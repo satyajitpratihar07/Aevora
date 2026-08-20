@@ -850,16 +850,14 @@ export const NurseDashboard: React.FC = () => {
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-5 py-3 bg-slate-50 border-b border-slate-100">
-                <div className="grid grid-cols-7 gap-2 text-[11px] font-bold text-slate-500 uppercase"><span>Day</span><span>Date</span><span>Shift</span><span>Start</span><span>End</span><span>Ward</span><span>Status</span></div>
+                <div className="grid grid-cols-5 gap-2 text-[11px] font-bold text-slate-500 uppercase"><span>Day</span><span>Date</span><span>Shift</span><span>Ward</span><span>Status</span></div>
               </div>
               <div className="divide-y divide-slate-100">
                 {SCHEDULE_DATA.map((s, i) => (
-                  <div key={i} className={`grid grid-cols-7 gap-2 px-5 py-4 text-sm ${s.status==='Active'?'bg-sky-50 border-l-2 border-sky-500':'hover:bg-slate-50'}`}>
+                  <div key={i} className={`grid grid-cols-5 gap-2 px-5 py-4 text-sm ${s.status==='Active'?'bg-sky-50 border-l-2 border-sky-500':'hover:bg-slate-50'}`}>
                     <span className="font-bold text-slate-700">{s.day}</span>
                     <span className="text-slate-600 text-xs">{s.date}</span>
                     <span className={`font-semibold ${s.shift==='Morning'?'text-amber-600':s.shift==='Afternoon'?'text-blue-600':s.shift==='Night'?'text-indigo-600':'text-slate-400'}`}>{s.shift}</span>
-                    <span className="text-slate-600 font-mono text-xs">{s.start}</span>
-                    <span className="text-slate-600 font-mono text-xs">{s.end}</span>
                     <span className="text-slate-600 text-xs truncate">{s.ward}</span>
                     <span className={badge(s.status)}>{s.status}</span>
                   </div>
