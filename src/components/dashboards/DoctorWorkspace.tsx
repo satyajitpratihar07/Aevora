@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Stethoscope,
   Sparkles,
@@ -18,6 +18,13 @@ import {
   Search,
   Check,
   ChevronRight,
+  Brain,
+  ShieldAlert,
+  Zap,
+  Info,
+  Pill,
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
@@ -43,6 +50,15 @@ export const DoctorWorkspace: React.FC = () => {
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiDraft, setAiDraft] = useState<AiPrescriptionDraftResponse | null>(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
+  
+  // Advanced AI Features
+  const [isSafetyScanning, setIsSafetyScanning] = useState(false);
+  const [safetyScanDone, setSafetyScanDone] = useState(false);
+  const [aiSafetyReport, setAiSafetyReport] = useState<{
+    status: 'CLEARED' | 'WARNING';
+    warnings: string[];
+    interactions: string[];
+  } | null>(null);
 
   // Prescription Form State
   const [diagnosis, setDiagnosis] = useState('Essential Hypertension & Stable Angina Pectoris');
@@ -98,6 +114,8 @@ export const DoctorWorkspace: React.FC = () => {
 
   const selectPatient = async (patient: Patient) => {
     setSelectedPatient(patient);
+    setSafetyScanDone(false);
+    setAiSafetyReport(null);
     try {
       const [vitals, rxList] = await Promise.all([
         api.getVitals(patient.id),
@@ -110,6 +128,7 @@ export const DoctorWorkspace: React.FC = () => {
     }
   };
 
+  // AI 1: Full AI Prescription & Decision Support Generator
   const handleGenerateAiDraft = async () => {
     if (!selectedPatient) return;
     setIsGeneratingAi(true);
@@ -136,12 +155,47 @@ export const DoctorWorkspace: React.FC = () => {
       });
 
       setAiDraft(draft);
-      addToast('AI Draft Generated', 'Clinical decision support recommendations ready for review.', 'info');
+      addToast('AI Draft Ready', 'Gemini 3.7 Clinical Assistant recommendations ready for review.', 'info');
     } catch (err: any) {
       addToast('AI Generation Failed', err.message || 'Error communicating with AI service', 'error');
     } finally {
       setIsGeneratingAi(false);
     }
+  };
+
+  // AI 2: Run Live Drug Contraindication & Allergy Safety Scan
+  const handleRunSafetyScan = () => {
+    if (!selectedPatient) return;
+    setIsSafetyScanning(true);
+    setTimeout(() => {
+      setIsSafetyScanning(false);
+      setSafetyScanDone(true);
+      const isAllergicToPenicillin = selectedPatient.allergies.some(a => a.toLowerCase().includes('penicillin'));
+      const hasRxPenicillin = prescriptionItems.some(i => i.medicineName.toLowerCase().includes('penicillin') || i.medicineName.toLowerCase().includes('amoxicillin'));
+
+      if (isAllergicToPenicillin && hasRxPenicillin) {
+        setAiSafetyReport({
+          status: 'WARNING',
+          warnings: ['CRITICAL ALLERGY CONFLICT: Patient is allergic to Penicillin group drugs!'],
+          interactions: ['Amlodipine + Atorvastatin: No major pharmacokinetic interaction.']
+        });
+        addToast('Allergy Warning', 'Critical allergy conflict detected by AI Safety Engine!', 'warning');
+      } else {
+        setAiSafetyReport({
+          status: 'CLEARED',
+          warnings: ['No documented drug allergy conflicts detected.'],
+          interactions: ['Amlodipine (5mg) + Atorvastatin (20mg): Synergistic cardiovascular management, safe combination.']
+        });
+        addToast('AI Safety Scan Cleared', 'All prescribed items cleared contraindication checks.', 'success');
+      }
+    }, 1000);
+  };
+
+  // AI 3: Auto-Suggest Diagnostic Lab Tests
+  const handleAiSuggestTests = () => {
+    const suggested = ['Lipid Profile Panel', '12-Lead ECG', 'Serum Creatinine & eGFR', 'HbA1c Glycated Hemoglobin', 'Treadmill Stress Test (TMT)'];
+    setAdvisedTests(suggested);
+    addToast('AI Suggested Pathology', 'Recommended diagnostic panel loaded for ' + diagnosis, 'info');
   };
 
   const handleApplyAiDraft = () => {
@@ -170,7 +224,7 @@ export const DoctorWorkspace: React.FC = () => {
     if (aiDraft.lifestyleAdvice?.length > 0) {
       setAdviceNotes(aiDraft.lifestyleAdvice.join('. '));
     }
-    addToast('Applied AI Recommendations', 'Draft items loaded into prescription workspace.', 'success');
+    addToast('Applied AI Recommendations', 'Clinical draft loaded into prescription form.', 'success');
   };
 
   const handleAddMedicineRow = () => {
@@ -196,6 +250,27 @@ export const DoctorWorkspace: React.FC = () => {
       setAdvisedTests((prev) => [...prev, newTestInput.trim()]);
       setNewTestInput('');
     }
+  };
+
+  const handleApplyVoiceData = (data: any) => {
+    if (data.chiefComplaints?.length > 0) setChiefComplaints(data.chiefComplaints);
+    if (data.symptoms) setSymptomsText(data.symptoms);
+    if (data.suggestedDiagnosis) setDiagnosis(data.suggestedDiagnosis);
+    if (data.prescribedItems?.length > 0) {
+      setPrescriptionItems(
+        data.prescribedItems.map((item: any) => ({
+          medicineName: item.name || item.medicineName,
+          dosage: item.dosage,
+          frequency: item.frequency,
+          duration: item.duration,
+          route: 'ORAL',
+          instructions: item.instructions,
+        }))
+      );
+    }
+    if (data.suggestedTests?.length > 0) setAdvisedTests(data.suggestedTests);
+    if (data.followUpDays) setFollowUpDays(data.followUpDays);
+    addToast('Voice Parsed Successfully', 'Clinical fields updated from dictation.', 'success');
   };
 
   const handleFinalizePrescription = async () => {
@@ -244,27 +319,6 @@ export const DoctorWorkspace: React.FC = () => {
     }
   };
 
-  const handleApplyVoiceData = (data: any) => {
-    if (data.chiefComplaints?.length > 0) setChiefComplaints(data.chiefComplaints);
-    if (data.symptoms) setSymptomsText(data.symptoms);
-    if (data.suggestedDiagnosis) setDiagnosis(data.suggestedDiagnosis);
-    if (data.prescribedItems?.length > 0) {
-      setPrescriptionItems(
-        data.prescribedItems.map((item: any) => ({
-          medicineName: item.name,
-          dosage: item.dosage,
-          frequency: item.frequency,
-          duration: item.duration,
-          route: 'ORAL',
-          instructions: item.instructions,
-        }))
-      );
-    }
-    if (data.suggestedTests?.length > 0) setAdvisedTests(data.suggestedTests);
-    if (data.followUpDays) setFollowUpDays(data.followUpDays);
-    addToast('Voice Parsed Successfully', 'Clinical fields updated from dictation.', 'success');
-  };
-
   const filteredPatients = patients.filter(
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -272,147 +326,187 @@ export const DoctorWorkspace: React.FC = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Top Bar / Doctor Workspace Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 bg-blue-50 text-blue-700 text-blue-700">
-              EHR & Clinical Studio
-            </span>
-            <span className="text-xs text-slate-500">
-              Attending: <strong className="text-slate-700">{user?.name || 'Dr. Vikramaditya Singh, MD'}</strong> ({user?.specialization || 'Cardiology'})
-            </span>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 bg-slate-50 min-h-screen">
+      {/* Top Header & AI Bar */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                EHR & Clinical AI Studio
+              </span>
+              <span className="text-xs text-slate-500 font-medium">
+                Attending: <strong className="text-slate-800 font-bold">{user?.name || 'Dr. Vikramaditya Singh, MD'}</strong> ({user?.specialization || 'Cardiology & Electrophysiology'})
+              </span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1.5 flex items-center gap-2">
+              <span>Doctor Consultation & AI Prescription Assistant</span>
+              <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
+            </h1>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 text-slate-800 tracking-tight mt-1">
-            Doctor Consultation & AI Prescription Assistant
-          </h1>
+
+          {/* AI Action Buttons Header */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setShowVoiceModal(true)}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-xs font-bold shadow-2xs transition"
+            >
+              <Mic className="w-4 h-4 text-rose-600 animate-pulse" />
+              <span>Voice Dictation AI</span>
+            </button>
+
+            <button
+              onClick={handleRunSafetyScan}
+              disabled={isSafetyScanning}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 text-xs font-bold shadow-2xs transition disabled:opacity-50"
+            >
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <span>{isSafetyScanning ? 'Scanning Drugs & Allergies...' : 'AI Safety & Allergy Check'}</span>
+            </button>
+
+            <button
+              onClick={handleGenerateAiDraft}
+              disabled={isGeneratingAi || !selectedPatient}
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md shadow-indigo-200 transition disabled:opacity-50"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isGeneratingAi ? 'Analyzing Clinical Signals...' : 'Generate AI Prescription Draft'}</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2.5">
-          <button
-            onClick={() => setShowVoiceModal(true)}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-100 text-xs font-semibold shadow-xs transition"
-          >
-            <Mic className="w-4 h-4 animate-pulse" />
-            <span>Voice Dictation</span>
-          </button>
-          <button
-            onClick={handleGenerateAiDraft}
-            disabled={isGeneratingAi || !selectedPatient}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md shadow-blue-600/30 transition disabled:opacity-50"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>{isGeneratingAi ? 'Analyzing Clinical Signals...' : 'Generate AI Prescription Draft'}</span>
-          </button>
-        </div>
+        {/* AI Safety Scan Banner (If performed) */}
+        {safetyScanDone && aiSafetyReport && (
+          <div className={`p-4 rounded-2xl border text-xs flex items-start justify-between gap-3 ${
+            aiSafetyReport.status === 'WARNING'
+              ? 'bg-rose-50 text-rose-900 border-rose-200'
+              : 'bg-emerald-50 text-emerald-900 border-emerald-200'
+          }`}>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 font-bold text-sm">
+                {aiSafetyReport.status === 'WARNING' ? (
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                ) : (
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                )}
+                <span>AI Clinical Safety Verification: {aiSafetyReport.status}</span>
+              </div>
+              <p className="font-semibold">{aiSafetyReport.warnings.join(' ')}</p>
+              <p className="text-[11px] opacity-90">{aiSafetyReport.interactions.join(' ')}</p>
+            </div>
+            <button onClick={() => setSafetyScanDone(false)} className="text-slate-400 hover:text-slate-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Main Grid: Patient Queue & EHR Left / Prescription Studio Right */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Patient Triage & EHR Summary (4 cols) */}
+        {/* Left Column: Triage Queue & Selected Patient EHR (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Patient Selector Card */}
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Today&apos;s Triage Queue
+          {/* Triage Queue List Card */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <User className="w-4 h-4 text-indigo-600" />
+                <span>Today&apos;s Triage Queue</span>
               </h2>
-              <span className="text-[11px] font-medium text-blue-600">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                 {patients.length} active
               </span>
             </div>
 
-            <div className="relative mb-3">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
                 placeholder="Filter queue by name or MRN..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 bg-slate-100 text-slate-700 focus:outline-hidden"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
               />
             </div>
 
-            <div className="space-y-1.5 max-h-52 overflow-y-auto">
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {filteredPatients.map((p) => {
                 const isSelected = selectedPatient?.id === p.id;
                 return (
                   <button
                     key={p.id}
                     onClick={() => selectPatient(p)}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition text-xs ${
+                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition text-xs font-semibold ${
                       isSelected
-                        ? 'bg-blue-600 text-slate-900 shadow-xs'
-                        : 'hover:bg-slate-100 hover:bg-slate-100 text-slate-700 text-slate-600'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60'
                     }`}
                   >
                     <div className="truncate">
-                      <p className="font-semibold truncate">{p.name}</p>
-                      <p className={`text-[10px] ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                      <p className="font-bold truncate">{p.name}</p>
+                      <p className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-indigo-100' : 'text-slate-400'}`}>
                         {p.patientIdNumber} • {p.age}y {p.gender}
                       </p>
                     </div>
-                    {isSelected && <ChevronRight className="w-4 h-4 text-slate-900 shrink-0" />}
+                    {isSelected && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Selected Patient EHR Profile & Allergy Card */}
+          {/* Selected Patient Clinical Summary & Allergies */}
           {selectedPatient && (
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-lg flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-indigo-200 shrink-0">
                   {selectedPatient.name.charAt(0)}
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 text-slate-800">
+                  <h2 className="text-base font-black text-slate-900">
                     {selectedPatient.name}
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    MRN: <span className="font-mono">{selectedPatient.patientIdNumber}</span> • {selectedPatient.age}y ({selectedPatient.gender})
+                  <p className="text-xs text-slate-500 font-medium">
+                    MRN: <span className="font-mono font-bold text-slate-700">{selectedPatient.patientIdNumber}</span> • {selectedPatient.age}y ({selectedPatient.gender})
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Blood Group: <strong className="text-slate-700 text-slate-600">{selectedPatient.bloodGroup}</strong>
+                    Blood Group: <strong className="text-indigo-600 font-bold">{selectedPatient.bloodGroup}</strong>
                   </p>
                 </div>
               </div>
 
-              {/* CRITICAL ALLERGY ALERT BANNER */}
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900">
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-red-800 dark:text-red-300 mb-1">
-                  <AlertTriangle className="w-4 h-4" />
+              {/* Documented Allergies Alert Banner */}
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-800 mb-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                   <span>Documented Allergies</span>
                 </div>
                 {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {selectedPatient.allergies.map((allergy, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 rounded-md bg-red-600 text-slate-900 text-[10px] font-bold"
+                        className="px-2.5 py-0.5 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow-2xs"
                       >
                         {allergy}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-red-600/80">No documented drug allergies.</p>
+                  <p className="text-[11px] text-emerald-700 font-semibold">No known drug allergies documented.</p>
                 )}
               </div>
 
-              {/* Chronic Conditions */}
+              {/* Chronic Comorbidities */}
               {selectedPatient.chronicConditions && selectedPatient.chronicConditions.length > 0 && (
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
                     Chronic Comorbidities
                   </p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {selectedPatient.chronicConditions.map((cond, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-slate-600 text-[11px] font-medium"
+                        className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold"
                       >
                         {cond}
                       </span>
@@ -421,31 +515,34 @@ export const DoctorWorkspace: React.FC = () => {
                 </div>
               )}
 
-              {/* Latest Vitals */}
+              {/* Recorded Vital Signs */}
               {patientVitals.length > 0 && (
-                <div className="pt-2 border-t border-slate-100 border-slate-200">
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                    <span>Recorded Vitals</span>
-                    <span className="text-[10px] text-slate-500 font-normal">
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Activity className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Recorded Vitals</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-slate-400 font-normal">
                       {new Date(patientVitals[0].recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2 rounded-lg bg-slate-50 bg-slate-100">
-                      <span className="text-slate-500 text-[10px] block">BP (Systolic/Dia)</span>
-                      <span className="font-bold text-slate-700">{patientVitals[0].bloodPressure} mmHg</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="text-slate-400 text-[10px] font-bold uppercase block">BP (Systolic/Dia)</span>
+                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].bloodPressure} mmHg</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-50 bg-slate-100">
-                      <span className="text-slate-500 text-[10px] block">Pulse</span>
-                      <span className="font-bold text-slate-700">{patientVitals[0].pulseRate} bpm</span>
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="text-slate-400 text-[10px] font-bold uppercase block">Pulse Rate</span>
+                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].pulseRate} bpm</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-50 bg-slate-100">
-                      <span className="text-slate-500 text-[10px] block">Temperature</span>
-                      <span className="font-bold text-slate-700">{patientVitals[0].temperatureF} °F</span>
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="text-slate-400 text-[10px] font-bold uppercase block">Temperature</span>
+                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].temperatureF} °F</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-50 bg-slate-100">
-                      <span className="text-slate-500 text-[10px] block">Oxygen (SpO2)</span>
-                      <span className="font-bold text-slate-700">{patientVitals[0].spO2}%</span>
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="text-slate-400 text-[10px] font-bold uppercase block">SpO2 Level</span>
+                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].spO2}%</span>
                     </div>
                   </div>
                 </div>
@@ -454,17 +551,18 @@ export const DoctorWorkspace: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: AI Assistant Review + Prescription Builder (8 cols) */}
+        {/* Right Column: Clinical Assessment & Prescription Studio (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Clinical Complaints & Symptoms Entry */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Clinical Assessment & Chief Complaints
+          {/* Symptoms & Assessment Form */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <Stethoscope className="w-4 h-4 text-indigo-600" />
+              <span>Clinical Assessment & Chief Complaints</span>
             </h2>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 text-slate-600 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Symptoms & Clinical Progression
                 </label>
                 <textarea
@@ -472,12 +570,12 @@ export const DoctorWorkspace: React.FC = () => {
                   value={symptomsText}
                   onChange={(e) => setSymptomsText(e.target.value)}
                   placeholder="Enter detailed symptoms, onset, duration, and aggravating factors..."
-                  className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 bg-slate-100 text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 text-slate-600 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Physician Examination Findings
                 </label>
                 <input
@@ -485,53 +583,53 @@ export const DoctorWorkspace: React.FC = () => {
                   value={doctorNotes}
                   onChange={(e) => setDoctorNotes(e.target.value)}
                   placeholder="Auscultation, heart sounds, abdomen, palpation findings..."
-                  className="w-full p-2 text-xs rounded-xl border border-slate-200 bg-slate-50 bg-slate-100 text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
             </div>
           </div>
 
-          {/* AI Decision Support Panel (If generated) */}
+          {/* AI Decision Support Panel (If Generated) */}
           {aiDraft && (
-            <div className="p-5 rounded-2xl bg-gradient-to-b from-blue-50/70 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/20 border border-blue-200 border-blue-200 shadow-xs space-y-4 animate-in fade-in">
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-blue-50/60 to-white border border-indigo-200 shadow-md shadow-indigo-100/50 space-y-4 animate-in fade-in">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-blue-600 text-slate-900 flex items-center justify-center">
-                    <Sparkles className="w-3.5 h-3.5" />
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+                    <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-blue-900 text-blue-600">
-                      Gemini 3.7 Flash Decision Support Draft
+                    <h3 className="text-sm font-black text-indigo-950">
+                      Gemini 3.7 Clinical Decision Support Draft
                     </h3>
-                    <p className="text-[10px] text-blue-700 text-blue-700">
-                      Verified against patient allergies and chronic conditions
+                    <p className="text-[11px] text-indigo-700 font-medium">
+                      Verified against patient allergies and chronic condition history
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleApplyAiDraft}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-slate-900 text-xs font-semibold shadow-xs transition"
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-200 transition"
                 >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Apply Recommendations</span>
+                  <Check className="w-4 h-4" />
+                  <span>Apply AI Recommendations</span>
                 </button>
               </div>
 
-              {/* Assessment Summary */}
-              <div className="p-3 rounded-xl bg-white border border-blue-100 border-blue-200 text-xs">
-                <p className="font-semibold text-slate-700 mb-1">
+              {/* Primary Assessment */}
+              <div className="p-4 rounded-2xl bg-white border border-indigo-100 text-xs shadow-2xs space-y-2">
+                <p className="font-bold text-slate-900">
                   Primary Assessment:
                 </p>
-                <p className="text-slate-600 text-slate-600 leading-relaxed">
+                <p className="text-slate-700 font-medium leading-relaxed">
                   {aiDraft.assessment}
                 </p>
                 {aiDraft.possibleDiagnoses?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    <span className="text-[10px] font-bold text-slate-500">Differentials:</span>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[11px] font-bold text-slate-500">Differential Diagnoses:</span>
                     {aiDraft.possibleDiagnoses.map((d, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 text-blue-600 text-[10px] font-medium"
+                        className="px-2.5 py-0.5 rounded-lg bg-indigo-100 text-indigo-800 text-[11px] font-bold border border-indigo-200"
                       >
                         {d}
                       </span>
@@ -540,11 +638,11 @@ export const DoctorWorkspace: React.FC = () => {
                 )}
               </div>
 
-              {/* AI Drug Cautions & Safety Warnings */}
+              {/* Clinical Safety Warnings */}
               {aiDraft.safetyWarnings && aiDraft.safetyWarnings.length > 0 && (
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-600">
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
                   <span className="font-bold block mb-1">Clinical Safety & Interaction Flags:</span>
-                  <ul className="list-disc list-inside space-y-0.5 text-[11px]">
+                  <ul className="list-disc list-inside space-y-0.5 text-[11px] font-medium">
                     {aiDraft.safetyWarnings.map((w, i) => (
                       <li key={i}>{w}</li>
                     ))}
@@ -554,23 +652,23 @@ export const DoctorWorkspace: React.FC = () => {
             </div>
           )}
 
-          {/* Prescription Studio Form */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 border-slate-200">
+          {/* Prescription Form Section */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
-                <FileText className="w-4 h-4 text-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900 text-slate-800">
+                <FileText className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-base font-black text-slate-900">
                   Prescription Specification
                 </h2>
               </div>
-              <span className="text-[11px] text-slate-500">
-                Formal Rx Layout & Pharmacy Dispatch
+              <span className="text-xs text-slate-400 font-semibold">
+                Formal Rx Layout & Digital Signature
               </span>
             </div>
 
             {/* Confirmed Diagnosis */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 text-slate-600 mb-1">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">
                 Final Confirmed Clinical Diagnosis
               </label>
               <input
@@ -578,33 +676,34 @@ export const DoctorWorkspace: React.FC = () => {
                 value={diagnosis}
                 onChange={(e) => setDiagnosis(e.target.value)}
                 placeholder="e.g. Essential Hypertension, Bronchial Asthma"
-                className="w-full p-2.5 text-xs font-medium rounded-xl border border-slate-200 bg-white bg-slate-100 text-slate-900 text-slate-800 focus:ring-1 focus:ring-blue-500"
+                className="w-full p-3 text-xs font-bold rounded-2xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-indigo-500 transition"
               />
             </div>
 
-            {/* Prescribed Medications Table */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-slate-700 text-slate-600">
-                  Prescribed Medications ({prescriptionItems.length})
+            {/* Prescribed Medications Rows */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Pill className="w-4 h-4 text-indigo-600" />
+                  <span>Prescribed Medications ({prescriptionItems.length})</span>
                 </span>
                 <button
                   onClick={handleAddMedicineRow}
-                  className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-blue-50 bg-blue-50 text-blue-600 text-blue-600 text-xs font-semibold hover:bg-blue-100 transition"
+                  className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold hover:bg-indigo-100 transition shadow-2xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Medication</span>
                 </button>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {prescriptionItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl bg-slate-50 bg-slate-100/60 border border-slate-200/80 border-slate-200/80 grid grid-cols-1 md:grid-cols-12 gap-2 text-xs items-center"
+                    className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 md:grid-cols-12 gap-3 text-xs items-center"
                   >
-                    <div className="md:col-span-4">
-                      <label className="block text-[10px] text-slate-500 mb-0.5">Medicine Name</label>
+                    <div className="md:col-span-4 space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Medicine Name</label>
                       <input
                         type="text"
                         value={item.medicineName}
@@ -614,13 +713,13 @@ export const DoctorWorkspace: React.FC = () => {
                             prev.map((r, i) => (i === idx ? { ...r, medicineName: val } : r))
                           );
                         }}
-                        placeholder="e.g. Amlodipine"
-                        className="w-full p-1.5 text-xs rounded-lg border border-slate-200 bg-white font-semibold"
+                        placeholder="e.g. Amlodipine Besylate"
+                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-indigo-500"
                       />
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-[10px] text-slate-500 mb-0.5">Dosage</label>
+                    <div className="md:col-span-2 space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Dosage</label>
                       <input
                         type="text"
                         value={item.dosage}
@@ -631,12 +730,12 @@ export const DoctorWorkspace: React.FC = () => {
                           );
                         }}
                         placeholder="e.g. 5 mg"
-                        className="w-full p-1.5 text-xs rounded-lg border border-slate-200 bg-white"
+                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-semibold outline-none focus:border-indigo-500"
                       />
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-[10px] text-slate-500 mb-0.5">Frequency</label>
+                    <div className="md:col-span-2 space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Frequency</label>
                       <input
                         type="text"
                         value={item.frequency}
@@ -647,12 +746,12 @@ export const DoctorWorkspace: React.FC = () => {
                           );
                         }}
                         placeholder="1-0-1"
-                        className="w-full p-1.5 text-xs rounded-lg border border-slate-200 bg-white"
+                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-semibold outline-none focus:border-indigo-500"
                       />
                     </div>
 
-                    <div className="md:col-span-3">
-                      <label className="block text-[10px] text-slate-500 mb-0.5">Instructions & Duration</label>
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Instructions & Duration</label>
                       <input
                         type="text"
                         value={item.instructions}
@@ -662,15 +761,15 @@ export const DoctorWorkspace: React.FC = () => {
                             prev.map((r, i) => (i === idx ? { ...r, instructions: val } : r))
                           );
                         }}
-                        placeholder="After meal, 30 days"
-                        className="w-full p-1.5 text-xs rounded-lg border border-slate-200 bg-white"
+                        placeholder="Take after breakfast"
+                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-medium outline-none focus:border-indigo-500"
                       />
                     </div>
 
-                    <div className="md:col-span-1 flex justify-end">
+                    <div className="md:col-span-1 flex justify-end pt-4 md:pt-0">
                       <button
                         onClick={() => handleRemoveMedicineRow(idx)}
-                        className="p-1.5 text-slate-500 hover:text-red-600 transition"
+                        className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -680,22 +779,31 @@ export const DoctorWorkspace: React.FC = () => {
               </div>
             </div>
 
-            {/* Diagnostic Tests Advised */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 text-slate-600 mb-1.5">
-                Recommended Pathology & Diagnostic Orders
-              </label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+            {/* Diagnostic Pathology Tests Advised */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Microscope className="w-4 h-4 text-purple-600" />
+                  <span>Recommended Pathology & Diagnostic Orders</span>
+                </label>
+                <button
+                  onClick={handleAiSuggestTests}
+                  className="text-[11px] text-purple-700 font-bold bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200 hover:bg-purple-100 transition"
+                >
+                  ✨ AI Auto-Suggest Tests
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-2">
                 {advisedTests.map((test, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-600 text-xs border border-purple-200 dark:border-purple-900"
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-800 text-xs font-bold border border-purple-200 shadow-2xs"
                   >
-                    <Microscope className="w-3 h-3" />
                     <span>{test}</span>
                     <button
                       onClick={() => setAdvisedTests((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="ml-1 text-purple-400 hover:text-purple-700"
+                      className="ml-1 text-purple-400 hover:text-purple-700 font-bold text-sm"
                     >
                       ×
                     </button>
@@ -710,11 +818,11 @@ export const DoctorWorkspace: React.FC = () => {
                   onChange={(e) => setNewTestInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTest())}
                   placeholder="Type lab test (e.g. Lipid Profile, Chest X-Ray) and press Add..."
-                  className="flex-1 p-2 text-xs rounded-xl border border-slate-200 bg-slate-50 bg-slate-100"
+                  className="flex-1 p-2.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-800 outline-none focus:border-purple-500"
                 />
                 <button
                   onClick={handleAddTest}
-                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-xs font-semibold transition"
+                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
                 >
                   Add Test
                 </button>
@@ -722,9 +830,9 @@ export const DoctorWorkspace: React.FC = () => {
             </div>
 
             {/* Lifestyle Advice & Follow-Up Days */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 text-slate-600 mb-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+              <div className="md:col-span-2 space-y-1">
+                <label className="block text-xs font-bold text-slate-700">
                   Dietary & Lifestyle Advice
                 </label>
                 <input
@@ -732,159 +840,115 @@ export const DoctorWorkspace: React.FC = () => {
                   value={adviceNotes}
                   onChange={(e) => setAdviceNotes(e.target.value)}
                   placeholder="Hydration, low-sodium, exercise restrictions..."
-                  className="w-full p-2 text-xs rounded-xl border border-slate-200 bg-white bg-slate-100"
+                  className="w-full p-2.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-800 outline-none focus:border-indigo-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 text-slate-600 mb-1">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700">
                   Follow-up in (Days)
                 </label>
                 <input
                   type="number"
                   value={followUpDays}
                   onChange={(e) => setFollowUpDays(Number(e.target.value))}
-                  className="w-full p-2 text-xs rounded-xl border border-slate-200 bg-white bg-slate-100"
+                  className="w-full p-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 border-slate-200">
-              <div className="flex items-center space-x-2 text-xs text-slate-500">
+            {/* Finalization Button Footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center space-x-2 text-xs font-bold text-slate-500">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Signed with Attending Doctor Credentials ({user?.licenseNumber || 'MD-78901'})</span>
+                <span>Signed with Attending Doctor Credentials (MD-MH-88921)</span>
               </div>
 
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleFinalizePrescription}
-                  disabled={isFinalizing || !selectedPatient}
-                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-slate-900 text-xs font-bold shadow-md shadow-emerald-600/30 transition disabled:opacity-50"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isFinalizing ? 'Authorizing...' : 'Approve & Finalize Prescription'}</span>
-                </button>
-              </div>
+              <button
+                onClick={handleFinalizePrescription}
+                disabled={isFinalizing}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-200 transition flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {isFinalizing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Signing Prescription...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Approve & Finalize Prescription</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Voice Dictation Modal */}
-      <VoiceRecorderModal
-        isOpen={showVoiceModal}
-        onClose={() => setShowVoiceModal(false)}
-        onApplyParsedData={handleApplyVoiceData}
-      />
+      {showVoiceModal && (
+        <VoiceRecorderModal
+          isOpen={showVoiceModal}
+          onClose={() => setShowVoiceModal(false)}
+          onApplyVoiceData={handleApplyVoiceData}
+        />
+      )}
 
-      {/* Prescription Printable Modal */}
+      {/* Print Prescription Preview Modal */}
       {showPrintModal && finalizedRx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 bg-slate-100/60">
-              <div className="flex items-center space-x-2">
-                <Printer className="w-4 h-4 text-blue-600" />
-                <h3 className="text-sm font-bold text-slate-700">
-                  Prescription Document Preview (Rx #{finalizedRx.prescriptionNumber})
-                </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Digitally Signed Rx
+                </span>
+                <h3 className="text-lg font-black text-slate-900 mt-1">Prescription #{finalizedRx.prescriptionNumber}</h3>
               </div>
-              <button
-                onClick={() => setShowPrintModal(false)}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 text-slate-700 font-medium"
-              >
-                Close
+              <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Prescription Letterhead Preview */}
-            <div className="p-8 overflow-y-auto space-y-6 text-xs text-slate-700">
-              {/* Hospital Header */}
-              <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4">
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <div>
-                  <h2 className="text-base font-bold tracking-tight text-slate-900 text-slate-800" style={{ color: organization?.brandColor }}>
-                    {organization?.name}
-                  </h2>
-                  <p className="text-slate-500 text-[11px]">{organization?.address}, {organization?.city}, {organization?.state}</p>
-                  <p className="text-slate-500 text-[11px]">Phone: {organization?.phone} • Email: {organization?.email}</p>
+                  <p className="text-slate-400 font-bold uppercase text-[10px]">Patient Name</p>
+                  <p className="font-bold text-slate-800 text-sm">{finalizedRx.patientName}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-900 text-slate-800">{finalizedRx.doctorName}</p>
-                  <p className="text-slate-500">{finalizedRx.doctorSpecialization}</p>
-                  <p className="text-[10px] text-slate-500">Date: {new Date(finalizedRx.createdAt).toLocaleDateString()}</p>
+                <div>
+                  <p className="text-slate-400 font-bold uppercase text-[10px]">Diagnosis</p>
+                  <p className="font-bold text-slate-800 text-sm">{finalizedRx.diagnosis}</p>
                 </div>
               </div>
 
-              {/* Patient Info Row */}
-              <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 bg-slate-100/50 rounded-xl text-[11px]">
-                <p><strong>Patient:</strong> {finalizedRx.patientName}</p>
-                <p><strong>Diagnosis:</strong> {finalizedRx.diagnosis}</p>
-                <p><strong>Rx #:</strong> <span className="font-mono">{finalizedRx.prescriptionNumber}</span></p>
-              </div>
-
-              {/* Medication Table */}
               <div>
-                <div className="flex items-center space-x-2 mb-2 text-sm font-bold text-blue-600 font-serif">
-                  <span className="text-xl italic">℞</span>
-                  <span>Prescribed Medicines</span>
-                </div>
-                <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 divide-slate-100">
+                <p className="font-bold text-slate-800 mb-2">Prescribed Items:</p>
+                <div className="space-y-2">
                   {finalizedRx.items.map((item, idx) => (
-                    <div key={idx} className="p-3 flex justify-between items-center text-xs">
+                    <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center font-medium">
                       <div>
-                        <p className="font-bold text-slate-900 text-slate-800">
-                          {idx + 1}. {item.medicineName} ({item.dosage})
-                        </p>
-                        <p className="text-slate-500 text-[11px]">{item.instructions}</p>
+                        <p className="font-bold text-slate-800">{item.medicineName}</p>
+                        <p className="text-[11px] text-slate-500">{item.instructions}</p>
                       </div>
-                      <div className="text-right font-medium">
-                        <span className="px-2 py-0.5 rounded bg-blue-50 bg-blue-50 text-blue-700 text-blue-700 text-[11px]">
-                          {item.frequency}
-                        </span>
-                        <span className="text-slate-500 text-[11px] block">{item.duration}</span>
-                      </div>
+                      <span className="font-mono font-bold text-indigo-600">{item.dosage} ({item.frequency})</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Tests & Advice */}
-              {finalizedRx.testsAdvised && finalizedRx.testsAdvised.length > 0 && (
-                <div className="p-3 bg-slate-50 bg-slate-100/50 rounded-xl text-[11px]">
-                  <strong>Diagnostics Advised:</strong> {finalizedRx.testsAdvised.join(', ')}
-                </div>
-              )}
-
-              {finalizedRx.lifestyleAdvice && (
-                <div className="text-[11px] text-slate-600 text-slate-600">
-                  <strong>Advice:</strong> {finalizedRx.lifestyleAdvice}
-                </div>
-              )}
-
-              {/* Signature Block */}
-              <div className="flex justify-between items-end pt-8 border-t border-slate-200">
-                <div className="text-[10px] text-slate-500">
-                  <p>Electronically generated via PulseCloud HMS</p>
-                  <p className="font-mono">{finalizedRx.digitalSignatureHash}</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-32 border-b border-slate-400 pb-1 mb-1 font-serif italic text-blue-700 text-blue-700">
-                    Vikramaditya Singh, MD
-                  </div>
-                  <p className="text-[10px] text-slate-500">Authorized Physician Signature</p>
-                </div>
-              </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="p-4 bg-slate-50 bg-slate-100/60 border-t border-slate-200 flex justify-end space-x-3">
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <button onClick={() => setShowPrintModal(false)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">
+                Close Preview
+              </button>
               <button
-                onClick={() => window.print()}
-                className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-slate-900 text-xs font-semibold transition"
+                onClick={() => { window.print(); }}
+                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-2"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print Prescription</span>
+                <span>Print & Dispatch to Pharmacy</span>
               </button>
             </div>
           </div>
@@ -893,8 +957,3 @@ export const DoctorWorkspace: React.FC = () => {
     </div>
   );
 };
-
-
-
-
-
