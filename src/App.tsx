@@ -192,15 +192,14 @@ const MainAppContent: React.FC = () => {
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`pointer-events-auto p-4 rounded-2xl shadow-xl border text-xs flex justify-between items-start space-x-3 max-w-sm ${
-                toast.type === 'success'
+              className={`pointer-events-auto p-4 rounded-2xl shadow-xl border text-xs flex justify-between items-start space-x-3 max-w-sm ${toast.type === 'success'
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                   : toast.type === 'error'
-                  ? 'bg-rose-50 text-rose-800 border-rose-300'
-                  : toast.type === 'warning'
-                  ? 'bg-amber-50 text-amber-800 border-amber-300'
-                  : 'bg-white text-slate-800 border-slate-200'
-              }`}
+                    ? 'bg-rose-50 text-rose-800 border-rose-300'
+                    : toast.type === 'warning'
+                      ? 'bg-amber-50 text-amber-800 border-amber-300'
+                      : 'bg-white text-slate-800 border-slate-200'
+                }`}
             >
               <div>
                 <p className="font-bold">{toast.title}</p>
@@ -273,15 +272,14 @@ const MainAppContent: React.FC = () => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto p-4 rounded-2xl shadow-xl border text-xs flex justify-between items-start space-x-3 max-w-sm animate-in slide-in-from-bottom-2 duration-200 ${
-              toast.type === 'success'
+            className={`pointer-events-auto p-4 rounded-2xl shadow-xl border text-xs flex justify-between items-start space-x-3 max-w-sm animate-in slide-in-from-bottom-2 duration-200 ${toast.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-emerald-100'
                 : toast.type === 'error'
-                ? 'bg-rose-50 text-rose-800 border-rose-300 shadow-rose-100'
-                : toast.type === 'warning'
-                ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-amber-100'
-                : 'bg-white text-slate-800 border-slate-200 shadow-slate-100'
-            }`}
+                  ? 'bg-rose-50 text-rose-800 border-rose-300 shadow-rose-100'
+                  : toast.type === 'warning'
+                    ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-amber-100'
+                    : 'bg-white text-slate-800 border-slate-200 shadow-slate-100'
+              }`}
           >
             <div>
               <p className="font-bold">{toast.title}</p>
