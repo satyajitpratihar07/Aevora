@@ -1708,6 +1708,7 @@ export const NurseDashboard: React.FC = () => {
               phone: newNurse.phone || '+91 99999 99999',
               ward: newNurse.ward || 'General Ward A',
               shift: newNurse.shift || 'Morning (07-15h)',
+              regNo: newNurse.regNo || n.regNo,
               status: newNurse.status as any || 'Active'
             }
           : n
@@ -1757,7 +1758,9 @@ export const NurseDashboard: React.FC = () => {
 
         {showAddNurse ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-xl mx-auto shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-4 text-base">Add New Staff Nurse</h3>
+            <h3 className="font-bold text-slate-800 mb-4 text-base">
+              {editingNurseId ? 'Edit Staff Nurse Details' : 'Add New Staff Nurse'}
+            </h3>
             <form onSubmit={handleAddNurse} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-600">Full Name *</label>
@@ -1818,11 +1821,34 @@ export const NurseDashboard: React.FC = () => {
                   </select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600">Registration Number</label>
+                  <input
+                    value={newNurse.regNo || ''}
+                    onChange={e => setNewNurse(p => ({ ...p, regNo: e.target.value }))}
+                    placeholder="MNC-2026-XXXX"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600">Status</label>
+                  <select
+                    value={newNurse.status || 'Active'}
+                    onChange={e => setNewNurse(p => ({ ...p, status: e.target.value as any }))}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"
+                  >
+                    <option>Active</option>
+                    <option>On Leave</option>
+                    <option>Off Duty</option>
+                  </select>
+                </div>
+              </div>
               <button
                 type="submit"
                 className="w-full py-3 bg-sky-600 text-white font-bold rounded-xl hover:bg-sky-700 transition shadow-md"
               >
-                Register Staff Nurse
+                {editingNurseId ? 'Save Changes' : 'Register Staff Nurse'}
               </button>
             </form>
           </div>
@@ -1879,6 +1905,7 @@ export const NurseDashboard: React.FC = () => {
                               phone: nurse.phone,
                               ward: nurse.ward,
                               shift: nurse.shift,
+                              regNo: nurse.regNo,
                               status: nurse.status as any
                             });
                             setShowAddNurse(true);
