@@ -183,10 +183,35 @@ export const NurseDashboard: React.FC = () => {
     p.diagnosis.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [medNameEdit, setMedNameEdit] = useState('');
+  const [medDoseEdit, setMedDoseEdit] = useState('');
+  const [medRouteEdit, setMedRouteEdit] = useState('');
+  const [medFreqEdit, setMedFreqEdit] = useState('');
+  const [medTimeEdit, setMedTimeEdit] = useState('');
+
+  // Option lists for MAR Modal dropdown selectors
+  const [medNamesList, setMedNamesList] = useState<string[]>(['Metformin 500mg', 'Amlodipine 5mg', 'Tramadol 50mg', 'Azithromycin 500mg', 'Prednisolone 20mg', 'ORS Sachets']);
+  const [dosagesList, setDosagesList] = useState<string[]>(['500mg', '5mg', '50mg', '250mg', '20mg', '200ml']);
+  const [routesList, setRoutesList] = useState<string[]>(['Oral', 'IV', 'IM', 'Subcut', 'Inhaled']);
+  const [frequenciesList, setFrequenciesList] = useState<string[]>(['OD', 'BD', 'TDS', 'QID', 'PRN']);
+  const [timesList, setTimesList] = useState<string[]>(['08:00', '12:00', '14:00', '16:00', '20:00', '22:00']);
+
+  // Inputs for adding new options
+  const [newMedNameOpt, setNewMedNameOpt] = useState('');
+  const [newDosageOpt, setNewDosageOpt] = useState('');
+  const [newRouteOpt, setNewRouteOpt] = useState('');
+  const [newFreqOpt, setNewFreqOpt] = useState('');
+  const [newTimeOpt, setNewTimeOpt] = useState('');
+
   const openMAR = (m: MAREntry) => {
     setSelectedMar(m);
     setMarStatus(m.status === 'Pending' ? 'Given' : m.status);
     setMarNote(m.notes || '');
+    setMedNameEdit(m.medicine);
+    setMedDoseEdit(m.dosage);
+    setMedRouteEdit(m.route);
+    setMedFreqEdit(m.frequency);
+    setMedTimeEdit(m.scheduledTime);
     setShowMARModal(true);
   };
 
@@ -195,11 +220,21 @@ export const NurseDashboard: React.FC = () => {
     const now = new Date();
     const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     setMarData(prev => prev.map(m => m.id === selectedMar.id
-      ? { ...m, status: marStatus, givenAt: marStatus === 'Given' ? t : m.givenAt, notes: marNote }
+      ? { 
+          ...m, 
+          status: marStatus, 
+          givenAt: marStatus === 'Given' ? t : m.givenAt, 
+          notes: marNote,
+          medicine: medNameEdit,
+          dosage: medDoseEdit,
+          route: medRouteEdit,
+          frequency: medFreqEdit,
+          scheduledTime: medTimeEdit
+        }
       : m
     ));
     setShowMARModal(false);
-    addToast('MAR Updated', `Status set to "${marStatus}" for ${selectedMar.patientName}`, 'success');
+    addToast('MAR Updated', `Medication administration saved for ${selectedMar.patientName}`, 'success');
   };
 
   const handleAdmit = () => {
@@ -940,7 +975,7 @@ export const NurseDashboard: React.FC = () => {
         <div className="divide-y divide-slate-100 min-w-[800px]">
           {marData.map(m => (
             <div key={m.id} className={`grid grid-cols-8 gap-2 px-5 py-4 items-center text-sm ${m.status==='Missed'?'bg-red-50':m.status==='Held'?'bg-slate-50':'hover:bg-slate-50'}`}>
-              <div className="col-span-2"><p className="font-semibold text-slate-800">{m.patientName}</p><p className="text-[11px] text-slate-400 font-mono">{m.patientId} Â· {m.bed}</p></div>
+              <div className="col-span-2"><p className="font-semibold text-slate-800">{m.patientName}</p><p className="text-[11px] text-slate-400 font-mono">{m.patientId} · {m.bed}</p></div>
               <div><p className="font-semibold text-slate-700">{m.medicine}</p><p className="text-[10px] text-slate-400">{m.doctor}</p></div>
               <span className="text-slate-600 text-xs font-mono">{m.dosage}/{m.route}</span>
               <span className="text-slate-600 text-xs">{m.frequency}</span>
@@ -958,32 +993,94 @@ export const NurseDashboard: React.FC = () => {
   const PatientsV = () => (
     <div className="space-y-5">
       {selectedPatient ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
+          {/* Header Action Row */}
           <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedPatient(null)} className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100"><ChevronLeft className="w-4 h-4" /></button>
-            <div><h2 className="text-xl font-black text-slate-800">{selectedPatient.name}</h2><p className="text-sm text-slate-500">{selectedPatient.id} Â· Bed {selectedPatient.bed}</p></div>
+            <button onClick={() => setSelectedPatient(null)} className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 bg-white transition"><ChevronLeft className="w-4 h-4" /></button>
+            <div>
+              <h2 className="text-xl font-black text-slate-800">Patient File & EMR</h2>
+              <p className="text-xs text-slate-500">Electronic health record sheet</p>
+            </div>
             <span className={`ml-auto ${badge(selectedPatient.condition)}`}>{selectedPatient.condition}</span>
           </div>
+
+          {/* Premium Profile & QR Summary Card */}
+          <div className="bg-gradient-to-r from-slate-800 to-slate-950 rounded-3xl p-6 text-white border-2 border-slate-700 shadow-md flex flex-wrap justify-between items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl font-black text-white shadow-inner">
+                {selectedPatient.name.charAt(0)}
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-black">{selectedPatient.name}</h3>
+                <p className="text-xs text-slate-300 font-medium">EMR Access Token: <span className="font-mono text-sky-400 font-bold">{selectedPatient.id}</span></p>
+                <div className="flex gap-2 items-center flex-wrap pt-1">
+                  <span className="bg-white/15 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Bed: {selectedPatient.bed}</span>
+                  <span className="bg-white/15 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Blood: {selectedPatient.bloodGroup}</span>
+                  <span className="bg-white/15 px-2.5 py-0.5 rounded-full text-[10px] font-bold">{selectedPatient.age} yrs / {selectedPatient.gender}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="bg-white rounded-2xl p-3 border border-slate-200 flex flex-col items-center gap-1.5 shadow-sm">
+              <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center relative overflow-hidden border border-slate-200">
+                {/* Mock Vector QR Code Pattern */}
+                <div className="absolute inset-2 grid grid-cols-5 gap-0.5 opacity-90">
+                  {[1,1,0,1,1, 1,0,0,0,1, 0,0,1,0,0, 1,0,1,0,1, 1,1,0,1,1, 0,1,0,1,0, 1,0,1,1,0].map((v, i) => (
+                    <div key={i} className={`rounded-sm ${v === 1 ? 'bg-slate-900' : 'bg-transparent'}`} />
+                  ))}
+                  {/* QR square corners */}
+                  <div className="absolute top-0 left-0 w-4 h-4 bg-slate-900 border border-white rounded-sm" />
+                  <div className="absolute top-0 right-0 w-4 h-4 bg-slate-900 border border-white rounded-sm" />
+                  <div className="absolute bottom-0 left-0 w-4 h-4 bg-slate-900 border border-white rounded-sm" />
+                </div>
+              </div>
+              <span className="text-[9px] font-black text-slate-500 uppercase font-mono tracking-wider">Patient ID QR</span>
+            </div>
+          </div>
+
+          {/* Vitals Summary Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: 'Temp (Core)', value: '98.6 °F', desc: 'Normal', icon: Activity, col: 'text-emerald-500 bg-emerald-50' },
+              { label: 'Blood Pressure', value: '120/80 mmHg', desc: 'Stable', icon: Activity, col: 'text-sky-500 bg-sky-50' },
+              { label: 'Heart Rate', value: '72 bpm', desc: 'Normal', icon: Heart, col: 'text-rose-500 bg-rose-50' },
+              { label: 'SpO2 Oxygen', value: '98%', desc: 'Optimal', icon: Activity, col: 'text-indigo-500 bg-indigo-50' },
+            ].map(v => {
+              const Icon = v.icon;
+              return (
+                <div key={v.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{v.label}</span>
+                    <span className={`p-1 rounded-lg ${v.col}`}><Icon className="w-3.5 h-3.5" /></span>
+                  </div>
+                  <p className="text-xl font-black text-slate-800 mt-1">{v.value}</p>
+                  <p className="text-[10px] font-semibold text-slate-500">{v.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
               <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><User className="w-4 h-4 text-sky-600"/>Demographics</h3>
               {[['Age / Gender',`${selectedPatient.age}y / ${selectedPatient.gender}`],['Blood Group',selectedPatient.bloodGroup],['Phone',selectedPatient.phone],['Weight / Height',`${selectedPatient.weight}kg / ${selectedPatient.height}cm`]].map(([k,v]) => (
                 <div key={k as string} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0"><span className="text-xs text-slate-400 font-semibold">{k}</span><span className="text-xs font-bold text-slate-700">{v as string}</span></div>
               ))}
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
               <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><BedDouble className="w-4 h-4 text-sky-600"/>Admission Details</h3>
               {[['Date',selectedPatient.admissionDate],['Ward',selectedPatient.ward],['Bed',selectedPatient.bed],['Doctor',selectedPatient.doctor],['Diagnosis',selectedPatient.diagnosis],['Priority',selectedPatient.priority]].map(([k,v]) => (
                 <div key={k as string} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0"><span className="text-xs text-slate-400 font-semibold">{k}</span><span className="text-xs font-bold text-slate-700 text-right max-w-[60%]">{v as string}</span></div>
               ))}
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
               <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500"/>Allergies</h3>
               {selectedPatient.allergies.length===0?<p className="text-xs text-slate-400">No known allergies</p>:selectedPatient.allergies.map(a=><div key={a} className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-700">{a}</div>)}
               <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 pt-2"><Pill className="w-4 h-4 text-amber-600"/>Medications</h3>
               {marData.filter(m=>m.patientId===selectedPatient.id).map(m=>(
                 <div key={m.id} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0">
-                  <div><p className="text-xs font-bold text-slate-700">{m.medicine}</p><p className="text-[10px] text-slate-400">{m.dosage} Â· {m.route}</p></div>
+                  <div><p className="text-xs font-bold text-slate-700">{m.medicine}</p><p className="text-[10px] text-slate-400">{m.dosage} · {m.route}</p></div>
                   <span className={badge(m.status)}>{m.status}</span>
                 </div>
               ))}
@@ -1193,19 +1290,309 @@ export const NurseDashboard: React.FC = () => {
 
   // â”€â”€ MAR Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const MARModalEl = () => {
+    const [medSearch, setMedSearch] = useState('');
     if (!showMARModal || !selectedMar) return null;
+
+    // Filter medicine names based on search input
+    const filteredMeds = medNamesList.filter(name =>
+      name.toLowerCase().includes(medSearch.toLowerCase())
+    );
+
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-slate-900/60" onClick={()=>setShowMARModal(false)}/>
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
           <div className="flex items-start justify-between">
-            <div><h3 className="font-black text-slate-800 text-lg">Update Medication</h3><p className="text-sm text-slate-500">{selectedMar.medicine} Â· {selectedMar.patientName}</p></div>
+            <div><h3 className="font-black text-slate-800 text-lg">Update Medication</h3><p className="text-sm text-slate-500">{selectedMar.medicine} · {selectedMar.patientName}</p></div>
             <button onClick={()=>setShowMARModal(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"><X className="w-4 h-4"/></button>
           </div>
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-1.5 text-sm">
-            {[['Dosage',`${selectedMar.dosage} / ${selectedMar.route}`],['Frequency',selectedMar.frequency],['Scheduled',selectedMar.scheduledTime],['Instructions',selectedMar.instructions]].map(([k,v])=>(
-              <div key={k as string} className="flex justify-between"><span className="text-slate-500">{k}</span><span className="font-bold text-slate-700 text-right max-w-[60%]">{v as string}</span></div>
-            ))}
+
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3 text-sm">
+            {/* Medicine Name Select & Add */}
+            <div className="space-y-2 bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block">Medicine Name</label>
+                <div className="relative w-44">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search medicine..."
+                    value={medSearch}
+                    onChange={e => setMedSearch(e.target.value)}
+                    className="w-full pl-6 pr-2 py-0.5 text-[11px] border border-slate-200 rounded-md outline-none focus:border-sky-400 bg-slate-50/50"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={medNameEdit}
+                  onChange={e => setMedNameEdit(e.target.value)}
+                  className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white"
+                >
+                  {!filteredMeds.includes(medNameEdit) && <option value={medNameEdit}>{medNameEdit}</option>}
+                  {filteredMeds.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                {medNamesList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Remove "${medNameEdit}" from options?`)) {
+                        const newList = medNamesList.filter(n => n !== medNameEdit);
+                        setMedNamesList(newList);
+                        setMedNameEdit(newList[0] || '');
+                      }
+                    }}
+                    className="p-1.5 text-red-500 border border-red-200 hover:bg-red-50 rounded-lg"
+                    title="Delete Option"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <div className="flex gap-1 items-center">
+                  <input
+                    type="text"
+                    placeholder="New..."
+                    value={newMedNameOpt}
+                    onChange={e => setNewMedNameOpt(e.target.value)}
+                    className="w-16 border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-sky-400 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = newMedNameOpt.trim();
+                      if (val) {
+                        if (!medNamesList.includes(val)) setMedNamesList(p => [...p, val]);
+                        setMedNameEdit(val);
+                        setNewMedNameOpt('');
+                      }
+                    }}
+                    className="p-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Dosage & Route Select & Add */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block">Dosage</label>
+                <div className="flex gap-1.5 items-center">
+                  <select
+                    value={medDoseEdit}
+                    onChange={e => setMedDoseEdit(e.target.value)}
+                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white font-mono"
+                  >
+                    {!dosagesList.includes(medDoseEdit) && <option value={medDoseEdit}>{medDoseEdit}</option>}
+                    {dosagesList.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  {dosagesList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove dosage "${medDoseEdit}"?`)) {
+                          const newList = dosagesList.filter(d => d !== medDoseEdit);
+                          setDosagesList(newList);
+                          setMedDoseEdit(newList[0] || '');
+                        }
+                      }}
+                      className="p-1.5 text-red-500 border border-red-200 hover:bg-red-50 rounded-lg"
+                      title="Delete Option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Add..."
+                    value={newDosageOpt}
+                    onChange={e => setNewDosageOpt(e.target.value)}
+                    className="w-14 border border-slate-200 rounded-lg px-1 py-1 text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = newDosageOpt.trim();
+                      if (val) {
+                        if (!dosagesList.includes(val)) setDosagesList(p => [...p, val]);
+                        setMedDoseEdit(val);
+                        setNewDosageOpt('');
+                      }
+                    }}
+                    className="p-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block">Route</label>
+                <div className="flex gap-1.5 items-center">
+                  <select
+                    value={medRouteEdit}
+                    onChange={e => setMedRouteEdit(e.target.value)}
+                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white"
+                  >
+                    {!routesList.includes(medRouteEdit) && <option value={medRouteEdit}>{medRouteEdit}</option>}
+                    {routesList.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                  {routesList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove route "${medRouteEdit}"?`)) {
+                          const newList = routesList.filter(r => r !== medRouteEdit);
+                          setRoutesList(newList);
+                          setMedRouteEdit(newList[0] || '');
+                        }
+                      }}
+                      className="p-1.5 text-red-500 border border-red-200 hover:bg-red-50 rounded-lg"
+                      title="Delete Option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Add..."
+                    value={newRouteOpt}
+                    onChange={e => setNewRouteOpt(e.target.value)}
+                    className="w-14 border border-slate-200 rounded-lg px-1 py-1 text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = newRouteOpt.trim();
+                      if (val) {
+                        if (!routesList.includes(val)) setRoutesList(p => [...p, val]);
+                        setMedRouteEdit(val);
+                        setNewRouteOpt('');
+                      }
+                    }}
+                    className="p-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Frequency & Scheduled Time Select & Add */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block">Frequency</label>
+                <div className="flex gap-1.5 items-center">
+                  <select
+                    value={medFreqEdit}
+                    onChange={e => setMedFreqEdit(e.target.value)}
+                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white"
+                  >
+                    {!frequenciesList.includes(medFreqEdit) && <option value={medFreqEdit}>{medFreqEdit}</option>}
+                    {frequenciesList.map(f => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                  {frequenciesList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove frequency "${medFreqEdit}"?`)) {
+                          const newList = frequenciesList.filter(f => f !== medFreqEdit);
+                          setFrequenciesList(newList);
+                          setMedFreqEdit(newList[0] || '');
+                        }
+                      }}
+                      className="p-1.5 text-red-500 border border-red-200 hover:bg-red-50 rounded-lg"
+                      title="Delete Option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Add..."
+                    value={newFreqOpt}
+                    onChange={e => setNewFreqOpt(e.target.value)}
+                    className="w-14 border border-slate-200 rounded-lg px-1 py-1 text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = newFreqOpt.trim();
+                      if (val) {
+                        if (!frequenciesList.includes(val)) setFrequenciesList(p => [...p, val]);
+                        setMedFreqEdit(val);
+                        setNewFreqOpt('');
+                      }
+                    }}
+                    className="p-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase block">Scheduled Time</label>
+                <div className="flex gap-1.5 items-center">
+                  <select
+                    value={medTimeEdit}
+                    onChange={e => setMedTimeEdit(e.target.value)}
+                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white font-mono font-bold"
+                  >
+                    {!timesList.includes(medTimeEdit) && <option value={medTimeEdit}>{medTimeEdit}</option>}
+                    {timesList.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                  {timesList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove scheduled time "${medTimeEdit}"?`)) {
+                          const newList = timesList.filter(t => t !== medTimeEdit);
+                          setTimesList(newList);
+                          setMedTimeEdit(newList[0] || '');
+                        }
+                      }}
+                      className="p-1.5 text-red-500 border border-red-200 hover:bg-red-50 rounded-lg"
+                      title="Delete Option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Add..."
+                    value={newTimeOpt}
+                    onChange={e => setNewTimeOpt(e.target.value)}
+                    className="w-14 border border-slate-200 rounded-lg px-1 py-1 text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = newTimeOpt.trim();
+                      if (val) {
+                        if (!timesList.includes(val)) setTimesList(p => [...p, val]);
+                        setMedTimeEdit(val);
+                        setNewTimeOpt('');
+                      }
+                    }}
+                    className="p-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-600 uppercase">Administration Status</label>
