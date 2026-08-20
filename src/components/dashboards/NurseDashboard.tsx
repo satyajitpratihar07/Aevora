@@ -1821,10 +1821,9 @@ export const NurseDashboard: React.FC = () => {
                       }}
                       className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"
                     >
-                      <option>Morning (07-15h)</option>
-                      <option>Noon (12-20h)</option>
-                      <option>Afternoon (15-23h)</option>
-                      <option>Night (23-07h)</option>
+                      <option>Morning</option>
+                      <option>Afternoon</option>
+                      <option>Night</option>
                       <option>Custom</option>
                     </select>
                     {newNurse.shift?.startsWith('Custom:') && (
