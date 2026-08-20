@@ -126,9 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const visibleItems = section.items.filter(
               (item) =>
                 !item.roles ||
-                item.roles.includes(user?.role as any) ||
-                user?.role === 'SUPER_ADMIN' ||
-                user?.role === 'HOSPITAL_ADMIN'
+                item.roles.includes(user?.role as any)
             );
             if (visibleItems.length === 0) return null;
 
