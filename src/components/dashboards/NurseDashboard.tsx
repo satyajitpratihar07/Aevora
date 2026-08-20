@@ -280,7 +280,7 @@ export const NurseDashboard: React.FC = () => {
             </div>
             <div>
               <p className="font-black text-white text-sm">PulseCloud</p>
-              <p className="text-[10px] text-sky-200 font-semibold">Nurse Portal</p>
+              <p className="text-[10px] text-sky-200 font-semibold">Nurse Demo</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/80 hover:text-white">

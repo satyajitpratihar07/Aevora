@@ -160,7 +160,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
   const [phone, setPhone] = useState('');
 
   // Signup step 2 - Role Selection
-  const [selectedRole, setSelectedRole] = useState<UserRole>('NURSE');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('PATIENT');
 
   // Auto rotate features every 5.5 seconds
   useEffect(() => {
@@ -573,15 +573,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                       <span className="text-[11px] text-slate-500 font-semibold whitespace-nowrap">Quick demo login</span>
                       <div className="flex-1 h-px bg-slate-100" />
                     </div>
-                    <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {([
+                        { role: 'DOCTOR' as UserRole, label: 'Doctor', icon: Stethoscope, cls: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300' },
+                        { role: 'HOSPITAL_ADMIN' as UserRole, label: 'Hospital Admin', icon: Shield, cls: 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100 hover:border-sky-300' },
                         { role: 'NURSE' as UserRole, label: 'Nurse', icon: HeartPulse, cls: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300' },
+                        { role: 'PATIENT' as UserRole, label: 'Patient', icon: User, cls: 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 hover:border-rose-300' },
                       ] as const).map((r) => {
                         const Icon = r.icon;
                         return (
                           <button key={r.role} onClick={() => demoLogin(r.role)} disabled={loading}
-                            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${r.cls} disabled:opacity-50`}>
-                            <Icon className="w-3.5 h-3.5 shrink-0" /><span>{r.label} Portal</span>
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${r.cls} disabled:opacity-50`}>
+                            <Icon className="w-3.5 h-3.5 shrink-0" /><span>{r.role === 'NURSE' ? `${r.label} Portal` : `${r.label} Demo`}</span>
                           </button>
                         );
                       })}
@@ -684,9 +687,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {([
+                          { role: 'DOCTOR' as UserRole, label: 'Doctor', icon: Stethoscope, desc: 'EHR, ambient prescriptions & patient charts', activeCls: 'border-blue-500 bg-blue-50/50 text-blue-700 ring-2 ring-blue-500/20' },
+                          { role: 'HOSPITAL_ADMIN' as UserRole, label: 'Hospital Admin', icon: Shield, desc: 'Institutions, white label, billing & staff managers', activeCls: 'border-sky-500 bg-sky-50/50 text-sky-700 ring-2 ring-sky-500/20' },
                           { role: 'NURSE' as UserRole, label: 'Nurse', icon: HeartPulse, desc: 'Ward telemetry, rosters, MAR, patient directory', activeCls: 'border-emerald-500 bg-emerald-50/50 text-emerald-700 ring-2 ring-emerald-500/20' },
+                          { role: 'PATIENT' as UserRole, label: 'Patient', desc: 'Medical records, billing reports & appointments', icon: User, activeCls: 'border-rose-500 bg-rose-50/50 text-rose-700 ring-2 ring-rose-500/20' },
                         ] as const).map((r) => {
                           const Icon = r.icon;
                           const isSel = selectedRole === r.role;
