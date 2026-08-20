@@ -157,19 +157,33 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
 
       {/* Hero Content Section */}
       <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-10 flex flex-col justify-center">
-        <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-sky-200 text-sky-700 text-xs font-bold shadow-sm animate-float">
-            <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-            <span>Hospital Access Portal Gate</span>
+        <div className="text-center max-w-4xl mx-auto mb-12 space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-sky-200 text-sky-700 text-xs font-bold shadow-md shadow-sky-100/50 animate-float">
+            <Sparkles className="w-4 h-4 text-sky-600" />
+            <span>Institutional Role Access Gate · Security Boundary Active</span>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            Select Role to Access Portal
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            Role-Based Hospital <span className="bg-gradient-to-r from-sky-600 via-indigo-600 to-teal-600 bg-clip-text text-transparent">Access Gateway</span>
           </h1>
 
-          <p className="text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Welcome to PulseCloud Hospital Platform. Choose your designated clinical or operations role below to launch your role-specific dashboard.
+          <p className="text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
+            Welcome to PulseCloud HMS Platform. Choose your designated clinical or operations role below to launch your dedicated role-specific portal.
           </p>
+
+          {/* Quick Feature Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {[
+              { label: 'Doctor Clinical Workspace', color: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
+              { label: 'Executive Hospital Admin', color: 'bg-sky-50 border-sky-200 text-sky-700' },
+              { label: 'Inpatient Nurse Station', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { label: 'Technical & Telemetry Ops', color: 'bg-cyan-50 border-cyan-200 text-cyan-700' }
+            ].map(p => (
+              <span key={p.label} className={`px-3 py-1 rounded-full text-xs font-bold border shadow-2xs ${p.color}`}>
+                {p.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* 4 Distinct Role Cards (Clean White Theme) */}
