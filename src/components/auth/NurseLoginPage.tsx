@@ -50,46 +50,46 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans">
-      {/* Emerald Care Glow Background */}
-      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-emerald-600/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-teal-600/10 rounded-full blur-[130px] pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Emerald Care Soft Background Glow */}
+      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-emerald-100/60 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-teal-100/50 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 px-6 py-4 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+      <header className="relative z-10 px-6 py-4 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={onBackToRoles}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition"
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-600 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Role Gate</span>
+            <span>Back to Role Selection</span>
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+            <div className="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center border border-emerald-200">
               <HeartPulse className="w-4 h-4" />
             </div>
-            <span className="font-bold text-sm text-white">PulseCloud Staff Nursing Portal</span>
+            <span className="font-bold text-sm text-slate-900">Staff Nursing Care Portal</span>
           </div>
         </div>
       </header>
 
       {/* Main Body */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-6 my-6">
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 rounded-3xl border border-emerald-900/50 bg-slate-900/90 shadow-2xl shadow-emerald-950/60 overflow-hidden backdrop-blur-xl">
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 rounded-3xl border border-emerald-100 bg-white shadow-2xl shadow-emerald-100/60 overflow-hidden">
           {/* Left Panel: Nurse Patient-Care Branding */}
-          <div className="p-8 bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 border-b md:border-b-0 md:border-r border-emerald-900/40 flex flex-col justify-between relative overflow-hidden">
+          <div className="p-8 bg-gradient-to-br from-emerald-50/80 via-emerald-50/30 to-white border-b md:border-b-0 md:border-r border-emerald-100 flex flex-col justify-between">
             <div className="space-y-6">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-200">
                 <HeartPulse className="w-7 h-7" />
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
                   Patient Care & Ward Management
                 </span>
-                <h1 className="text-2xl font-black text-white mt-3">Nurse Station</h1>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                <h1 className="text-2xl font-black text-slate-900 mt-3">Nurse Station</h1>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                   Caregiver portal for staff nurses & head nurses. Manage inpatient bed telemetry, Medicine Administration Records (MAR), vitals monitoring & duty shifts.
                 </p>
               </div>
@@ -99,12 +99,12 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
                 {[
                   { label: 'Medicine Administration Record (MAR)', icon: Pill },
                   { label: 'Real-time Ward & Inpatient Bed Status', icon: BedDouble },
-                  { label: 'Shift Roster & Clock-In Attendance', icon: Clock }
+                  { label: 'Shift Duty Roster & Attendance Clock', icon: Clock }
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.label} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-emerald-950/50 border border-emerald-900/40 text-xs text-emerald-200">
-                      <Icon className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div key={item.label} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white border border-emerald-100 text-xs font-semibold text-emerald-900 shadow-2xs">
+                      <Icon className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>{item.label}</span>
                     </div>
                   );
@@ -112,20 +112,20 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
               </div>
             </div>
 
-            <div className="pt-6 border-t border-emerald-900/30 text-[11px] text-slate-500 flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="pt-6 border-t border-emerald-100 text-[11px] text-slate-500 font-medium flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Staff Nurse Badge Authentication Active.</span>
             </div>
           </div>
 
           {/* Right Panel: Nurse Login Form */}
-          <div className="p-8 flex flex-col justify-between space-y-6">
+          <div className="p-8 flex flex-col justify-between space-y-6 bg-white">
             <div>
-              <h2 className="text-xl font-bold text-white mb-1">Nurse Sign In</h2>
-              <p className="text-xs text-slate-400 mb-6">Enter your registered Staff Nurse credentials.</p>
+              <h2 className="text-xl font-bold text-slate-900 mb-1">Nurse Sign In</h2>
+              <p className="text-xs text-slate-500 mb-6">Enter your registered Staff Nurse credentials.</p>
 
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-950/80 border border-rose-800/80 text-rose-300 text-xs flex items-start gap-2 animate-fadeIn">
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
@@ -134,18 +134,18 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Nurse ID / Email */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1">
+                  <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <span>Nurse ID or Email</span>
-                    <span className="text-rose-400">*</span>
+                    <span className="text-rose-500">*</span>
                   </label>
-                  <div className="relative flex items-center rounded-xl border border-slate-800 bg-slate-950 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
-                    <Mail className="w-4 h-4 text-slate-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center rounded-xl border border-slate-200 bg-slate-50 focus-within:border-emerald-500 focus-within:bg-white transition">
+                    <Mail className="w-4 h-4 text-slate-400 ml-3.5 shrink-0" />
                     <input
                       type="text"
                       value={nurseId}
                       onChange={(e) => setNurseId(e.target.value)}
                       placeholder="sunita.s@hospital.org"
-                      className="w-full bg-transparent px-3 py-3 text-xs text-white placeholder-slate-500 outline-none"
+                      className="w-full bg-transparent px-3 py-3 text-xs text-slate-800 font-medium placeholder-slate-400 outline-none"
                       required
                     />
                   </div>
@@ -153,24 +153,24 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
 
                 {/* Password */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
                     <span>Password</span>
-                    <span className="text-rose-400">*</span>
+                    <span className="text-rose-500">*</span>
                   </label>
-                  <div className="relative flex items-center rounded-xl border border-slate-800 bg-slate-950 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
-                    <Lock className="w-4 h-4 text-slate-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center rounded-xl border border-slate-200 bg-slate-50 focus-within:border-emerald-500 focus-within:bg-white transition">
+                    <Lock className="w-4 h-4 text-slate-400 ml-3.5 shrink-0" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-transparent px-3 py-3 text-xs text-white placeholder-slate-500 outline-none"
+                      className="w-full bg-transparent px-3 py-3 text-xs text-slate-800 font-medium placeholder-slate-400 outline-none"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="pr-3.5 text-slate-500 hover:text-slate-300 transition"
+                      className="pr-3.5 text-slate-400 hover:text-slate-600 transition"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -179,37 +179,37 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
 
                 {/* Ward Selection */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1">
-                    <span>Assigned Ward Unit</span>
+                  <label className="text-xs font-bold text-slate-700">
+                    Assigned Ward Unit
                   </label>
-                  <div className="relative flex items-center rounded-xl border border-slate-800 bg-slate-950 focus-within:border-emerald-500 transition">
-                    <BedDouble className="w-4 h-4 text-slate-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center rounded-xl border border-slate-200 bg-slate-50 focus-within:border-emerald-500 transition">
+                    <BedDouble className="w-4 h-4 text-slate-400 ml-3.5 shrink-0" />
                     <select
                       value={wardCode}
                       onChange={(e) => setWardCode(e.target.value)}
-                      className="w-full bg-transparent px-3 py-3 text-xs text-white outline-none cursor-pointer"
+                      className="w-full bg-transparent px-3 py-3 text-xs text-slate-800 font-semibold outline-none cursor-pointer"
                     >
-                      <option value="General Ward A" className="bg-slate-900 text-white">General Ward A</option>
-                      <option value="General Ward B" className="bg-slate-900 text-white">General Ward B</option>
-                      <option value="ICU Ward" className="bg-slate-900 text-white">Intensive Care Unit (ICU)</option>
-                      <option value="Pediatrics" className="bg-slate-900 text-white">Pediatric Care Ward</option>
-                      <option value="Maternity" className="bg-slate-900 text-white">Maternity & Neonatal Ward</option>
+                      <option value="General Ward A">General Ward A</option>
+                      <option value="General Ward B">General Ward B</option>
+                      <option value="ICU Ward">Intensive Care Unit (ICU)</option>
+                      <option value="Pediatrics">Pediatric Care Ward</option>
+                      <option value="Maternity">Maternity & Neonatal Ward</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+                <div className="flex items-center justify-between text-xs text-slate-600 pt-1">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-slate-800 bg-slate-950 text-emerald-500 focus:ring-emerald-500"
+                      className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                     />
                     <span>Keep Nurse Duty Session</span>
                   </label>
-                  <a href="#" onClick={(e) => { e.preventDefault(); alert('Nursing Head desk notified.'); }} className="text-emerald-400 hover:underline">
+                  <a href="#" onClick={(e) => { e.preventDefault(); alert('Nursing Head desk notified.'); }} className="text-emerald-600 font-semibold hover:underline">
                     Forgot Password?
                   </a>
                 </div>
@@ -218,7 +218,7 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/50 hover:shadow-emerald-600/30 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -236,14 +236,14 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
             </div>
 
             {/* Demo Hint */}
-            <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/30 p-3 text-[11px] text-emerald-300 flex items-center justify-between">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3 text-[11px] text-emerald-900 flex items-center justify-between font-medium">
               <div>
-                <span className="font-bold">Demo Nurse:</span> sunita.s@hospital.org
+                <span className="font-bold text-emerald-700">Demo Nurse:</span> sunita.s@hospital.org
               </div>
               <button
                 type="button"
                 onClick={() => { setNurseId('sunita.s@hospital.org'); setPassword('nurse123'); }}
-                className="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 px-2 py-1 rounded text-emerald-200 border border-emerald-500/30 font-semibold"
+                className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-bold shadow-xs"
               >
                 Auto-Fill Demo
               </button>
@@ -253,7 +253,7 @@ export const NurseLoginPage: React.FC<NurseLoginPageProps> = ({ onBackToRoles, o
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-slate-800/60 bg-slate-950">
+      <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         PulseCloud HMS Staff Nurse Portal · Dedicated Inpatient Telemetry Node
       </footer>
     </div>
