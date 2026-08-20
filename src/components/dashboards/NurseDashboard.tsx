@@ -1810,15 +1810,35 @@ export const NurseDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600">Shift Schedule</label>
-                  <select
-                    value={newNurse.shift}
-                    onChange={e => setNewNurse(p => ({ ...p, shift: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"
-                  >
-                    <option>Morning (07-15h)</option>
-                    <option>Afternoon (15-23h)</option>
-                    <option>Night (23-07h)</option>
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                      value={newNurse.shift?.startsWith('Custom:') ? 'Custom' : newNurse.shift}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === 'Custom') {
+                          setNewNurse(p => ({ ...p, shift: 'Custom: 09:00 - 17:00' }));
+                        } else {
+                          setNewNurse(p => ({ ...p, shift: val }));
+                        }
+                      }}
+                      className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"
+                    >
+                      <option>Morning (07-15h)</option>
+                      <option>Noon (12-20h)</option>
+                      <option>Afternoon (15-23h)</option>
+                      <option>Night (23-07h)</option>
+                      <option>Custom</option>
+                    </select>
+                    {newNurse.shift?.startsWith('Custom:') && (
+                      <input
+                        type="text"
+                        value={newNurse.shift.replace('Custom: ', '')}
+                        onChange={e => setNewNurse(p => ({ ...p, shift: `Custom: ${e.target.value}` }))}
+                        placeholder="e.g. 09:00 - 17:00"
+                        className="w-40 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-sky-400 bg-white"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
