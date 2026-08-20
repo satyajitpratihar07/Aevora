@@ -143,6 +143,7 @@ export const NurseDashboard: React.FC = () => {
   ]);
   const [patients, setPatients] = useState<NursePatient[]>(NURSE_PATIENTS);
   const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
+  const [editingNurseId, setEditingNurseId] = useState<string | null>(null);
   const [assignForm, setAssignForm] = useState({
     date: '2026-08-20',
     ward: 'General Ward A',
@@ -1696,22 +1697,43 @@ export const NurseDashboard: React.FC = () => {
     const handleAddNurse = (e: React.FormEvent) => {
       e.preventDefault();
       if (!newNurse.name || !newNurse.email) return;
-      const id = `NSE-2024-0${Math.floor(100 + Math.random() * 900)}`;
-      const reg = `MNC-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      const created: StaffNurse = {
-        id,
-        name: newNurse.name,
-        email: newNurse.email,
-        phone: newNurse.phone || '+91 99999 99999',
-        ward: newNurse.ward || 'General Ward A',
-        shift: newNurse.shift || 'Morning (07-15h)',
-        regNo: reg,
-        status: newNurse.status as any || 'Active'
-      };
-      setNursesList(prev => [...prev, created]);
+
+      if (editingNurseId) {
+        // Edit existing nurse
+        setNursesList(prev => prev.map(n => n.id === editingNurseId
+          ? {
+              ...n,
+              name: newNurse.name || '',
+              email: newNurse.email || '',
+              phone: newNurse.phone || '+91 99999 99999',
+              ward: newNurse.ward || 'General Ward A',
+              shift: newNurse.shift || 'Morning (07-15h)',
+              status: newNurse.status as any || 'Active'
+            }
+          : n
+        ));
+        setEditingNurseId(null);
+        addToast('Nurse Updated', `${newNurse.name} details updated successfully.`, 'success');
+      } else {
+        // Add new nurse
+        const id = `NSE-2024-0${Math.floor(100 + Math.random() * 900)}`;
+        const reg = `MNC-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const created: StaffNurse = {
+          id,
+          name: newNurse.name,
+          email: newNurse.email,
+          phone: newNurse.phone || '+91 99999 99999',
+          ward: newNurse.ward || 'General Ward A',
+          shift: newNurse.shift || 'Morning (07-15h)',
+          regNo: reg,
+          status: newNurse.status as any || 'Active'
+        };
+        setNursesList(prev => [...prev, created]);
+        addToast('Nurse Added', `${created.name} registered successfully.`, 'success');
+      }
+
       setShowAddNurse(false);
       setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning (07-15h)', status: 'Active' });
-      addToast('Nurse Added', `${created.name} registered successfully.`, 'success');
     };
 
     return (
@@ -1722,7 +1744,11 @@ export const NurseDashboard: React.FC = () => {
             <p className="text-sm text-slate-500">Overview, shifts, and ward assignments of nursing staff</p>
           </div>
           <button
-            onClick={() => setShowAddNurse(!showAddNurse)}
+            onClick={() => {
+              setEditingNurseId(null);
+              setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning (07-15h)', status: 'Active' });
+              setShowAddNurse(!showAddNurse);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"
           >
             {showAddNurse ? 'View List' : 'Add Staff Nurse'}
@@ -1843,17 +1869,37 @@ export const NurseDashboard: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-left">
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to remove nurse ${nurse.name}?`)) {
-                            setNursesList(prev => prev.filter(n => n.id !== nurse.id));
-                            addToast('Nurse Removed', `${nurse.name} has been removed from the roster.`, 'info');
-                          }
-                        }}
-                        className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingNurseId(nurse.id);
+                            setNewNurse({
+                              name: nurse.name,
+                              email: nurse.email,
+                              phone: nurse.phone,
+                              ward: nurse.ward,
+                              shift: nurse.shift,
+                              status: nurse.status as any
+                            });
+                            setShowAddNurse(true);
+                          }}
+                          className="p-1.5 text-sky-600 hover:text-white hover:bg-sky-600 rounded-lg transition"
+                          title="Edit Nurse"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to remove nurse ${nurse.name}?`)) {
+                              setNursesList(prev => prev.filter(n => n.id !== nurse.id));
+                              addToast('Nurse Removed', `${nurse.name} has been removed from the roster.`, 'info');
+                            }
+                          }}
+                          className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
