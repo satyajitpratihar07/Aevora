@@ -24,7 +24,19 @@ import {
   Info,
   Pill,
   RefreshCw,
-  X
+  X,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Download,
+  Syringe,
+  Users,
+  LayoutDashboard,
+  Send,
+  Radio,
+  FileSpreadsheet,
+  CheckSquare
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
@@ -32,9 +44,54 @@ import { api } from '../../services/api.js';
 import { Patient, Appointment, Prescription, VitalSign, AiPrescriptionDraftResponse } from '../../types/index.js';
 import { VoiceRecorderModal } from '../common/VoiceRecorderModal.js';
 
+interface LabReportDetail {
+  id: string;
+  testName: string;
+  category: string;
+  date: string;
+  specimen: string;
+  status: 'COMPLETED' | 'PENDING' | 'CRITICAL';
+  parameters: Array<{
+    name: string;
+    value: string;
+    unit: string;
+    referenceRange: string;
+    flag: 'NORMAL' | 'HIGH' | 'LOW' | 'CRITICAL';
+  }>;
+  doctorNotes: string;
+}
+
+interface NurseInjectionOrder {
+  id: string;
+  patientName: string;
+  bed: string;
+  medicationName: string;
+  dosage: string;
+  route: 'IV Push' | 'IV Infusion' | 'IM Injection' | 'SubQ';
+  urgency: 'STAT Immediate' | 'Routine' | 'PRN Pain';
+  assignedNurse: string;
+  scheduledTime: string;
+  status: 'Pending' | 'Administered' | 'Held';
+  administeredAt?: string;
+  nurseNotes?: string;
+}
+
+interface NurseAssignment {
+  nurseId: string;
+  nurseName: string;
+  ward: string;
+  assignedBeds: string[];
+  shift: string;
+  activeOrdersCount: number;
+  status: 'On Duty' | 'In Ward' | 'On Break';
+}
+
 export const DoctorWorkspace: React.FC = () => {
   const { user, organization } = useAuth();
   const { addToast } = useNotifications();
+
+  // Active Navigation Tab inside Doctor Workspace
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'CONSULTATION' | 'NURSE_ASSIGNMENTS' | 'TEST_REPORTS' | 'INJECTION_ORDERS' | 'ELEVENLABS_VOICE' | 'REPORT_CARDS'>('CONSULTATION');
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -43,7 +100,7 @@ export const DoctorWorkspace: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // AI Assistant States
+  // AI & Voice States
   const [chiefComplaints, setChiefComplaints] = useState<string[]>(['Exertional chest tightness', 'Occasional palpitations']);
   const [symptomsText, setSymptomsText] = useState('Patient reports 3-week history of retrosternal discomfort on climbing stairs. Relieved by rest. No diaphoresis.');
   const [doctorNotes, setDoctorNotes] = useState('Normal S1/S2. Mild bilateral basal crackles. No peripheral edema.');
@@ -51,14 +108,114 @@ export const DoctorWorkspace: React.FC = () => {
   const [aiDraft, setAiDraft] = useState<AiPrescriptionDraftResponse | null>(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   
-  // Advanced AI Features
-  const [isSafetyScanning, setIsSafetyScanning] = useState(false);
-  const [safetyScanDone, setSafetyScanDone] = useState(false);
-  const [aiSafetyReport, setAiSafetyReport] = useState<{
-    status: 'CLEARED' | 'WARNING';
-    warnings: string[];
-    interactions: string[];
-  } | null>(null);
+  // ElevenLabs Voice Command & Synthesis States
+  const [elevenLabsVoice, setElevenLabsVoice] = useState<'Dr. Adam (Clinical Male)' | 'Rachel (Executive Female)' | 'Domi (Urgent Telemetry)'>('Dr. Adam (Clinical Male)');
+  const [elevenLabsText, setElevenLabsText] = useState('Nurse Sunita, please monitor patient Ramesh Kumar on Bed B-101. Administer 40mg IV Pantoprazole and record vitals every 2 hours.');
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [vocalLogs, setVocalLogs] = useState<Array<{ id: string; time: string; target: string; text: string; voice: string }>>([
+    { id: 'VOC-901', time: '14:10', target: 'Nurse Sunita (Ward A)', text: 'Prepare Bed B-102 for post-op appendectomy monitoring. Give Inj. Tramadol 50mg IV if VAS pain > 5.', voice: 'Dr. Adam (Clinical Male)' },
+    { id: 'VOC-898', time: '12:30', target: 'ICU Nursing Team', text: 'STAT Arterial Blood Gas (ABG) sample required for Bed B-104.', voice: 'Rachel (Executive Female)' }
+  ]);
+
+  // Comprehensive Lab Test Reports Data
+  const [selectedLabTest, setSelectedLabTest] = useState<LabReportDetail | null>(null);
+  const [labReports, setLabReports] = useState<LabReportDetail[]>([
+    {
+      id: 'LAB-2026-8801',
+      testName: 'Complete Blood Count (CBC) + Differential',
+      category: 'Hematology',
+      date: '2026-08-20 09:30',
+      specimen: 'Venous Whole Blood (EDTA)',
+      status: 'COMPLETED',
+      doctorNotes: 'Mild leukocytosis noted, likely reactive. Hemoglobin and platelet count within normal physiological limits.',
+      parameters: [
+        { name: 'Hemoglobin (Hb)', value: '14.2', unit: 'g/dL', referenceRange: '13.5 - 17.5', flag: 'NORMAL' },
+        { name: 'Total Leukocyte Count (WBC)', value: '11.8', unit: 'x10^3 / µL', referenceRange: '4.5 - 11.0', flag: 'HIGH' },
+        { name: 'Absolute Neutrophil Count', value: '7.8', unit: 'x10^3 / µL', referenceRange: '2.0 - 7.5', flag: 'HIGH' },
+        { name: 'Platelet Count', value: '280', unit: 'x10^3 / µL', referenceRange: '150 - 450', flag: 'NORMAL' },
+        { name: 'Packed Cell Volume (PCV)', value: '42.5', unit: '%', referenceRange: '40 - 50', flag: 'NORMAL' },
+      ]
+    },
+    {
+      id: 'LAB-2026-8805',
+      testName: 'Comprehensive Lipid & Cardiac Risk Profile',
+      category: 'Biochemistry',
+      date: '2026-08-20 10:15',
+      specimen: 'Serum (Fasting 12h)',
+      status: 'COMPLETED',
+      doctorNotes: 'Elevated LDL Cholesterol and Triglycerides. High risk cardiovascular profile. Statin therapy recommended.',
+      parameters: [
+        { name: 'Total Serum Cholesterol', value: '242', unit: 'mg/dL', referenceRange: '< 200', flag: 'HIGH' },
+        { name: 'LDL Cholesterol (Calculated)', value: '164', unit: 'mg/dL', referenceRange: '< 100', flag: 'CRITICAL' },
+        { name: 'HDL Cholesterol (Good)', value: '38', unit: 'mg/dL', referenceRange: '> 40', flag: 'LOW' },
+        { name: 'Serum Triglycerides', value: '210', unit: 'mg/dL', referenceRange: '< 150', flag: 'HIGH' },
+        { name: 'Fasting Blood Glucose', value: '118', unit: 'mg/dL', referenceRange: '70 - 99', flag: 'HIGH' },
+        { name: 'Serum Creatinine', value: '0.9', unit: 'mg/dL', referenceRange: '0.7 - 1.3', flag: 'NORMAL' }
+      ]
+    }
+  ]);
+
+  // Nurse Injection & Medication Orders Data
+  const [injectionOrders, setInjectionOrders] = useState<NurseInjectionOrder[]>([
+    {
+      id: 'INJ-102',
+      patientName: 'Ramesh Kumar',
+      bed: 'Bed B-101 (Ward A)',
+      medicationName: 'Inj. Pantoprazole 40mg',
+      dosage: '40 mg IV Slow Push',
+      route: 'IV Push',
+      urgency: 'Routine',
+      assignedNurse: 'Sunita Sharma, RN',
+      scheduledTime: '14:00',
+      status: 'Administered',
+      administeredAt: '14:05',
+      nurseNotes: 'Tolerated well. No phlebitis at IV site.'
+    },
+    {
+      id: 'INJ-105',
+      patientName: 'Sunita Devi',
+      bed: 'Bed B-102 (Ward A)',
+      medicationName: 'Inj. Tramadol 50mg in 100ml NS',
+      dosage: '50 mg IV Infusion',
+      route: 'IV Infusion',
+      urgency: 'STAT Immediate',
+      assignedNurse: 'Sunita Sharma, RN',
+      scheduledTime: '14:30',
+      status: 'Pending',
+      nurseNotes: 'Awaiting nurse execution'
+    },
+    {
+      id: 'INJ-109',
+      patientName: 'Mohan Lal',
+      bed: 'Bed B-105 (Ward A)',
+      medicationName: 'Inj. Hydrocortisone 100mg',
+      dosage: '100 mg IV Bolus',
+      route: 'IV Push',
+      urgency: 'STAT Immediate',
+      assignedNurse: 'Anjali Nair, RN',
+      scheduledTime: '15:00',
+      status: 'Pending'
+    }
+  ]);
+
+  // Nurse Assignments Roster State
+  const [nurseRoster, setNurseRoster] = useState<NurseAssignment[]>([
+    { nurseId: 'NSE-0042', nurseName: 'Sunita Sharma, RN', ward: 'General Ward A', assignedBeds: ['B-101', 'B-102', 'B-103'], shift: 'Afternoon (15-23h)', activeOrdersCount: 4, status: 'On Duty' },
+    { nurseId: 'NSE-0015', nurseName: 'Anjali Nair, RN', ward: 'General Ward A / ICU', assignedBeds: ['B-104', 'B-105'], shift: 'Morning (07-15h)', activeOrdersCount: 2, status: 'In Ward' },
+    { nurseId: 'NSE-0089', nurseName: 'Kiran Patel, RN', ward: 'Pediatrics Ward', assignedBeds: ['P-201', 'P-202'], shift: 'Night (23-07h)', activeOrdersCount: 1, status: 'On Duty' }
+  ]);
+
+  // New Injection Order Modal Form State
+  const [showAddInjectionModal, setShowAddInjectionModal] = useState(false);
+  const [newInjection, setNewInjection] = useState({
+    patientName: 'Ramesh Kumar',
+    bed: 'Bed B-101',
+    medicationName: 'Inj. Ceftriaxone 1g',
+    dosage: '1 g in 100ml NS over 30 mins',
+    route: 'IV Infusion' as NurseInjectionOrder['route'],
+    urgency: 'STAT Immediate' as NurseInjectionOrder['urgency'],
+    assignedNurse: 'Sunita Sharma, RN'
+  });
 
   // Prescription Form State
   const [diagnosis, setDiagnosis] = useState('Essential Hypertension & Stable Angina Pectoris');
@@ -92,7 +249,7 @@ export const DoctorWorkspace: React.FC = () => {
   const [followUpDays, setFollowUpDays] = useState(14);
   const [adviceNotes, setAdviceNotes] = useState('Low sodium diet (<2g/day), 30 minutes daily moderate walking, avoid sudden strenuous exertion.');
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showReportCardModal, setShowReportCardModal] = useState(false);
   const [finalizedRx, setFinalizedRx] = useState<Prescription | null>(null);
 
   // Load initial data
@@ -114,8 +271,6 @@ export const DoctorWorkspace: React.FC = () => {
 
   const selectPatient = async (patient: Patient) => {
     setSelectedPatient(patient);
-    setSafetyScanDone(false);
-    setAiSafetyReport(null);
     try {
       const [vitals, rxList] = await Promise.all([
         api.getVitals(patient.id),
@@ -128,7 +283,50 @@ export const DoctorWorkspace: React.FC = () => {
     }
   };
 
-  // AI 1: Full AI Prescription & Decision Support Generator
+  // Play ElevenLabs Vocal Audio Simulation
+  const handlePlayElevenLabsVoice = () => {
+    setIsPlayingAudio(true);
+    addToast('ElevenLabs AI Speech', `Playing synthetic speech via ${elevenLabsVoice} audio engine...`, 'info');
+    setTimeout(() => {
+      setIsPlayingAudio(false);
+    }, 3500);
+  };
+
+  // Send Vocal Command to Nurse Station
+  const handleSendVoiceCommandToNurse = () => {
+    if (!elevenLabsText) return;
+    const newLog = {
+      id: `VOC-${Math.floor(Math.random() * 900 + 100)}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      target: 'Sunita Sharma, RN (Ward A)',
+      text: elevenLabsText,
+      voice: elevenLabsVoice
+    };
+    setVocalLogs([newLog, ...vocalLogs]);
+    addToast('Vocal Directive Sent', 'ElevenLabs voice command dispatched to Nurse Mobile Telemetry Station.', 'success');
+  };
+
+  // Add Injection Order to Nurse
+  const handleAddInjectionOrder = () => {
+    if (!newInjection.medicationName) return;
+    const created: NurseInjectionOrder = {
+      id: `INJ-${Math.floor(Math.random() * 900 + 100)}`,
+      patientName: newInjection.patientName,
+      bed: newInjection.bed,
+      medicationName: newInjection.medicationName,
+      dosage: newInjection.dosage,
+      route: newInjection.route,
+      urgency: newInjection.urgency,
+      assignedNurse: newInjection.assignedNurse,
+      scheduledTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: 'Pending'
+    };
+    setInjectionOrders([created, ...injectionOrders]);
+    setShowAddInjectionModal(false);
+    addToast('Nurse Injection Order Created', `Order #${created.id} assigned to ${created.assignedNurse}.`, 'success');
+  };
+
+  // AI Full Prescription Generator
   const handleGenerateAiDraft = async () => {
     if (!selectedPatient) return;
     setIsGeneratingAi(true);
@@ -161,41 +359,6 @@ export const DoctorWorkspace: React.FC = () => {
     } finally {
       setIsGeneratingAi(false);
     }
-  };
-
-  // AI 2: Run Live Drug Contraindication & Allergy Safety Scan
-  const handleRunSafetyScan = () => {
-    if (!selectedPatient) return;
-    setIsSafetyScanning(true);
-    setTimeout(() => {
-      setIsSafetyScanning(false);
-      setSafetyScanDone(true);
-      const isAllergicToPenicillin = selectedPatient.allergies.some(a => a.toLowerCase().includes('penicillin'));
-      const hasRxPenicillin = prescriptionItems.some(i => i.medicineName.toLowerCase().includes('penicillin') || i.medicineName.toLowerCase().includes('amoxicillin'));
-
-      if (isAllergicToPenicillin && hasRxPenicillin) {
-        setAiSafetyReport({
-          status: 'WARNING',
-          warnings: ['CRITICAL ALLERGY CONFLICT: Patient is allergic to Penicillin group drugs!'],
-          interactions: ['Amlodipine + Atorvastatin: No major pharmacokinetic interaction.']
-        });
-        addToast('Allergy Warning', 'Critical allergy conflict detected by AI Safety Engine!', 'warning');
-      } else {
-        setAiSafetyReport({
-          status: 'CLEARED',
-          warnings: ['No documented drug allergy conflicts detected.'],
-          interactions: ['Amlodipine (5mg) + Atorvastatin (20mg): Synergistic cardiovascular management, safe combination.']
-        });
-        addToast('AI Safety Scan Cleared', 'All prescribed items cleared contraindication checks.', 'success');
-      }
-    }, 1000);
-  };
-
-  // AI 3: Auto-Suggest Diagnostic Lab Tests
-  const handleAiSuggestTests = () => {
-    const suggested = ['Lipid Profile Panel', '12-Lead ECG', 'Serum Creatinine & eGFR', 'HbA1c Glycated Hemoglobin', 'Treadmill Stress Test (TMT)'];
-    setAdvisedTests(suggested);
-    addToast('AI Suggested Pathology', 'Recommended diagnostic panel loaded for ' + diagnosis, 'info');
   };
 
   const handleApplyAiDraft = () => {
@@ -245,41 +408,8 @@ export const DoctorWorkspace: React.FC = () => {
     setPrescriptionItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleAddTest = () => {
-    if (newTestInput.trim() && !advisedTests.includes(newTestInput.trim())) {
-      setAdvisedTests((prev) => [...prev, newTestInput.trim()]);
-      setNewTestInput('');
-    }
-  };
-
-  const handleApplyVoiceData = (data: any) => {
-    if (data.chiefComplaints?.length > 0) setChiefComplaints(data.chiefComplaints);
-    if (data.symptoms) setSymptomsText(data.symptoms);
-    if (data.suggestedDiagnosis) setDiagnosis(data.suggestedDiagnosis);
-    if (data.prescribedItems?.length > 0) {
-      setPrescriptionItems(
-        data.prescribedItems.map((item: any) => ({
-          medicineName: item.name || item.medicineName,
-          dosage: item.dosage,
-          frequency: item.frequency,
-          duration: item.duration,
-          route: 'ORAL',
-          instructions: item.instructions,
-        }))
-      );
-    }
-    if (data.suggestedTests?.length > 0) setAdvisedTests(data.suggestedTests);
-    if (data.followUpDays) setFollowUpDays(data.followUpDays);
-    addToast('Voice Parsed Successfully', 'Clinical fields updated from dictation.', 'success');
-  };
-
   const handleFinalizePrescription = async () => {
     if (!selectedPatient) return;
-    if (prescriptionItems.length === 0) {
-      addToast('Empty Prescription', 'Please add at least one medication.', 'warning');
-      return;
-    }
-
     setIsFinalizing(true);
     try {
       const rx = await api.createPrescription({
@@ -310,13 +440,34 @@ export const DoctorWorkspace: React.FC = () => {
 
       setFinalizedRx(rx);
       setPastPrescriptions((prev) => [rx, ...prev]);
-      setShowPrintModal(true);
+      setShowReportCardModal(true);
       addToast('Prescription Approved', `Rx #${rx.prescriptionNumber} digitally signed and sent to Pharmacy.`, 'success');
     } catch (err: any) {
       addToast('Prescription Error', err.message || 'Failed to finalize prescription', 'error');
     } finally {
       setIsFinalizing(false);
     }
+  };
+
+  const handleApplyVoiceData = (data: any) => {
+    if (data.chiefComplaints?.length > 0) setChiefComplaints(data.chiefComplaints);
+    if (data.symptoms) setSymptomsText(data.symptoms);
+    if (data.suggestedDiagnosis) setDiagnosis(data.suggestedDiagnosis);
+    if (data.prescribedItems?.length > 0) {
+      setPrescriptionItems(
+        data.prescribedItems.map((item: any) => ({
+          medicineName: item.name || item.medicineName,
+          dosage: item.dosage,
+          frequency: item.frequency,
+          duration: item.duration,
+          route: 'ORAL',
+          instructions: item.instructions,
+        }))
+      );
+    }
+    if (data.suggestedTests?.length > 0) setAdvisedTests(data.suggestedTests);
+    if (data.followUpDays) setFollowUpDays(data.followUpDays);
+    addToast('Voice Parsed Successfully', 'Clinical fields updated from dictation.', 'success');
   };
 
   const filteredPatients = patients.filter(
@@ -326,629 +477,748 @@ export const DoctorWorkspace: React.FC = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 bg-slate-50 min-h-screen">
-      {/* Top Header & AI Bar */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Top Professional Header Bar */}
+      <header className="bg-white border-b border-slate-200 px-6 py-3.5 sticky top-0 z-40 flex items-center justify-between shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+            <Stethoscope className="w-5 h-5" />
+          </div>
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                EHR & Clinical AI Studio
-              </span>
-              <span className="text-xs text-slate-500 font-medium">
-                Attending: <strong className="text-slate-800 font-bold">{user?.name || 'Dr. Vikramaditya Singh, MD'}</strong> ({user?.specialization || 'Cardiology & Electrophysiology'})
+            <div className="flex items-center gap-2">
+              <span className="font-black text-slate-900 text-base tracking-tight">PulseCloud</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                Doctor Panel Studio
               </span>
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1.5 flex items-center gap-2">
-              <span>Doctor Consultation & AI Prescription Assistant</span>
-              <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
-            </h1>
-          </div>
-
-          {/* AI Action Buttons Header */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setShowVoiceModal(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-xs font-bold shadow-2xs transition"
-            >
-              <Mic className="w-4 h-4 text-rose-600 animate-pulse" />
-              <span>Voice Dictation AI</span>
-            </button>
-
-            <button
-              onClick={handleRunSafetyScan}
-              disabled={isSafetyScanning}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 text-xs font-bold shadow-2xs transition disabled:opacity-50"
-            >
-              <ShieldAlert className="w-4 h-4 text-amber-600" />
-              <span>{isSafetyScanning ? 'Scanning Drugs & Allergies...' : 'AI Safety & Allergy Check'}</span>
-            </button>
-
-            <button
-              onClick={handleGenerateAiDraft}
-              disabled={isGeneratingAi || !selectedPatient}
-              className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs font-bold shadow-md shadow-indigo-200 transition disabled:opacity-50"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{isGeneratingAi ? 'Analyzing Clinical Signals...' : 'Generate AI Prescription Draft'}</span>
-            </button>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Attending: <strong className="text-slate-800">{user?.name || 'Dr. Vikramaditya Singh, MD'}</strong> ({user?.specialization || 'Cardiology'})
+            </p>
           </div>
         </div>
 
-        {/* AI Safety Scan Banner (If performed) */}
-        {safetyScanDone && aiSafetyReport && (
-          <div className={`p-4 rounded-2xl border text-xs flex items-start justify-between gap-3 ${
-            aiSafetyReport.status === 'WARNING'
-              ? 'bg-rose-50 text-rose-900 border-rose-200'
-              : 'bg-emerald-50 text-emerald-900 border-emerald-200'
-          }`}>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 font-bold text-sm">
-                {aiSafetyReport.status === 'WARNING' ? (
-                  <AlertTriangle className="w-4 h-4 text-rose-600" />
-                ) : (
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                )}
-                <span>AI Clinical Safety Verification: {aiSafetyReport.status}</span>
-              </div>
-              <p className="font-semibold">{aiSafetyReport.warnings.join(' ')}</p>
-              <p className="text-[11px] opacity-90">{aiSafetyReport.interactions.join(' ')}</p>
-            </div>
-            <button onClick={() => setSafetyScanDone(false)} className="text-slate-400 hover:text-slate-600">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
+        {/* Action Pills */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveTab('ELEVENLABS_VOICE')}
+            className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold hover:bg-purple-100 transition"
+          >
+            <Volume2 className="w-4 h-4 text-purple-600" />
+            <span>ElevenLabs Voice Engine</span>
+          </button>
 
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Triage Queue & Selected Patient EHR (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Triage Queue List Card */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-indigo-600" />
-                <span>Today&apos;s Triage Queue</span>
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                {patients.length} active
-              </span>
-            </div>
+          <button
+            onClick={() => setShowVoiceModal(true)}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold hover:bg-rose-100 transition"
+          >
+            <Mic className="w-4 h-4 text-rose-600 animate-pulse" />
+            <span>Voice Dictation</span>
+          </button>
+        </div>
+      </header>
 
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                placeholder="Filter queue by name or MRN..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
-              />
-            </div>
-
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              {filteredPatients.map((p) => {
-                const isSelected = selectedPatient?.id === p.id;
+      {/* Main Layout Container with Doctor Navigation Sidebar */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* DOCTOR FUNCTIONS NAVIGATION SIDEBAR */}
+        <aside className="w-64 bg-white border-r border-slate-200 p-4 space-y-6 shrink-0 hidden md:block">
+          <div>
+            <p className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Doctor Functions</p>
+            <nav className="space-y-1">
+              {[
+                { id: 'OVERVIEW', label: 'Dashboard Overview', icon: LayoutDashboard },
+                { id: 'CONSULTATION', label: 'AI EHR & Consult Studio', icon: Stethoscope },
+                { id: 'NURSE_ASSIGNMENTS', label: 'Nurse Duty Assignments', icon: Users },
+                { id: 'TEST_REPORTS', label: 'Detailed Blood Tests', icon: Microscope },
+                { id: 'INJECTION_ORDERS', label: 'Nurse Injections & Meds', icon: Syringe },
+                { id: 'ELEVENLABS_VOICE', label: 'ElevenLabs Voice Studio', icon: Volume2 },
+                { id: 'REPORT_CARDS', label: 'Patient Report Cards', icon: FileSpreadsheet }
+              ].map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
                 return (
                   <button
-                    key={p.id}
-                    onClick={() => selectPatient(p)}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition text-xs font-semibold ${
-                      isSelected
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                      isActive
                         ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                   >
-                    <div className="truncate">
-                      <p className="font-bold truncate">{p.name}</p>
-                      <p className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-indigo-100' : 'text-slate-400'}`}>
-                        {p.patientIdNumber} • {p.age}y {p.gender}
-                      </p>
-                    </div>
-                    {isSelected && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
                   </button>
                 );
               })}
-            </div>
+            </nav>
           </div>
 
-          {/* Selected Patient Clinical Summary & Allergies */}
+          {/* Quick Active Patient Box */}
           {selectedPatient && (
-            <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-indigo-200 shrink-0">
-                  {selectedPatient.name.charAt(0)}
-                </div>
-                <div>
-                  <h2 className="text-base font-black text-slate-900">
-                    {selectedPatient.name}
-                  </h2>
-                  <p className="text-xs text-slate-500 font-medium">
-                    MRN: <span className="font-mono font-bold text-slate-700">{selectedPatient.patientIdNumber}</span> • {selectedPatient.age}y ({selectedPatient.gender})
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    Blood Group: <strong className="text-indigo-600 font-bold">{selectedPatient.bloodGroup}</strong>
-                  </p>
-                </div>
+            <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-2 text-xs">
+              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700">Selected Patient</span>
+              <div>
+                <p className="font-black text-slate-900">{selectedPatient.name}</p>
+                <p className="text-[11px] text-slate-500 font-mono">{selectedPatient.patientIdNumber} • {selectedPatient.age}y {selectedPatient.gender}</p>
               </div>
-
-              {/* Documented Allergies Alert Banner */}
-              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-800 mb-1.5">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span>Documented Allergies</span>
-                </div>
-                {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedPatient.allergies.map((allergy, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-0.5 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow-2xs"
-                      >
-                        {allergy}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-emerald-700 font-semibold">No known drug allergies documented.</p>
-                )}
-              </div>
-
-              {/* Chronic Comorbidities */}
-              {selectedPatient.chronicConditions && selectedPatient.chronicConditions.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                    Chronic Comorbidities
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedPatient.chronicConditions.map((cond, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold"
-                      >
-                        {cond}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recorded Vital Signs */}
-              {patientVitals.length > 0 && (
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Activity className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Recorded Vitals</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-400 font-normal">
-                      {new Date(patientVitals[0].recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-slate-400 text-[10px] font-bold uppercase block">BP (Systolic/Dia)</span>
-                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].bloodPressure} mmHg</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-slate-400 text-[10px] font-bold uppercase block">Pulse Rate</span>
-                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].pulseRate} bpm</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-slate-400 text-[10px] font-bold uppercase block">Temperature</span>
-                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].temperatureF} °F</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="text-slate-400 text-[10px] font-bold uppercase block">SpO2 Level</span>
-                      <span className="font-bold text-slate-800 text-xs font-mono">{patientVitals[0].spO2}%</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={() => setActiveTab('REPORT_CARDS')}
+                className="w-full py-1.5 rounded-xl bg-white border border-indigo-200 text-indigo-700 font-bold text-[11px] hover:bg-indigo-100 transition shadow-2xs"
+              >
+                Generate Report Card
+              </button>
             </div>
           )}
+        </aside>
+
+        {/* Mobile Navigation Tabs Header */}
+        <div className="md:hidden flex overflow-x-auto gap-2 p-3 bg-white border-b border-slate-200 text-xs w-full">
+          {[
+            { id: 'OVERVIEW', label: 'Overview' },
+            { id: 'CONSULTATION', label: 'Consult Studio' },
+            { id: 'NURSE_ASSIGNMENTS', label: 'Nurse Duty' },
+            { id: 'TEST_REPORTS', label: 'Blood Tests' },
+            { id: 'INJECTION_ORDERS', label: 'Nurse Injections' },
+            { id: 'ELEVENLABS_VOICE', label: 'ElevenLabs Voice' },
+            { id: 'REPORT_CARDS', label: 'Report Cards' }
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap ${
+                activeTab === t.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* Right Column: Clinical Assessment & Prescription Studio (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Symptoms & Assessment Form */}
-          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <Stethoscope className="w-4 h-4 text-indigo-600" />
-              <span>Clinical Assessment & Chief Complaints</span>
-            </h2>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Symptoms & Clinical Progression
-                </label>
-                <textarea
-                  rows={2}
-                  value={symptomsText}
-                  onChange={(e) => setSymptomsText(e.target.value)}
-                  placeholder="Enter detailed symptoms, onset, duration, and aggravating factors..."
-                  className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition"
-                />
+        {/* MAIN VIEWPORT FRAME */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-7xl mx-auto w-full">
+          {/* TAB 1: CLEAN DASHBOARD OVERVIEW */}
+          {activeTab === 'OVERVIEW' && (
+            <div className="space-y-6">
+              {/* Stat Metric Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Consultations Today', value: '18 Patients', icon: User, color: 'text-indigo-600', sub: '4 Queue Active' },
+                  { label: 'Pending Lab Test Reviews', value: '4 Reports', icon: Microscope, color: 'text-purple-600', sub: '2 STAT Urgent' },
+                  { label: 'Nurse Injection Orders', value: `${injectionOrders.filter(i=>i.status==='Pending').length} Pending`, icon: Syringe, color: 'text-rose-600', sub: '3 Administered' },
+                  { label: 'Voice Directives Sent', value: `${vocalLogs.length} Directives`, icon: Volume2, color: 'text-cyan-600', sub: 'ElevenLabs Engine' }
+                ].map(card => {
+                  const Icon = card.icon;
+                  return (
+                    <div key={card.label} className="rounded-3xl border border-slate-200/80 bg-white p-5 space-y-2 shadow-xs">
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
+                        <span>{card.label}</span>
+                        <Icon className={`w-4 h-4 ${card.color}`} />
+                      </div>
+                      <p className="text-2xl font-black text-slate-900">{card.value}</p>
+                      <p className="text-[11px] text-slate-400 font-medium">{card.sub}</p>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Physician Examination Findings
-                </label>
-                <input
-                  type="text"
-                  value={doctorNotes}
-                  onChange={(e) => setDoctorNotes(e.target.value)}
-                  placeholder="Auscultation, heart sounds, abdomen, palpation findings..."
-                  className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* AI Decision Support Panel (If Generated) */}
-          {aiDraft && (
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-blue-50/60 to-white border border-indigo-200 shadow-md shadow-indigo-100/50 space-y-4 animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-indigo-950">
-                      Gemini 3.7 Clinical Decision Support Draft
+              {/* Quick Consultation Queue & Live Nurse Directives Feed */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Consultation Queue */}
+                <div className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                      <Stethoscope className="w-4 h-4 text-indigo-600" />
+                      <span>Today&apos;s Triage Consultation Queue</span>
                     </h3>
-                    <p className="text-[11px] text-indigo-700 font-medium">
-                      Verified against patient allergies and chronic condition history
-                    </p>
+                    <button onClick={() => setActiveTab('CONSULTATION')} className="text-xs text-indigo-600 font-bold hover:underline">
+                      Open Consult Studio →
+                    </button>
                   </div>
-                </div>
-                <button
-                  onClick={handleApplyAiDraft}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-200 transition"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Apply AI Recommendations</span>
-                </button>
-              </div>
 
-              {/* Primary Assessment */}
-              <div className="p-4 rounded-2xl bg-white border border-indigo-100 text-xs shadow-2xs space-y-2">
-                <p className="font-bold text-slate-900">
-                  Primary Assessment:
-                </p>
-                <p className="text-slate-700 font-medium leading-relaxed">
-                  {aiDraft.assessment}
-                </p>
-                {aiDraft.possibleDiagnoses?.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <span className="text-[11px] font-bold text-slate-500">Differential Diagnoses:</span>
-                    {aiDraft.possibleDiagnoses.map((d, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-0.5 rounded-lg bg-indigo-100 text-indigo-800 text-[11px] font-bold border border-indigo-200"
-                      >
-                        {d}
-                      </span>
+                  <div className="space-y-2.5">
+                    {patients.slice(0, 4).map(p => (
+                      <div key={p.id} onClick={() => { selectPatient(p); setActiveTab('CONSULTATION'); }} className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-indigo-50/50 cursor-pointer transition flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center">
+                            {p.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800">{p.name}</p>
+                            <p className="text-[11px] text-slate-500">{p.patientIdNumber} • {p.age}y {p.gender}</p>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-[10px] font-bold text-slate-600">
+                          {p.bloodGroup}
+                        </span>
+                      </div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Clinical Safety Warnings */}
-              {aiDraft.safetyWarnings && aiDraft.safetyWarnings.length > 0 && (
-                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
-                  <span className="font-bold block mb-1">Clinical Safety & Interaction Flags:</span>
-                  <ul className="list-disc list-inside space-y-0.5 text-[11px] font-medium">
-                    {aiDraft.safetyWarnings.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))}
-                  </ul>
                 </div>
-              )}
+
+                {/* ElevenLabs Eleven Voice Log Feed */}
+                <div className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                      <Volume2 className="w-4 h-4 text-purple-600" />
+                      <span>Nurse Voice Directives (ElevenLabs Engine)</span>
+                    </h3>
+                    <button onClick={() => setActiveTab('ELEVENLABS_VOICE')} className="text-xs text-purple-600 font-bold hover:underline">
+                      Launch Studio →
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {vocalLogs.map(log => (
+                      <div key={log.id} className="p-3.5 rounded-2xl border border-purple-100 bg-purple-50/40 text-xs space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-mono font-bold text-purple-700">{log.id} • {log.target}</span>
+                          <span className="text-slate-400">{log.time}</span>
+                        </div>
+                        <p className="text-slate-700 font-medium italic">&ldquo;{log.text}&rdquo;</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Prescription Form Section */}
-          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-base font-black text-slate-900">
-                  Prescription Specification
-                </h2>
-              </div>
-              <span className="text-xs text-slate-400 font-semibold">
-                Formal Rx Layout & Digital Signature
-              </span>
-            </div>
+          {/* TAB 2: AI EHR & CONSULTATION ASSISTANT */}
+          {activeTab === 'CONSULTATION' && (
+            <div className="space-y-6">
+              {/* Doctor Consultation Studio UI */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Queue (4 cols) */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xs font-black uppercase tracking-wider text-slate-500">Triage Queue</h2>
+                      <span className="text-xs text-indigo-600 font-bold">{patients.length} active</span>
+                    </div>
 
-            {/* Confirmed Diagnosis */}
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700">
-                Final Confirmed Clinical Diagnosis
-              </label>
-              <input
-                type="text"
-                value={diagnosis}
-                onChange={(e) => setDiagnosis(e.target.value)}
-                placeholder="e.g. Essential Hypertension, Bronchial Asthma"
-                className="w-full p-3 text-xs font-bold rounded-2xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-indigo-500 transition"
-              />
-            </div>
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                      {filteredPatients.map((p) => {
+                        const isSelected = selectedPatient?.id === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => selectPatient(p)}
+                            className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition text-xs font-semibold ${
+                              isSelected
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-bold truncate">{p.name}</p>
+                              <p className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-indigo-100' : 'text-slate-400'}`}>
+                                {p.patientIdNumber} • {p.age}y {p.gender}
+                              </p>
+                            </div>
+                            {isSelected && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-            {/* Prescribed Medications Rows */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <Pill className="w-4 h-4 text-indigo-600" />
-                  <span>Prescribed Medications ({prescriptionItems.length})</span>
-                </span>
-                <button
-                  onClick={handleAddMedicineRow}
-                  className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold hover:bg-indigo-100 transition shadow-2xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Medication</span>
-                </button>
-              </div>
+                  {selectedPatient && (
+                    <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-indigo-200 shrink-0">
+                          {selectedPatient.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h2 className="text-base font-black text-slate-900">{selectedPatient.name}</h2>
+                          <p className="text-xs text-slate-500">MRN: <span className="font-mono font-bold text-slate-700">{selectedPatient.patientIdNumber}</span> • {selectedPatient.age}y</p>
+                          <p className="text-[11px] text-slate-500">Blood Group: <strong className="text-indigo-600">{selectedPatient.bloodGroup}</strong></p>
+                        </div>
+                      </div>
 
-              <div className="space-y-3">
-                {prescriptionItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 md:grid-cols-12 gap-3 text-xs items-center"
-                  >
-                    <div className="md:col-span-4 space-y-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Medicine Name</label>
+                      <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-800 mb-1">
+                          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                          <span>Documented Allergies</span>
+                        </div>
+                        {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {selectedPatient.allergies.map((allergy, i) => (
+                              <span key={i} className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold">{allergy}</span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-emerald-700 font-semibold">No known allergies</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Prescription Studio (8 cols) */}
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                      <Stethoscope className="w-4 h-4 text-indigo-600" />
+                      <span>Clinical Assessment & Chief Complaints</span>
+                    </h2>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Symptoms & Clinical Progression</label>
+                        <textarea
+                          rows={2}
+                          value={symptomsText}
+                          onChange={(e) => setSymptomsText(e.target.value)}
+                          className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white outline-none focus:border-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Physician Examination Findings</label>
+                        <input
+                          type="text"
+                          value={doctorNotes}
+                          onChange={(e) => setDoctorNotes(e.target.value)}
+                          className="w-full p-3 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:bg-white outline-none focus:border-indigo-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <h2 className="text-base font-black text-slate-900">Prescription Specification</h2>
+                      <button onClick={handleGenerateAiDraft} disabled={isGeneratingAi} className="px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold hover:bg-indigo-100">
+                        ✨ Generate AI Draft
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-slate-700">Diagnosis</label>
                       <input
                         type="text"
-                        value={item.medicineName}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setPrescriptionItems((prev) =>
-                            prev.map((r, i) => (i === idx ? { ...r, medicineName: val } : r))
-                          );
-                        }}
-                        placeholder="e.g. Amlodipine Besylate"
-                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-indigo-500"
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        className="w-full p-3 text-xs font-bold rounded-2xl border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-500"
                       />
                     </div>
 
-                    <div className="md:col-span-2 space-y-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Dosage</label>
-                      <input
-                        type="text"
-                        value={item.dosage}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setPrescriptionItems((prev) =>
-                            prev.map((r, i) => (i === idx ? { ...r, dosage: val } : r))
-                          );
-                        }}
-                        placeholder="e.g. 5 mg"
-                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-semibold outline-none focus:border-indigo-500"
-                      />
+                    {/* Medications Table */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700">Prescribed Oral Medications</span>
+                        <button onClick={handleAddMedicineRow} className="px-3 py-1 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold">
+                          + Add Med
+                        </button>
+                      </div>
+                      <div className="space-y-2.5">
+                        {prescriptionItems.map((item, idx) => (
+                          <div key={idx} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-2 text-xs items-center">
+                            <input type="text" value={item.medicineName} onChange={e => { const val=e.target.value; setPrescriptionItems(p=>p.map((r,i)=>i===idx?{...r,medicineName:val}:r)); }} className="md:col-span-4 p-2 rounded-xl border border-slate-200 bg-white font-bold" placeholder="Medicine" />
+                            <input type="text" value={item.dosage} onChange={e => { const val=e.target.value; setPrescriptionItems(p=>p.map((r,i)=>i===idx?{...r,dosage:val}:r)); }} className="md:col-span-2 p-2 rounded-xl border border-slate-200 bg-white font-semibold" placeholder="Dose" />
+                            <input type="text" value={item.frequency} onChange={e => { const val=e.target.value; setPrescriptionItems(p=>p.map((r,i)=>i===idx?{...r,frequency:val}:r)); }} className="md:col-span-2 p-2 rounded-xl border border-slate-200 bg-white font-semibold" placeholder="Freq" />
+                            <input type="text" value={item.instructions} onChange={e => { const val=e.target.value; setPrescriptionItems(p=>p.map((r,i)=>i===idx?{...r,instructions:val}:r)); }} className="md:col-span-3 p-2 rounded-xl border border-slate-200 bg-white" placeholder="Instructions" />
+                            <button onClick={() => handleRemoveMedicineRow(idx)} className="md:col-span-1 p-1 text-slate-400 hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="md:col-span-2 space-y-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Frequency</label>
-                      <input
-                        type="text"
-                        value={item.frequency}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setPrescriptionItems((prev) =>
-                            prev.map((r, i) => (i === idx ? { ...r, frequency: val } : r))
-                          );
-                        }}
-                        placeholder="1-0-1"
-                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-semibold outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div className="md:col-span-3 space-y-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Instructions & Duration</label>
-                      <input
-                        type="text"
-                        value={item.instructions}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setPrescriptionItems((prev) =>
-                            prev.map((r, i) => (i === idx ? { ...r, instructions: val } : r))
-                          );
-                        }}
-                        placeholder="Take after breakfast"
-                        className="w-full p-2.5 text-xs rounded-xl border border-slate-200 bg-white font-medium outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 flex justify-end pt-4 md:pt-0">
-                      <button
-                        onClick={() => handleRemoveMedicineRow(idx)}
-                        className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                    <div className="pt-4 border-t border-slate-100 flex justify-end">
+                      <button onClick={handleFinalizePrescription} disabled={isFinalizing} className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200">
+                        Approve & Sign Prescription
                       </button>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Diagnostic Pathology Tests Advised */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <Microscope className="w-4 h-4 text-purple-600" />
-                  <span>Recommended Pathology & Diagnostic Orders</span>
-                </label>
-                <button
-                  onClick={handleAiSuggestTests}
-                  className="text-[11px] text-purple-700 font-bold bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200 hover:bg-purple-100 transition"
-                >
-                  ✨ AI Auto-Suggest Tests
-                </button>
+          {/* TAB 3: MANAGE NURSE ASSIGNMENTS */}
+          {activeTab === 'NURSE_ASSIGNMENTS' && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">Nurse Assignments & Duty Roster</h2>
+                  <p className="text-xs text-slate-500">Assign attending nurses to ward beds and dispatch shift instructions</p>
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-2">
-                {advisedTests.map((test, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-800 text-xs font-bold border border-purple-200 shadow-2xs"
-                  >
-                    <span>{test}</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {nurseRoster.map(nurse => (
+                  <div key={nurse.nurseId} className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-xs">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center shadow-xs">
+                          {nurse.nurseName.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm">{nurse.nurseName}</h3>
+                          <p className="text-[10px] text-slate-400 font-mono">{nurse.nurseId} • {nurse.ward}</p>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {nurse.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs text-slate-600 border-t border-b border-slate-100 py-3">
+                      <div className="flex justify-between"><span>Assigned Beds:</span><span className="font-mono font-bold text-slate-800">{nurse.assignedBeds.join(', ')}</span></div>
+                      <div className="flex justify-between"><span>Shift:</span><span className="font-semibold text-slate-700">{nurse.shift}</span></div>
+                      <div className="flex justify-between"><span>Active Med Orders:</span><span className="font-mono font-bold text-indigo-600">{nurse.activeOrdersCount} Pending</span></div>
+                    </div>
+
                     <button
-                      onClick={() => setAdvisedTests((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="ml-1 text-purple-400 hover:text-purple-700 font-bold text-sm"
+                      onClick={() => {
+                        setElevenLabsText(`Nurse ${nurse.nurseName.split(' ')[0]}, please review vitals for ${nurse.assignedBeds.join(' and ')}.`);
+                        setActiveTab('ELEVENLABS_VOICE');
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 font-bold text-xs hover:bg-purple-100 transition flex items-center justify-center gap-2"
                     >
-                      ×
+                      <Volume2 className="w-4 h-4 text-purple-600" />
+                      <span>Send Voice Instruction</span>
                     </button>
-                  </span>
+                  </div>
                 ))}
               </div>
+            </div>
+          )}
 
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={newTestInput}
-                  onChange={(e) => setNewTestInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTest())}
-                  placeholder="Type lab test (e.g. Lipid Profile, Chest X-Ray) and press Add..."
-                  className="flex-1 p-2.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-800 outline-none focus:border-purple-500"
-                />
+          {/* TAB 4: COMPREHENSIVE LAB TEST REPORTS */}
+          {activeTab === 'TEST_REPORTS' && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">Detailed Patient Lab & Diagnostic Reports</h2>
+                  <p className="text-xs text-slate-500">Comprehensive hematology, lipid profiles, metabolic panels & ECG waveforms</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {labReports.map(report => (
+                  <div key={report.id} className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-xs">
+                    <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+                      <div>
+                        <span className="text-[10px] font-mono font-bold text-purple-600 uppercase tracking-wider">{report.id} • {report.category}</span>
+                        <h3 className="text-base font-black text-slate-900 mt-0.5">{report.testName}</h3>
+                        <p className="text-xs text-slate-400">Specimen: {report.specimen} • Collected: {report.date}</p>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {report.status}
+                      </span>
+                    </div>
+
+                    {/* Detailed Parameter Table */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
+                          <tr>
+                            <th className="px-4 py-2.5">Parameter Name</th>
+                            <th className="px-4 py-2.5">Result Value</th>
+                            <th className="px-4 py-2.5">Reference Range</th>
+                            <th className="px-4 py-2.5">Status Flag</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium">
+                          {report.parameters.map((p, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50">
+                              <td className="px-4 py-2.5 font-semibold text-slate-800">{p.name}</td>
+                              <td className="px-4 py-2.5 font-bold font-mono text-slate-900">{p.value} {p.unit}</td>
+                              <td className="px-4 py-2.5 text-slate-500 font-mono">{p.referenceRange} {p.unit}</td>
+                              <td className="px-4 py-2.5">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  p.flag === 'CRITICAL' ? 'bg-rose-600 text-white' :
+                                  p.flag === 'HIGH' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                  p.flag === 'LOW' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                  'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}>
+                                  {p.flag}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-purple-50/50 border border-purple-100 text-xs text-purple-900">
+                      <strong className="font-bold">Attending Doctor Interpretation Notes:</strong>
+                      <p className="mt-1 text-slate-700">{report.doctorNotes}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: PRESCRIBING & MANAGING MEDICATION & INJECTIONS FOR NURSES */}
+          {activeTab === 'INJECTION_ORDERS' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">Nurse Medication & Injection Execution Orders</h2>
+                  <p className="text-xs text-slate-500">Order intravenous (IV) push, infusions, and IM injections for nurse administration</p>
+                </div>
                 <button
-                  onClick={handleAddTest}
-                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                  onClick={() => setShowAddInjectionModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition"
                 >
-                  Add Test
+                  <Plus className="w-4 h-4" />
+                  <span>Order New IV / Injection</span>
                 </button>
               </div>
-            </div>
 
-            {/* Lifestyle Advice & Follow-Up Days */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
-              <div className="md:col-span-2 space-y-1">
-                <label className="block text-xs font-bold text-slate-700">
-                  Dietary & Lifestyle Advice
-                </label>
-                <input
-                  type="text"
-                  value={adviceNotes}
-                  onChange={(e) => setAdviceNotes(e.target.value)}
-                  placeholder="Hydration, low-sodium, exercise restrictions..."
-                  className="w-full p-2.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-800 outline-none focus:border-indigo-500"
-                />
+              <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
+                    <tr>
+                      <th className="px-5 py-3.5">Order ID</th>
+                      <th className="px-5 py-3.5">Patient & Bed</th>
+                      <th className="px-5 py-3.5">Medication / Injection</th>
+                      <th className="px-5 py-3.5">Route</th>
+                      <th className="px-5 py-3.5">Assigned Nurse</th>
+                      <th className="px-5 py-3.5">Urgency</th>
+                      <th className="px-5 py-3.5">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {injectionOrders.map(order => (
+                      <tr key={order.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-4 font-mono font-bold text-indigo-600">{order.id}</td>
+                        <td className="px-5 py-4 font-bold text-slate-900">{order.patientName}<br/><span className="text-[10px] font-normal text-slate-400">{order.bed}</span></td>
+                        <td className="px-5 py-4 font-bold text-slate-800">{order.medicationName}<br/><span className="text-[10px] font-normal text-slate-500">{order.dosage}</span></td>
+                        <td className="px-5 py-4"><span className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[10px]">{order.route}</span></td>
+                        <td className="px-5 py-4 font-semibold">{order.assignedNurse}</td>
+                        <td className="px-5 py-4 font-bold text-rose-600">{order.urgency}</td>
+                        <td className="px-5 py-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            order.status === 'Administered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: ELEVENLABS VOICE-COMMAND STUDIO */}
+          {activeTab === 'ELEVENLABS_VOICE' && (
+            <div className="space-y-6 max-w-4xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">
+                  <Volume2 className="w-4 h-4 text-purple-600 animate-pulse" />
+                  <span>ElevenLabs Voice AI Technology</span>
+                </div>
+                <h2 className="text-2xl font-black text-slate-900">ElevenLabs Vocal Directive & Report Studio</h2>
+                <p className="text-xs text-slate-500">Synthesize realistic physician voice instructions for nurse stations & clinical reports</p>
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700">
-                  Follow-up in (Days)
-                </label>
-                <input
-                  type="number"
-                  value={followUpDays}
-                  onChange={(e) => setFollowUpDays(Number(e.target.value))}
-                  className="w-full p-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-500"
-                />
+              <div className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-6 shadow-sm">
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700">Select ElevenLabs Synthetic Physician Voice</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {[
+                      'Dr. Adam (Clinical Male)',
+                      'Rachel (Executive Female)',
+                      'Domi (Urgent Telemetry)'
+                    ].map(v => (
+                      <button
+                        key={v}
+                        onClick={() => setElevenLabsVoice(v as any)}
+                        className={`p-3 rounded-2xl border text-xs font-bold text-left transition ${
+                          elevenLabsVoice === v ? 'bg-purple-600 text-white shadow-md shadow-purple-200 border-purple-600' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700">Physician Vocal Directive / Clinical Summary</label>
+                  <textarea
+                    rows={4}
+                    value={elevenLabsText}
+                    onChange={(e) => setElevenLabsText(e.target.value)}
+                    placeholder="Type or dictate spoken instructions..."
+                    className="w-full p-4 text-xs font-medium rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handlePlayElevenLabsVoice}
+                    disabled={isPlayingAudio}
+                    className="flex-1 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-200 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isPlayingAudio ? (
+                      <>
+                        <Volume2 className="w-4 h-4 animate-bounce" />
+                        <span>Playing ElevenLabs Voice Audio...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        <span>Synthesize & Play Voice Audio</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleSendVoiceCommandToNurse}
+                    className="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Dispatch Voice Directive to Nurse Station</span>
+                  </button>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Finalization Button Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center space-x-2 text-xs font-bold text-slate-500">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Signed with Attending Doctor Credentials (MD-MH-88921)</span>
+          {/* TAB 7: PATIENT REPORT CARD GENERATOR & DOWNLOADER */}
+          {activeTab === 'REPORT_CARDS' && (
+            <div className="space-y-6 max-w-4xl mx-auto">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">Patient Medical Report Card Studio</h2>
+                  <p className="text-xs text-slate-500">Official medical summary card with diagnostics, medications & digital doctor signature</p>
+                </div>
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download / Print Report Card</span>
+                </button>
               </div>
 
-              <button
-                onClick={handleFinalizePrescription}
-                disabled={isFinalizing}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg shadow-emerald-200 transition flex items-center justify-center space-x-2 disabled:opacity-50"
-              >
-                {isFinalizing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Signing Prescription...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Approve & Finalize Prescription</span>
-                  </>
-                )}
-              </button>
+              {selectedPatient && (
+                <div className="rounded-3xl border border-slate-300 bg-white p-8 space-y-6 shadow-xl relative">
+                  {/* Watermark Logo */}
+                  <div className="flex items-center justify-between border-b-2 border-slate-900 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Stethoscope className="w-6 h-6 text-indigo-600" />
+                        <span className="font-black text-2xl text-slate-900">PulseCloud Hospital</span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-semibold">Institutional Health System & Medical Research Center</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-mono font-bold">
+                        OFFICIAL MEDICAL CARD
+                      </span>
+                      <p className="text-[10px] text-slate-400 font-mono mt-1">Generated: 2026-08-20</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                    <div><p className="text-slate-400 font-bold uppercase text-[10px]">Patient Name</p><p className="font-bold text-slate-900 text-sm">{selectedPatient.name}</p></div>
+                    <div><p className="text-slate-400 font-bold uppercase text-[10px]">Medical Record Number (MRN)</p><p className="font-mono font-bold text-slate-900 text-sm">{selectedPatient.patientIdNumber}</p></div>
+                    <div><p className="text-slate-400 font-bold uppercase text-[10px]">Age / Gender</p><p className="font-bold text-slate-800">{selectedPatient.age} Years / {selectedPatient.gender}</p></div>
+                    <div><p className="text-slate-400 font-bold uppercase text-[10px]">Attending Doctor</p><p className="font-bold text-slate-800">Dr. Vikramaditya Singh, MD</p></div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Confirmed Clinical Diagnosis</h3>
+                    <p className="p-3 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs font-bold text-indigo-900">{diagnosis}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Prescribed Oral & IV Medications</h3>
+                    <div className="space-y-1.5">
+                      {prescriptionItems.map((item, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex justify-between text-xs font-medium">
+                          <span>{item.medicineName} ({item.dosage})</span>
+                          <span className="font-bold font-mono text-indigo-600">{item.frequency}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs font-semibold">
+                    <div className="space-y-1">
+                      <p className="text-slate-400 text-[10px] font-bold">DIGITAL VERIFICATION QR</p>
+                      <div className="w-16 h-16 bg-slate-900 rounded-xl text-white font-mono text-[8px] flex items-center justify-center p-1 text-center">
+                        QR-VERIFIED SIG-2026
+                      </div>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <p className="font-bold text-slate-900">Dr. Vikramaditya Singh, MD (AIIMS)</p>
+                      <p className="text-[10px] text-slate-400 font-mono">Digital Signature Hash: SIG-SHA256-88091A</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
+          )}
+        </main>
       </div>
 
-      {/* Voice Dictation Modal */}
-      {showVoiceModal && (
-        <VoiceRecorderModal
-          isOpen={showVoiceModal}
-          onClose={() => setShowVoiceModal(false)}
-          onApplyVoiceData={handleApplyVoiceData}
-        />
-      )}
-
-      {/* Print Prescription Preview Modal */}
-      {showPrintModal && finalizedRx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  Digitally Signed Rx
-                </span>
-                <h3 className="text-lg font-black text-slate-900 mt-1">Prescription #{finalizedRx.prescriptionNumber}</h3>
-              </div>
-              <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+      {/* New Nurse Injection Order Modal */}
+      {showAddInjectionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md space-y-4 border border-slate-200 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 text-base">Order Nurse Medication / Injection</h3>
+              <button onClick={() => setShowAddInjectionModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-slate-400 font-bold uppercase text-[10px]">Patient Name</p>
-                  <p className="font-bold text-slate-800 text-sm">{finalizedRx.patientName}</p>
-                </div>
-                <div>
-                  <p className="text-slate-400 font-bold uppercase text-[10px]">Diagnosis</p>
-                  <p className="font-bold text-slate-800 text-sm">{finalizedRx.diagnosis}</p>
-                </div>
+            <div className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Medication / Injection Name</label>
+                <input
+                  type="text"
+                  value={newInjection.medicationName}
+                  onChange={e => setNewInjection({ ...newInjection, medicationName: e.target.value })}
+                  placeholder="e.g. Inj. Pantoprazole 40mg IV"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 outline-none"
+                />
               </div>
 
-              <div>
-                <p className="font-bold text-slate-800 mb-2">Prescribed Items:</p>
-                <div className="space-y-2">
-                  {finalizedRx.items.map((item, idx) => (
-                    <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center font-medium">
-                      <div>
-                        <p className="font-bold text-slate-800">{item.medicineName}</p>
-                        <p className="text-[11px] text-slate-500">{item.instructions}</p>
-                      </div>
-                      <span className="font-mono font-bold text-indigo-600">{item.dosage} ({item.frequency})</span>
-                    </div>
-                  ))}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Route</label>
+                  <select
+                    value={newInjection.route}
+                    onChange={e => setNewInjection({ ...newInjection, route: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold"
+                  >
+                    <option value="IV Push">IV Push</option>
+                    <option value="IV Infusion">IV Infusion</option>
+                    <option value="IM Injection">IM Injection</option>
+                    <option value="SubQ">SubQ</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Urgency</label>
+                  <select
+                    value={newInjection.urgency}
+                    onChange={e => setNewInjection({ ...newInjection, urgency: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold"
+                  >
+                    <option value="STAT Immediate">STAT Immediate</option>
+                    <option value="Routine">Routine</option>
+                    <option value="PRN Pain">PRN Pain</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button onClick={() => setShowPrintModal(false)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">
-                Close Preview
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setShowAddInjectionModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">
+                Cancel
               </button>
-              <button
-                onClick={() => { window.print(); }}
-                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-2"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Print & Dispatch to Pharmacy</span>
+              <button onClick={handleAddInjectionOrder} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md">
+                Dispatch Order
               </button>
             </div>
           </div>
