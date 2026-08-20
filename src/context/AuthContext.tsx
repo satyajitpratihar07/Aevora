@@ -37,11 +37,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (defaultOrg) {
           api.setTenantId(defaultOrg.id);
           setOrganization(defaultOrg);
-          // Login default administrator
-          const res = await api.login({ role: 'HOSPITAL_ADMIN', organizationId: defaultOrg.id });
-          setUser(res.user);
-          setActiveRole(res.user.role);
-          setOrganization(res.organization);
+        }
+
+        // Restore active user session from sessionStorage if explicitly logged in
+        const savedUser = sessionStorage.getItem('pulsecloud_user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+            setActiveRole(parsedUser.role);
+          } catch {
+            sessionStorage.removeItem('pulsecloud_user');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
         }
       } catch (err) {
         console.error('Failed to initialize auth:', err);
@@ -61,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.user);
       setActiveRole(res.user.role);
       setOrganization(res.organization);
+      sessionStorage.setItem('pulsecloud_user', JSON.stringify(res.user));
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -76,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.user);
       setActiveRole(res.user.role);
       setOrganization(res.organization);
+      sessionStorage.setItem('pulsecloud_user', JSON.stringify(res.user));
       // Refresh organizations
       const orgList = await api.getOrganizations();
       setOrganizations(orgList);
@@ -102,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    sessionStorage.removeItem('pulsecloud_user');
     setUser(null);
   };
 
