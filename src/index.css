@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Force light mode globally — disable dark variant */
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  :root {
+    --tw-bg-opacity: 1;
+  }
+  /* Ensure dark: prefixes never apply */
+  @media (prefers-color-scheme: dark) {
+    html { color-scheme: light; }
+  }
+}

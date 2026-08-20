@@ -1,0 +1,6 @@
+{
+  "name": "PulseCloud HMS SaaS",
+  "description": "Enterprise-grade, AI-powered multi-tenant Hospital Management System with clinical workflows, voice-assisted prescriptions, pathology lab, pharmacy, inpatient bed management, billing, and patient portal.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
