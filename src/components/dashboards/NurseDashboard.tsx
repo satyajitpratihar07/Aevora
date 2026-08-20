@@ -91,18 +91,18 @@ const INITIAL_MAR: MAREntry[] = [
 ];
 
 const badge = (status: string) => {
-  const m: Record<string,string> = {
-    Stable:'bg-emerald-50 text-emerald-700 border-emerald-200',Critical:'bg-red-50 text-red-700 border-red-200',
-    Improving:'bg-blue-50 text-blue-700 border-blue-200',Serious:'bg-orange-50 text-orange-700 border-orange-200',
-    Completed:'bg-emerald-50 text-emerald-700 border-emerald-200',Active:'bg-sky-50 text-sky-700 border-sky-200',
-    Upcoming:'bg-indigo-50 text-indigo-700 border-indigo-200',Leave:'bg-amber-50 text-amber-700 border-amber-200',
-    Absent:'bg-red-50 text-red-700 border-red-200',Present:'bg-emerald-50 text-emerald-700 border-emerald-200',
-    Late:'bg-amber-50 text-amber-700 border-amber-200',Given:'bg-emerald-50 text-emerald-700 border-emerald-200',
-    Pending:'bg-amber-50 text-amber-700 border-amber-200',Missed:'bg-red-50 text-red-700 border-red-200',
-    Refused:'bg-orange-50 text-orange-700 border-orange-200',Held:'bg-slate-100 text-slate-600 border-slate-200',
-    High:'bg-red-50 text-red-700 border-red-200',Medium:'bg-amber-50 text-amber-700 border-amber-200',Low:'bg-emerald-50 text-emerald-700 border-emerald-200',
+  const m: Record<string, string> = {
+    Stable: 'bg-emerald-50 text-emerald-700 border-emerald-200', Critical: 'bg-red-50 text-red-700 border-red-200',
+    Improving: 'bg-blue-50 text-blue-700 border-blue-200', Serious: 'bg-orange-50 text-orange-700 border-orange-200',
+    Completed: 'bg-emerald-50 text-emerald-700 border-emerald-200', Active: 'bg-sky-50 text-sky-700 border-sky-200',
+    Upcoming: 'bg-indigo-50 text-indigo-700 border-indigo-200', Leave: 'bg-amber-50 text-amber-700 border-amber-200',
+    Absent: 'bg-red-50 text-red-700 border-red-200', Present: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    Late: 'bg-amber-50 text-amber-700 border-amber-200', Given: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    Pending: 'bg-amber-50 text-amber-700 border-amber-200', Missed: 'bg-red-50 text-red-700 border-red-200',
+    Refused: 'bg-orange-50 text-orange-700 border-orange-200', Held: 'bg-slate-100 text-slate-600 border-slate-200',
+    High: 'bg-red-50 text-red-700 border-red-200', Medium: 'bg-amber-50 text-amber-700 border-amber-200', Low: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   };
-  return `inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${m[status]||'bg-slate-100 text-slate-600 border-slate-200'}`;
+  return `inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${m[status] || 'bg-slate-100 text-slate-600 border-slate-200'}`;
 };
 
 export const NurseDashboard: React.FC = () => {
@@ -221,19 +221,19 @@ export const NurseDashboard: React.FC = () => {
   const saveMAR = () => {
     if (!selectedMar) return;
     const now = new Date();
-    const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const t = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     setMarData(prev => prev.map(m => m.id === selectedMar.id
-      ? { 
-          ...m, 
-          status: marStatus, 
-          givenAt: marStatus === 'Given' ? t : m.givenAt, 
-          notes: marNote,
-          medicine: medNameEdit,
-          dosage: medDoseEdit,
-          route: medRouteEdit,
-          frequency: medFreqEdit,
-          scheduledTime: medTimeEdit
-        }
+      ? {
+        ...m,
+        status: marStatus,
+        givenAt: marStatus === 'Given' ? t : m.givenAt,
+        notes: marNote,
+        medicine: medNameEdit,
+        dosage: medDoseEdit,
+        route: medRouteEdit,
+        frequency: medFreqEdit,
+        scheduledTime: medTimeEdit
+      }
       : m
     ));
     setShowMARModal(false);
@@ -264,7 +264,7 @@ export const NurseDashboard: React.FC = () => {
     setPatients(p => [...p, newPatient]);
     addToast('Patient Admitted', `${admitForm.firstName} ${admitForm.lastName} admitted to ${admitForm.bed}`, 'success');
     setAdmitStep(1);
-    setAdmitForm({ firstName:'',lastName:'',dob:'',gender:'',phone:'',email:'',address:'',emergencyName:'',emergencyPhone:'',bloodGroup:'',allergies:'',medHistory:'',diagnosis:'',doctor:'',admitDate:'',ward:'General Ward A',bed:'B-106' });
+    setAdmitForm({ firstName: '', lastName: '', dob: '', gender: '', phone: '', email: '', address: '', emergencyName: '', emergencyPhone: '', bloodGroup: '', allergies: '', medHistory: '', diagnosis: '', doctor: '', admitDate: '', ward: 'General Ward A', bed: 'B-106' });
     setActiveView('PATIENTS');
   };
 
@@ -280,7 +280,7 @@ export const NurseDashboard: React.FC = () => {
             </div>
             <div>
               <p className="font-black text-white text-sm">PulseCloud</p>
-              <p className="text-[10px] text-sky-200 font-semibold">Nurse Demo</p>
+              <p className="text-[10px] text-sky-200 font-semibold">Nurse Portal</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/80 hover:text-white">
@@ -309,7 +309,7 @@ export const NurseDashboard: React.FC = () => {
                 onClick={() => { setActiveView(item.id); setSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${isActive ? 'bg-sky-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
               >
-                <Icon style={{width:18,height:18}} className="shrink-0" />
+                <Icon style={{ width: 18, height: 18 }} className="shrink-0" />
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.id === 'MAR' && pendingMeds > 0 && <span className="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{pendingMeds}</span>}
                 {item.id === 'PATIENTS' && criticalPts > 0 && <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{criticalPts}</span>}
@@ -319,7 +319,7 @@ export const NurseDashboard: React.FC = () => {
         </nav>
         <div className="p-3 border-t border-slate-100 shrink-0">
           <button onClick={() => { if (window.confirm('Logout?')) logout(); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all">
-            <LogOut style={{width:18,height:18}} className="shrink-0" />
+            <LogOut style={{ width: 18, height: 18 }} className="shrink-0" />
             Logout
           </button>
         </div>
@@ -357,8 +357,8 @@ export const NurseDashboard: React.FC = () => {
                 { msg: 'Medication due for Ramesh Kumar at 14:00', type: 'warning', time: '10m ago' },
                 { msg: 'New patient admitted to B-106', type: 'info', time: '1h ago' },
               ].map((n, i) => (
-                <div key={i} className={`px-4 py-3 border-b border-slate-50 flex gap-3 ${n.type==='critical'?'bg-red-50':n.type==='warning'?'bg-amber-50':'bg-sky-50'}`}>
-                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type==='critical'?'bg-red-500 animate-pulse':n.type==='warning'?'bg-amber-500':'bg-sky-500'}`} />
+                <div key={i} className={`px-4 py-3 border-b border-slate-50 flex gap-3 ${n.type === 'critical' ? 'bg-red-50' : n.type === 'warning' ? 'bg-amber-50' : 'bg-sky-50'}`}>
+                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type === 'critical' ? 'bg-red-500 animate-pulse' : n.type === 'warning' ? 'bg-amber-500' : 'bg-sky-500'}`} />
                   <div><p className="text-xs text-slate-700 font-medium">{n.msg}</p><p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p></div>
                 </div>
               ))}
@@ -392,7 +392,7 @@ export const NurseDashboard: React.FC = () => {
               <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-bold rounded-full border border-white/30">Staff Nurse</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[{label:'Nurse ID',value:'NSE-2024-0042'},{label:'Ward',value:'General Ward A'},{label:'Shift',value:'Afternoon (15-23h)'},{label:'Department',value:'General Medicine'}].map(item => (
+              {[{ label: 'Nurse ID', value: 'NSE-2024-0042' }, { label: 'Ward', value: 'General Ward A' }, { label: 'Shift', value: 'Afternoon (15-23h)' }, { label: 'Department', value: 'General Medicine' }].map(item => (
                 <div key={item.label} className="bg-white/10 rounded-xl p-2 border border-white/15">
                   <p className="text-sky-200 text-[10px] font-semibold uppercase">{item.label}</p>
                   <p className="text-white text-xs font-bold mt-0.5 truncate">{item.value}</p>
@@ -405,16 +405,16 @@ export const NurseDashboard: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          {label:'Total Beds',value:8,icon:BedDouble,c:'sky'},
-          {label:'Patients',value:5,icon:Users,c:'blue'},
-          {label:'Beds Free',value:3,icon:BedDouble,c:'emerald'},
-          {label:'Meds Due',value:pendingMeds,icon:Pill,c:'amber'},
-          {label:'Missed',value:marData.filter(m=>m.status==='Missed').length,icon:AlertTriangle,c:'red'},
-          {label:'Critical',value:criticalPts,icon:Heart,c:'rose'},
+          { label: 'Total Beds', value: 8, icon: BedDouble, c: 'sky' },
+          { label: 'Patients', value: 5, icon: Users, c: 'blue' },
+          { label: 'Beds Free', value: 3, icon: BedDouble, c: 'emerald' },
+          { label: 'Meds Due', value: pendingMeds, icon: Pill, c: 'amber' },
+          { label: 'Missed', value: marData.filter(m => m.status === 'Missed').length, icon: AlertTriangle, c: 'red' },
+          { label: 'Critical', value: criticalPts, icon: Heart, c: 'rose' },
         ].map(s => {
           const Icon = s.icon;
-          const bgs: Record<string,string> = {sky:'bg-sky-50 border-sky-200',blue:'bg-blue-50 border-blue-200',emerald:'bg-emerald-50 border-emerald-200',amber:'bg-amber-50 border-amber-200',red:'bg-red-50 border-red-200',rose:'bg-rose-50 border-rose-200'};
-          const ics: Record<string,string> = {sky:'text-sky-600',blue:'text-blue-600',emerald:'text-emerald-600',amber:'text-amber-600',red:'text-red-600',rose:'text-rose-600'};
+          const bgs: Record<string, string> = { sky: 'bg-sky-50 border-sky-200', blue: 'bg-blue-50 border-blue-200', emerald: 'bg-emerald-50 border-emerald-200', amber: 'bg-amber-50 border-amber-200', red: 'bg-red-50 border-red-200', rose: 'bg-rose-50 border-rose-200' };
+          const ics: Record<string, string> = { sky: 'text-sky-600', blue: 'text-blue-600', emerald: 'text-emerald-600', amber: 'text-amber-600', red: 'text-red-600', rose: 'text-rose-600' };
           return (
             <div key={s.label} className={`rounded-2xl border p-4 ${bgs[s.c]}`}>
               <Icon className={`w-5 h-5 mb-2 ${ics[s.c]}`} />
@@ -432,10 +432,10 @@ export const NurseDashboard: React.FC = () => {
             <button onClick={() => setActiveView('PATIENTS')} className="text-xs text-sky-600 font-semibold flex items-center gap-1">View All<ChevronRight className="w-3 h-3" /></button>
           </div>
           <div className="divide-y divide-slate-50">
-            {NURSE_PATIENTS.slice(0,5).map(p => (
+            {NURSE_PATIENTS.slice(0, 5).map(p => (
               <div key={p.id} onClick={() => { setSelectedPatient(p); setActiveView('PATIENTS'); }} className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition">
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${p.condition==='Critical'?'bg-red-100 text-red-700':p.condition==='Stable'?'bg-emerald-100 text-emerald-700':'bg-sky-100 text-sky-700'}`}>{p.name.charAt(0)}</div>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${p.condition === 'Critical' ? 'bg-red-100 text-red-700' : p.condition === 'Stable' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}`}>{p.name.charAt(0)}</div>
                   <div><p className="text-sm font-semibold text-slate-800">{p.name}</p><p className="text-[11px] text-slate-400">{p.bed} Â· {p.diagnosis}</p></div>
                 </div>
                 <span className={badge(p.condition)}>{p.condition}</span>
@@ -452,7 +452,7 @@ export const NurseDashboard: React.FC = () => {
             {marData.filter(m => m.status === 'Pending' || m.status === 'Missed').map(m => (
               <div key={m.id} className="px-5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-8 rounded-full ${m.status==='Missed'?'bg-red-400':'bg-amber-400'}`} />
+                  <div className={`w-2 h-8 rounded-full ${m.status === 'Missed' ? 'bg-red-400' : 'bg-amber-400'}`} />
                   <div><p className="text-sm font-semibold text-slate-800">{m.medicine}</p><p className="text-[11px] text-slate-400">{m.patientName} Â· {m.bed} Â· {m.scheduledTime}</p></div>
                 </div>
                 <button onClick={() => openMAR(m)} className="text-[11px] bg-sky-50 text-sky-700 border border-sky-200 px-2 py-1 rounded-lg font-semibold hover:bg-sky-100 transition">Administer</button>
@@ -469,11 +469,11 @@ export const NurseDashboard: React.FC = () => {
         </div>
         <div className="grid grid-cols-7 divide-x divide-slate-100">
           {SCHEDULE_DATA.map((s, i) => (
-            <div key={i} className={`p-3 text-center ${s.status==='Active'?'bg-sky-50':''}`}>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">{s.day.slice(0,3)}</p>
+            <div key={i} className={`p-3 text-center ${s.status === 'Active' ? 'bg-sky-50' : ''}`}>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">{s.day.slice(0, 3)}</p>
               <p className="text-[10px] text-slate-400 mt-0.5">{s.date.slice(8)}</p>
-              <div className={`w-8 h-8 rounded-full mx-auto mt-2 flex items-center justify-center text-[10px] font-black ${s.status==='Active'?'bg-sky-600 text-white':s.status==='Completed'?'bg-emerald-100 text-emerald-700':s.status==='Leave'?'bg-amber-100 text-amber-700':s.status==='Absent'?'bg-red-100 text-red-700':'bg-slate-100 text-slate-600'}`}>
-                {s.shift==='Off'?'OFF':s.shift.charAt(0)}
+              <div className={`w-8 h-8 rounded-full mx-auto mt-2 flex items-center justify-center text-[10px] font-black ${s.status === 'Active' ? 'bg-sky-600 text-white' : s.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : s.status === 'Leave' ? 'bg-amber-100 text-amber-700' : s.status === 'Absent' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
+                {s.shift === 'Off' ? 'OFF' : s.shift.charAt(0)}
               </div>
             </div>
           ))}
@@ -501,12 +501,12 @@ export const NurseDashboard: React.FC = () => {
         // Edit existing assignment
         setAssignments(p => p.map(a => a.id === editingAssignmentId
           ? {
-              ...a,
-              date: assignForm.date,
-              ward: finalWard,
-              beds: assignForm.selectedBeds,
-              nurses: assignForm.selectedNurses
-            }
+            ...a,
+            date: assignForm.date,
+            ward: finalWard,
+            beds: assignForm.selectedBeds,
+            nurses: assignForm.selectedNurses
+          }
           : a
         ));
         setEditingAssignmentId(null);
@@ -533,7 +533,7 @@ export const NurseDashboard: React.FC = () => {
         const alreadySelected = prev.selectedBeds.includes(bed);
         return {
           ...prev,
-          selectedBeds: alreadySelected 
+          selectedBeds: alreadySelected
             ? prev.selectedBeds.filter(b => b !== bed)
             : [...prev.selectedBeds, bed]
         };
@@ -545,7 +545,7 @@ export const NurseDashboard: React.FC = () => {
         const alreadySelected = prev.selectedNurses.includes(nurseName);
         return {
           ...prev,
-          selectedNurses: alreadySelected 
+          selectedNurses: alreadySelected
             ? prev.selectedNurses.filter(n => n !== nurseName)
             : [...prev.selectedNurses, nurseName]
         };
@@ -602,11 +602,10 @@ export const NurseDashboard: React.FC = () => {
                             type="button"
                             key={dayNum}
                             onClick={() => setAssignForm(p => ({ ...p, date: dateStr }))}
-                            className={`h-9 w-9 mx-auto rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
-                              isSelected
+                            className={`h-9 w-9 mx-auto rounded-xl text-xs font-bold transition-all flex items-center justify-center ${isSelected
                                 ? 'bg-sky-600 text-white shadow-md scale-110'
                                 : 'text-slate-700 hover:bg-slate-200 bg-white border border-slate-100'
-                            }`}
+                              }`}
                           >
                             {dayNum}
                           </button>
@@ -713,9 +712,8 @@ export const NurseDashboard: React.FC = () => {
                     return (
                       <div
                         key={bed}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition ${
-                          isSelected ? 'bg-sky-600 border-sky-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition ${isSelected ? 'bg-sky-600 border-sky-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
                       >
                         <button
                           type="button"
@@ -734,9 +732,8 @@ export const NurseDashboard: React.FC = () => {
                               addToast('Bed Deleted', 'Bed option removed.', 'info');
                             }
                           }}
-                          className={`hover:bg-black/10 rounded p-0.5 ml-0.5 text-[10px] ${
-                            isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-slate-600'
-                          }`}
+                          className={`hover:bg-black/10 rounded p-0.5 ml-0.5 text-[10px] ${isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-slate-600'
+                            }`}
                         >
                           &times;
                         </button>
@@ -757,9 +754,8 @@ export const NurseDashboard: React.FC = () => {
                         type="button"
                         key={nurse.id}
                         onClick={() => handleToggleNurse(nurse.name)}
-                        className={`flex items-center justify-between p-3 rounded-xl border text-left text-xs font-bold transition ${
-                          isSelected ? 'bg-sky-50 border-sky-500 text-sky-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                        }`}
+                        className={`flex items-center justify-between p-3 rounded-xl border text-left text-xs font-bold transition ${isSelected ? 'bg-sky-50 border-sky-500 text-sky-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
                       >
                         <div>
                           <p>{nurse.name}</p>
@@ -854,10 +850,10 @@ export const NurseDashboard: React.FC = () => {
               </div>
               <div className="divide-y divide-slate-100">
                 {SCHEDULE_DATA.map((s, i) => (
-                  <div key={i} className={`grid grid-cols-5 gap-2 px-5 py-4 text-sm ${s.status==='Active'?'bg-sky-50 border-l-2 border-sky-500':'hover:bg-slate-50'}`}>
+                  <div key={i} className={`grid grid-cols-5 gap-2 px-5 py-4 text-sm ${s.status === 'Active' ? 'bg-sky-50 border-l-2 border-sky-500' : 'hover:bg-slate-50'}`}>
                     <span className="font-bold text-slate-700">{s.day}</span>
                     <span className="text-slate-600 text-xs">{s.date}</span>
-                    <span className={`font-semibold ${s.shift==='Morning'?'text-amber-600':s.shift==='Afternoon'?'text-blue-600':s.shift==='Night'?'text-indigo-600':'text-slate-400'}`}>{s.shift}</span>
+                    <span className={`font-semibold ${s.shift === 'Morning' ? 'text-amber-600' : s.shift === 'Afternoon' ? 'text-blue-600' : s.shift === 'Night' ? 'text-indigo-600' : 'text-slate-400'}`}>{s.shift}</span>
                     <span className="text-slate-600 text-xs truncate">{s.ward}</span>
                     <span className={badge(s.status)}>{s.status}</span>
                   </div>
@@ -867,7 +863,7 @@ export const NurseDashboard: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5">
               <p className="font-bold text-slate-700 text-sm mb-3">Shift Legend</p>
               <div className="flex flex-wrap gap-3">
-                {[{l:'Morning (M)',c:'bg-amber-100 text-amber-700',d:'07:00–15:00'},{l:'Afternoon (A)',c:'bg-blue-100 text-blue-700',d:'15:00–23:00'},{l:'Night (N)',c:'bg-indigo-100 text-indigo-700',d:'23:00–07:00'},{l:'Off',c:'bg-slate-100 text-slate-600',d:'No Duty'}].map(l=>(
+                {[{ l: 'Morning (M)', c: 'bg-amber-100 text-amber-700', d: '07:00–15:00' }, { l: 'Afternoon (A)', c: 'bg-blue-100 text-blue-700', d: '15:00–23:00' }, { l: 'Night (N)', c: 'bg-indigo-100 text-indigo-700', d: '23:00–07:00' }, { l: 'Off', c: 'bg-slate-100 text-slate-600', d: 'No Duty' }].map(l => (
                   <div key={l.l} className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-lg text-[11px] font-bold ${l.c}`}>{l.l}</span>
                     <span className="text-xs text-slate-400">{l.d}</span>
@@ -909,12 +905,12 @@ export const NurseDashboard: React.FC = () => {
         const match = prev.find(a => a.nurseId === nurseId && a.date === selectedAttendanceDate);
         if (match) {
           return prev.map(a => (a.nurseId === nurseId && a.date === selectedAttendanceDate)
-            ? { 
-                ...a, 
-                status, 
-                checkIn: status === 'Present' ? '08:00' : status === 'Late' ? '08:45' : '-',
-                hours: (status === 'Present' || status === 'Late') ? 8 : 0
-              }
+            ? {
+              ...a,
+              status,
+              checkIn: status === 'Present' ? '08:00' : status === 'Late' ? '08:45' : '-',
+              hours: (status === 'Present' || status === 'Late') ? 8 : 0
+            }
             : a
           );
         } else {
@@ -955,9 +951,9 @@ export const NurseDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[{label:'Present Staff',value:`${presentCount}/${dailyRecords.length}`,icon:CheckCircle,c:'text-emerald-600'},{label:'Absent Staff',value:`${absentCount}`,icon:AlertTriangle,c:'text-red-500'},{label:'On Leave',value:`${leaveCount}`,icon:Clock,c:'text-amber-500'},{label:'Present Rate',value:`${Math.round((presentCount/dailyRecords.length)*100 || 0)}%`,icon:TrendingUp,c:'text-sky-600'}].map(s => {
+          {[{ label: 'Present Staff', value: `${presentCount}/${dailyRecords.length}`, icon: CheckCircle, c: 'text-emerald-600' }, { label: 'Absent Staff', value: `${absentCount}`, icon: AlertTriangle, c: 'text-red-500' }, { label: 'On Leave', value: `${leaveCount}`, icon: Clock, c: 'text-amber-500' }, { label: 'Present Rate', value: `${Math.round((presentCount / dailyRecords.length) * 100 || 0)}%`, icon: TrendingUp, c: 'text-sky-600' }].map(s => {
             const Icon = s.icon;
-            return <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><Icon className={`w-5 h-5 ${s.c} mb-2`}/><p className="text-2xl font-black text-slate-800">{s.value}</p><p className="text-xs text-slate-500 font-semibold">{s.label}</p></div>;
+            return <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm"><Icon className={`w-5 h-5 ${s.c} mb-2`} /><p className="text-2xl font-black text-slate-800">{s.value}</p><p className="text-xs text-slate-500 font-semibold">{s.label}</p></div>;
           })}
         </div>
 
@@ -967,10 +963,10 @@ export const NurseDashboard: React.FC = () => {
           </div>
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>{['Nurse Name & ID', 'Date', 'Check In', 'Check Out', 'Hours', 'Status Option Toggle'].map(h=><th key={h} className="px-5 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">{h}</th>)}</tr>
+              <tr>{['Nurse Name & ID', 'Date', 'Check In', 'Check Out', 'Hours', 'Status Option Toggle'].map(h => <th key={h} className="px-5 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {dailyRecords.map((r,i)=>(
+              {dailyRecords.map((r, i) => (
                 <tr key={i} className="hover:bg-slate-50 transition">
                   <td className="px-5 py-3">
                     <div>
@@ -981,7 +977,7 @@ export const NurseDashboard: React.FC = () => {
                   <td className="px-5 py-3 font-semibold text-slate-600 font-mono">{r.date}</td>
                   <td className="px-5 py-3 font-mono text-slate-600">{r.checkIn}</td>
                   <td className="px-5 py-3 font-mono text-slate-600">{r.checkOut}</td>
-                  <td className="px-5 py-3 font-semibold text-slate-700">{r.hours>0?`${r.hours}h`:'-'}</td>
+                  <td className="px-5 py-3 font-semibold text-slate-700">{r.hours > 0 ? `${r.hours}h` : '-'}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-1.5">
                       {(['Present', 'Absent', 'Late', 'Leave'] as const).map(st => {
@@ -1020,7 +1016,7 @@ export const NurseDashboard: React.FC = () => {
       <div className="flex flex-wrap gap-3 items-start justify-between">
         <div><h2 className="text-xl font-black text-slate-800">Medicine Administration Record</h2><p className="text-sm text-slate-500">Medication assignments for ward patients</p></div>
         <div className="flex gap-2 flex-wrap">
-          {[{l:`${marData.filter(m=>m.status==='Pending').length} Pending`,c:'amber'},{l:`${marData.filter(m=>m.status==='Missed').length} Missed`,c:'red'},{l:`${marData.filter(m=>m.status==='Given').length} Given`,c:'emerald'}].map(s=>(
+          {[{ l: `${marData.filter(m => m.status === 'Pending').length} Pending`, c: 'amber' }, { l: `${marData.filter(m => m.status === 'Missed').length} Missed`, c: 'red' }, { l: `${marData.filter(m => m.status === 'Given').length} Given`, c: 'emerald' }].map(s => (
             <span key={s.l} className={`px-3 py-1.5 rounded-xl text-xs font-bold bg-${s.c}-50 text-${s.c}-700 border border-${s.c}-200`}>{s.l}</span>
           ))}
         </div>
@@ -1033,14 +1029,14 @@ export const NurseDashboard: React.FC = () => {
         </div>
         <div className="divide-y divide-slate-100 min-w-[800px]">
           {marData.map(m => (
-            <div key={m.id} className={`grid grid-cols-8 gap-2 px-5 py-4 items-center text-sm ${m.status==='Missed'?'bg-red-50':m.status==='Held'?'bg-slate-50':'hover:bg-slate-50'}`}>
+            <div key={m.id} className={`grid grid-cols-8 gap-2 px-5 py-4 items-center text-sm ${m.status === 'Missed' ? 'bg-red-50' : m.status === 'Held' ? 'bg-slate-50' : 'hover:bg-slate-50'}`}>
               <div className="col-span-2"><p className="font-semibold text-slate-800">{m.patientName}</p><p className="text-[11px] text-slate-400 font-mono">{m.patientId} · {m.bed}</p></div>
               <div><p className="font-semibold text-slate-700">{m.medicine}</p><p className="text-[10px] text-slate-400">{m.doctor}</p></div>
               <span className="text-slate-600 text-xs font-mono">{m.dosage}/{m.route}</span>
               <span className="text-slate-600 text-xs">{m.frequency}</span>
-              <span className={`font-mono font-bold text-xs ${m.status==='Missed'?'text-red-600':'text-slate-700'}`}>{m.scheduledTime}</span>
+              <span className={`font-mono font-bold text-xs ${m.status === 'Missed' ? 'text-red-600' : 'text-slate-700'}`}>{m.scheduledTime}</span>
               <span className={badge(m.status)}>{m.status}</span>
-              <button onClick={() => openMAR(m)} className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition">{m.status==='Given'?'View':'Update'}</button>
+              <button onClick={() => openMAR(m)} className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition">{m.status === 'Given' ? 'View' : 'Update'}</button>
             </div>
           ))}
         </div>
@@ -1085,7 +1081,7 @@ export const NurseDashboard: React.FC = () => {
               <div className="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center relative overflow-hidden border border-slate-200">
                 {/* Mock Vector QR Code Pattern */}
                 <div className="absolute inset-2 grid grid-cols-5 gap-0.5 opacity-90">
-                  {[1,1,0,1,1, 1,0,0,0,1, 0,0,1,0,0, 1,0,1,0,1, 1,1,0,1,1, 0,1,0,1,0, 1,0,1,1,0].map((v, i) => (
+                  {[1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0].map((v, i) => (
                     <div key={i} className={`rounded-sm ${v === 1 ? 'bg-slate-900' : 'bg-transparent'}`} />
                   ))}
                   {/* QR square corners */}
@@ -1122,22 +1118,22 @@ export const NurseDashboard: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
-              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><User className="w-4 h-4 text-sky-600"/>Demographics</h3>
-              {[['Age / Gender',`${selectedPatient.age}y / ${selectedPatient.gender}`],['Blood Group',selectedPatient.bloodGroup],['Phone',selectedPatient.phone],['Weight / Height',`${selectedPatient.weight}kg / ${selectedPatient.height}cm`]].map(([k,v]) => (
+              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><User className="w-4 h-4 text-sky-600" />Demographics</h3>
+              {[['Age / Gender', `${selectedPatient.age}y / ${selectedPatient.gender}`], ['Blood Group', selectedPatient.bloodGroup], ['Phone', selectedPatient.phone], ['Weight / Height', `${selectedPatient.weight}kg / ${selectedPatient.height}cm`]].map(([k, v]) => (
                 <div key={k as string} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0"><span className="text-xs text-slate-400 font-semibold">{k}</span><span className="text-xs font-bold text-slate-700">{v as string}</span></div>
               ))}
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
-              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><BedDouble className="w-4 h-4 text-sky-600"/>Admission Details</h3>
-              {[['Date',selectedPatient.admissionDate],['Ward',selectedPatient.ward],['Bed',selectedPatient.bed],['Doctor',selectedPatient.doctor],['Diagnosis',selectedPatient.diagnosis],['Priority',selectedPatient.priority]].map(([k,v]) => (
+              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><BedDouble className="w-4 h-4 text-sky-600" />Admission Details</h3>
+              {[['Date', selectedPatient.admissionDate], ['Ward', selectedPatient.ward], ['Bed', selectedPatient.bed], ['Doctor', selectedPatient.doctor], ['Diagnosis', selectedPatient.diagnosis], ['Priority', selectedPatient.priority]].map(([k, v]) => (
                 <div key={k as string} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0"><span className="text-xs text-slate-400 font-semibold">{k}</span><span className="text-xs font-bold text-slate-700 text-right max-w-[60%]">{v as string}</span></div>
               ))}
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-sm">
-              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500"/>Allergies</h3>
-              {selectedPatient.allergies.length===0?<p className="text-xs text-slate-400">No known allergies</p>:selectedPatient.allergies.map(a=><div key={a} className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-700">{a}</div>)}
-              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 pt-2"><Pill className="w-4 h-4 text-amber-600"/>Medications</h3>
-              {marData.filter(m=>m.patientId===selectedPatient.id).map(m=>(
+              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500" />Allergies</h3>
+              {selectedPatient.allergies.length === 0 ? <p className="text-xs text-slate-400">No known allergies</p> : selectedPatient.allergies.map(a => <div key={a} className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-700">{a}</div>)}
+              <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2 pt-2"><Pill className="w-4 h-4 text-amber-600" />Medications</h3>
+              {marData.filter(m => m.patientId === selectedPatient.id).map(m => (
                 <div key={m.id} className="flex justify-between border-b border-slate-50 pb-1.5 last:border-0">
                   <div><p className="text-xs font-bold text-slate-700">{m.medicine}</p><p className="text-[10px] text-slate-400">{m.dosage} · {m.route}</p></div>
                   <span className={badge(m.status)}>{m.status}</span>
@@ -1152,18 +1148,18 @@ export const NurseDashboard: React.FC = () => {
             <h2 className="text-xl font-black text-slate-800">Patients ({filteredPatients.length})</h2>
             <div className="flex gap-2">
               <div className="relative flex items-center">
-                <Search className="absolute left-3 w-4 h-4 text-slate-400"/>
-                <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Search..." className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-sky-400 w-44"/>
+                <Search className="absolute left-3 w-4 h-4 text-slate-400" />
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-sky-400 w-44" />
               </div>
-              <button onClick={()=>setActiveView('ADMIT')} className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"><Plus className="w-4 h-4"/>Admit</button>
+              <button onClick={() => setActiveView('ADMIT')} className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"><Plus className="w-4 h-4" />Admit</button>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredPatients.map(p => (
-              <div key={p.id} onClick={()=>setSelectedPatient(p)} className={`bg-white rounded-2xl border shadow-sm p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${p.condition==='Critical'?'border-red-200 bg-red-50/20':'border-slate-200'}`}>
+              <div key={p.id} onClick={() => setSelectedPatient(p)} className={`bg-white rounded-2xl border shadow-sm p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${p.condition === 'Critical' ? 'border-red-200 bg-red-50/20' : 'border-slate-200'}`}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base font-black ${p.condition==='Critical'?'bg-red-100 text-red-700':p.condition==='Stable'?'bg-emerald-100 text-emerald-700':'bg-sky-100 text-sky-700'}`}>{p.name.charAt(0)}</div>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base font-black ${p.condition === 'Critical' ? 'bg-red-100 text-red-700' : p.condition === 'Stable' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}`}>{p.name.charAt(0)}</div>
                     <div><p className="font-bold text-slate-800">{p.name}</p><p className="text-xs text-slate-400 font-mono">{p.id}</p></div>
                   </div>
                   <span className={badge(p.priority)}>{p.priority}</span>
@@ -1187,103 +1183,103 @@ export const NurseDashboard: React.FC = () => {
 
   // â”€â”€ Admit Patient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const AdmitV = () => {
-    const steps = ['Personal Info','Medical Details','Admission Info','Confirm'];
+    const steps = ['Personal Info', 'Medical Details', 'Admission Info', 'Confirm'];
     return (
       <div className="space-y-5 max-w-2xl mx-auto">
         <div><h2 className="text-xl font-black text-slate-800">Admit New Patient</h2><p className="text-sm text-slate-500">Complete all steps to admit the patient</p></div>
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <div className="flex items-center justify-between">
-            {steps.map((s,i) => (
+            {steps.map((s, i) => (
               <React.Fragment key={s}>
                 <div className="flex flex-col items-center gap-1">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${admitStep>i+1?'bg-emerald-500 text-white':admitStep===i+1?'bg-sky-600 text-white shadow-md':'bg-slate-100 text-slate-500'}`}>
-                    {admitStep>i+1?<CheckCircle2 className="w-4 h-4"/>:i+1}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${admitStep > i + 1 ? 'bg-emerald-500 text-white' : admitStep === i + 1 ? 'bg-sky-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}>
+                    {admitStep > i + 1 ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                   </div>
-                  <span className={`text-[10px] font-bold hidden sm:block ${admitStep===i+1?'text-sky-600':admitStep>i+1?'text-emerald-600':'text-slate-400'}`}>{s}</span>
+                  <span className={`text-[10px] font-bold hidden sm:block ${admitStep === i + 1 ? 'text-sky-600' : admitStep > i + 1 ? 'text-emerald-600' : 'text-slate-400'}`}>{s}</span>
                 </div>
-                {i<steps.length-1&&<div className={`flex-1 h-0.5 mx-2 ${admitStep>i+1?'bg-emerald-300':'bg-slate-200'}`}/>}
+                {i < steps.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${admitStep > i + 1 ? 'bg-emerald-300' : 'bg-slate-200'}`} />}
               </React.Fragment>
             ))}
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-          {admitStep===1 && (
+          {admitStep === 1 && (
             <><h3 className="font-bold text-slate-800">Personal Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {[{l:'First Name *',k:'firstName',p:'Rajesh'},{l:'Last Name *',k:'lastName',p:'Verma'},{l:'Phone *',k:'phone',p:'+91 98765...'},{l:'Email',k:'email',p:'patient@mail.com'},{l:'Emergency Name',k:'emergencyName',p:'Sunita Verma'},{l:'Emergency Phone',k:'emergencyPhone',p:'+91 87654...'},{l:'Address',k:'address',p:'123 Street, City'}].map(f=>(
-                <div key={f.k} className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600">{f.l}</label>
-                  <input value={(admitForm as any)[f.k]} onChange={e=>setAdmitForm(p=>({...p,[f.k]:e.target.value}))} placeholder={f.p||''} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/>
+              <div className="grid grid-cols-2 gap-4">
+                {[{ l: 'First Name *', k: 'firstName', p: 'Rajesh' }, { l: 'Last Name *', k: 'lastName', p: 'Verma' }, { l: 'Phone *', k: 'phone', p: '+91 98765...' }, { l: 'Email', k: 'email', p: 'patient@mail.com' }, { l: 'Emergency Name', k: 'emergencyName', p: 'Sunita Verma' }, { l: 'Emergency Phone', k: 'emergencyPhone', p: '+91 87654...' }, { l: 'Address', k: 'address', p: '123 Street, City' }].map(f => (
+                  <div key={f.k} className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600">{f.l}</label>
+                    <input value={(admitForm as any)[f.k]} onChange={e => setAdmitForm(p => ({ ...p, [f.k]: e.target.value }))} placeholder={f.p || ''} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" />
+                  </div>
+                ))}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600">Date of Birth</label>
+                  <input type="date" value={admitForm.dob} onChange={e => setAdmitForm(p => ({ ...p, dob: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" />
                 </div>
-              ))}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Date of Birth</label>
-                <input type="date" value={admitForm.dob} onChange={e=>setAdmitForm(p=>({...p,dob:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Gender</label>
-                <select value={admitForm.gender} onChange={e=>setAdmitForm(p=>({...p,gender:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">
-                  <option value="">Select...</option>{['Male','Female','Other'].map(o=><option key={o}>{o}</option>)}
-                </select>
-              </div>
-            </div></>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600">Gender</label>
+                  <select value={admitForm.gender} onChange={e => setAdmitForm(p => ({ ...p, gender: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">
+                    <option value="">Select...</option>{['Male', 'Female', 'Other'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+              </div></>
           )}
-          {admitStep===2 && (
+          {admitStep === 2 && (
             <><h3 className="font-bold text-slate-800">Medical Details</h3>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Blood Group</label>
-                <select value={admitForm.bloodGroup} onChange={e=>setAdmitForm(p=>({...p,bloodGroup:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">
-                  <option value="">Select...</option>{['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(o=><option key={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Known Allergies</label><input value={admitForm.allergies} onChange={e=>setAdmitForm(p=>({...p,allergies:e.target.value}))} placeholder="Penicillin, Sulfa..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/></div>
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Past Medical History</label><textarea value={admitForm.medHistory} onChange={e=>setAdmitForm(p=>({...p,medHistory:e.target.value}))} rows={3} placeholder="Hypertension (2018)..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 resize-none"/></div>
-            </div></>
-          )}
-          {admitStep===3 && (
-            <><h3 className="font-bold text-slate-800">Admission Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Diagnosis *</label><input value={admitForm.diagnosis} onChange={e=>setAdmitForm(p=>({...p,diagnosis:e.target.value}))} placeholder="Acute Appendicitis" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/></div>
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Doctor *</label><select value={admitForm.doctor} onChange={e=>setAdmitForm(p=>({...p,doctor:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"><option value="">Select...</option>{['Dr. Anjali Mehta','Dr. Vikram Singh','Dr. Rohit Gupta'].map(o=><option key={o}>{o}</option>)}</select></div>
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Admission Date/Time</label><input type="datetime-local" value={admitForm.admitDate} onChange={e=>setAdmitForm(p=>({...p,admitDate:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/></div>
-              <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Ward</label><select value={admitForm.ward} onChange={e=>setAdmitForm(p=>({...p,ward:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"><option>General Ward A</option><option>ICU</option><option>Maternity</option><option>Pediatrics</option></select></div>
-            </div>
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm font-bold text-emerald-700 mb-3">Available Beds</p>
-              <div className="grid grid-cols-4 gap-2">
-                {['B-106','B-107','B-108','B-110'].map(b=>(
-                  <button key={b} onClick={()=>setAdmitForm(p=>({...p,bed:b}))} className={`py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${admitForm.bed===b?'border-sky-500 bg-sky-600 text-white':'border-emerald-200 bg-white text-emerald-700 hover:border-sky-300'}`}>{b}</button>
-                ))}
-                {['B-101','B-102','B-103','B-104','B-105'].map(b=>(
-                  <div key={b} className="py-2.5 rounded-xl text-sm font-bold border-2 border-slate-200 bg-slate-100 text-slate-400 text-center">{b}</div>
-                ))}
-              </div>
-            </div></>
-          )}
-          {admitStep===4 && (
-            <><h3 className="font-bold text-slate-800">Review & Confirm</h3>
-            <div className="space-y-4">
-              {[
-                {title:'Personal',items:[['Name',`${admitForm.firstName} ${admitForm.lastName}`],['Gender',admitForm.gender],['Phone',admitForm.phone]]},
-                {title:'Medical',items:[['Blood Group',admitForm.bloodGroup],['Allergies',admitForm.allergies||'None']]},
-                {title:'Admission',items:[['Diagnosis',admitForm.diagnosis],['Doctor',admitForm.doctor],['Ward',admitForm.ward],['Bed',admitForm.bed]]},
-              ].map(section=>(
-                <div key={section.title} className="rounded-xl border border-slate-200 p-4">
-                  <p className="text-xs font-black text-slate-500 uppercase mb-3">{section.title}</p>
-                  <div className="grid grid-cols-2 gap-2">{section.items.map(([k,v])=>(
-                    <div key={k as string}><p className="text-[10px] text-slate-400">{k}</p><p className="text-sm font-bold text-slate-800">{(v as string)||'-'}</p></div>
-                  ))}</div>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600">Blood Group</label>
+                  <select value={admitForm.bloodGroup} onChange={e => setAdmitForm(p => ({ ...p, bloodGroup: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">
+                    <option value="">Select...</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(o => <option key={o}>{o}</option>)}
+                  </select>
                 </div>
-              ))}
-              <div className="rounded-xl border border-sky-200 bg-sky-50 p-4"><p className="text-sm font-bold text-sky-700 flex items-center gap-2"><Info className="w-4 h-4"/>Patient ID will be auto-generated on admission</p></div>
-            </div></>
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Known Allergies</label><input value={admitForm.allergies} onChange={e => setAdmitForm(p => ({ ...p, allergies: e.target.value }))} placeholder="Penicillin, Sulfa..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" /></div>
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Past Medical History</label><textarea value={admitForm.medHistory} onChange={e => setAdmitForm(p => ({ ...p, medHistory: e.target.value }))} rows={3} placeholder="Hypertension (2018)..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 resize-none" /></div>
+              </div></>
+          )}
+          {admitStep === 3 && (
+            <><h3 className="font-bold text-slate-800">Admission Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Diagnosis *</label><input value={admitForm.diagnosis} onChange={e => setAdmitForm(p => ({ ...p, diagnosis: e.target.value }))} placeholder="Acute Appendicitis" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" /></div>
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Doctor *</label><select value={admitForm.doctor} onChange={e => setAdmitForm(p => ({ ...p, doctor: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"><option value="">Select...</option>{['Dr. Anjali Mehta', 'Dr. Vikram Singh', 'Dr. Rohit Gupta'].map(o => <option key={o}>{o}</option>)}</select></div>
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Admission Date/Time</label><input type="datetime-local" value={admitForm.admitDate} onChange={e => setAdmitForm(p => ({ ...p, admitDate: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" /></div>
+                <div className="space-y-1.5"><label className="text-xs font-semibold text-slate-600">Ward</label><select value={admitForm.ward} onChange={e => setAdmitForm(p => ({ ...p, ward: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800"><option>General Ward A</option><option>ICU</option><option>Maternity</option><option>Pediatrics</option></select></div>
+              </div>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm font-bold text-emerald-700 mb-3">Available Beds</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {['B-106', 'B-107', 'B-108', 'B-110'].map(b => (
+                    <button key={b} onClick={() => setAdmitForm(p => ({ ...p, bed: b }))} className={`py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${admitForm.bed === b ? 'border-sky-500 bg-sky-600 text-white' : 'border-emerald-200 bg-white text-emerald-700 hover:border-sky-300'}`}>{b}</button>
+                  ))}
+                  {['B-101', 'B-102', 'B-103', 'B-104', 'B-105'].map(b => (
+                    <div key={b} className="py-2.5 rounded-xl text-sm font-bold border-2 border-slate-200 bg-slate-100 text-slate-400 text-center">{b}</div>
+                  ))}
+                </div>
+              </div></>
+          )}
+          {admitStep === 4 && (
+            <><h3 className="font-bold text-slate-800">Review & Confirm</h3>
+              <div className="space-y-4">
+                {[
+                  { title: 'Personal', items: [['Name', `${admitForm.firstName} ${admitForm.lastName}`], ['Gender', admitForm.gender], ['Phone', admitForm.phone]] },
+                  { title: 'Medical', items: [['Blood Group', admitForm.bloodGroup], ['Allergies', admitForm.allergies || 'None']] },
+                  { title: 'Admission', items: [['Diagnosis', admitForm.diagnosis], ['Doctor', admitForm.doctor], ['Ward', admitForm.ward], ['Bed', admitForm.bed]] },
+                ].map(section => (
+                  <div key={section.title} className="rounded-xl border border-slate-200 p-4">
+                    <p className="text-xs font-black text-slate-500 uppercase mb-3">{section.title}</p>
+                    <div className="grid grid-cols-2 gap-2">{section.items.map(([k, v]) => (
+                      <div key={k as string}><p className="text-[10px] text-slate-400">{k}</p><p className="text-sm font-bold text-slate-800">{(v as string) || '-'}</p></div>
+                    ))}</div>
+                  </div>
+                ))}
+                <div className="rounded-xl border border-sky-200 bg-sky-50 p-4"><p className="text-sm font-bold text-sky-700 flex items-center gap-2"><Info className="w-4 h-4" />Patient ID will be auto-generated on admission</p></div>
+              </div></>
           )}
           <div className="flex gap-3 pt-4 border-t border-slate-100">
-            {admitStep>1&&<button onClick={()=>setAdmitStep(s=>Math.max(1,s-1) as any)} className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition">Back</button>}
-            {admitStep<4
-              ?<button onClick={()=>setAdmitStep(s=>Math.min(4,s+1) as any)} className="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition shadow-md flex items-center justify-center gap-2">Continue<ChevronRight className="w-4 h-4"/></button>
-              :<button onClick={handleAdmit} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-2"><CheckCircle2 className="w-4 h-4"/>Confirm Admission</button>
+            {admitStep > 1 && <button onClick={() => setAdmitStep(s => Math.max(1, s - 1) as any)} className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition">Back</button>}
+            {admitStep < 4
+              ? <button onClick={() => setAdmitStep(s => Math.min(4, s + 1) as any)} className="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition shadow-md flex items-center justify-center gap-2">Continue<ChevronRight className="w-4 h-4" /></button>
+              : <button onClick={handleAdmit} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-2"><CheckCircle2 className="w-4 h-4" />Confirm Admission</button>
             }
           </div>
         </div>
@@ -1298,28 +1294,30 @@ export const NurseDashboard: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <h3 className="font-bold text-slate-700">Generate Patient Medical Report</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[{l:'Patient',t:'select',opts:NURSE_PATIENTS.map(p=>p.name)},{l:'Date From',t:'date'},{l:'Date To',t:'date'},{l:'Ward',t:'select',opts:['All Wards','General Ward A','ICU']},{l:'Doctor',t:'select',opts:['All Doctors','Dr. Anjali Mehta','Dr. Vikram Singh','Dr. Rohit Gupta']},{l:'Report Type',t:'select',opts:['Full Summary','Medication Report','Vitals Report','Nursing Notes']}].map(f=>(
+          {[{ l: 'Patient', t: 'select', opts: NURSE_PATIENTS.map(p => p.name) }, { l: 'Date From', t: 'date' }, { l: 'Date To', t: 'date' }, { l: 'Ward', t: 'select', opts: ['All Wards', 'General Ward A', 'ICU'] }, { l: 'Doctor', t: 'select', opts: ['All Doctors', 'Dr. Anjali Mehta', 'Dr. Vikram Singh', 'Dr. Rohit Gupta'] }, { l: 'Report Type', t: 'select', opts: ['Full Summary', 'Medication Report', 'Vitals Report', 'Nursing Notes'] }].map(f => (
             <div key={f.l} className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-600">{f.l}</label>
-              {f.t==='select'
-                ?<select className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">{f.opts?.map(o=><option key={o}>{o}</option>)}</select>
-                :<input type={f.t} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400"/>
+              {f.t === 'select'
+                ? <select className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 text-slate-800">{f.opts?.map(o => <option key={o}>{o}</option>)}</select>
+                : <input type={f.t} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400" />
               }
             </div>
           ))}
         </div>
         <div className="flex flex-wrap gap-3 pt-2 border-t border-slate-100">
-          {[{l:'Preview',icon:Eye,c:'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'},{l:'Generate PDF',icon:Download,c:'bg-sky-600 text-white hover:bg-sky-700 shadow-md'},{l:'Print',icon:Printer,c:'bg-slate-700 text-white hover:bg-slate-800 shadow-md'}].map(b=>{const Icon=b.icon;return(
-            <button key={b.l} onClick={()=>addToast('Report',`${b.l} initiated`,'success')} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition ${b.c}`}><Icon className="w-4 h-4"/>{b.l}</button>
-          );})}
+          {[{ l: 'Preview', icon: Eye, c: 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200' }, { l: 'Generate PDF', icon: Download, c: 'bg-sky-600 text-white hover:bg-sky-700 shadow-md' }, { l: 'Print', icon: Printer, c: 'bg-slate-700 text-white hover:bg-slate-800 shadow-md' }].map(b => {
+            const Icon = b.icon; return (
+              <button key={b.l} onClick={() => addToast('Report', `${b.l} initiated`, 'success')} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition ${b.c}`}><Icon className="w-4 h-4" />{b.l}</button>
+            );
+          })}
         </div>
       </div>
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <p className="font-bold text-slate-700 text-sm mb-3">Report Sections Included</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {['Patient Demographics','Admission Details','Diagnosis & ICD Codes','Medication History (MAR)','Nursing Notes','Vital Signs Records','Doctor Visits & Orders','Lab Results','Procedures','Progress Notes','Discharge Summary','Follow-up Instructions'].map(s=>(
+          {['Patient Demographics', 'Admission Details', 'Diagnosis & ICD Codes', 'Medication History (MAR)', 'Nursing Notes', 'Vital Signs Records', 'Doctor Visits & Orders', 'Lab Results', 'Procedures', 'Progress Notes', 'Discharge Summary', 'Follow-up Instructions'].map(s => (
             <div key={s} className="flex items-center gap-2 p-2.5 rounded-xl bg-sky-50 border border-sky-100">
-              <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0"/><span className="text-xs font-semibold text-slate-700">{s}</span>
+              <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" /><span className="text-xs font-semibold text-slate-700">{s}</span>
             </div>
           ))}
         </div>
@@ -1342,7 +1340,7 @@ export const NurseDashboard: React.FC = () => {
             <div key={l as string} className="space-y-1"><label className="text-[10px] font-bold text-slate-400 uppercase">{l}</label><p className="text-sm font-semibold text-slate-700 border-b border-slate-100 pb-1">{v as string}</p></div>
           ))}
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"><Edit className="w-4 h-4"/>Edit Profile</button>
+        <button className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"><Edit className="w-4 h-4" />Edit Profile</button>
       </div>
     </div>
   );
@@ -1359,11 +1357,11 @@ export const NurseDashboard: React.FC = () => {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-slate-900/60" onClick={()=>setShowMARModal(false)}/>
+        <div className="absolute inset-0 bg-slate-900/60" onClick={() => setShowMARModal(false)} />
         <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
           <div className="flex items-start justify-between">
             <div><h3 className="font-black text-slate-800 text-lg">Update Medication</h3><p className="text-sm text-slate-500">{selectedMar.medicine} · {selectedMar.patientName}</p></div>
-            <button onClick={()=>setShowMARModal(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"><X className="w-4 h-4"/></button>
+            <button onClick={() => setShowMARModal(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"><X className="w-4 h-4" /></button>
           </div>
 
           <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3 text-sm">
@@ -1656,18 +1654,18 @@ export const NurseDashboard: React.FC = () => {
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-600 uppercase">Administration Status</label>
             <div className="grid grid-cols-3 gap-2">
-              {(['Given','Pending','Missed','Refused','Held'] as MAREntry['status'][]).map(s=>(
-                <button key={s} onClick={()=>setMarStatus(s)} className={`py-2 rounded-xl text-sm font-bold border-2 transition-all ${marStatus===s?s==='Given'?'border-emerald-500 bg-emerald-600 text-white':s==='Missed'?'border-red-500 bg-red-600 text-white':s==='Refused'?'border-orange-500 bg-orange-500 text-white':s==='Held'?'border-slate-400 bg-slate-600 text-white':'border-amber-500 bg-amber-500 text-white':'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{s}</button>
+              {(['Given', 'Pending', 'Missed', 'Refused', 'Held'] as MAREntry['status'][]).map(s => (
+                <button key={s} onClick={() => setMarStatus(s)} className={`py-2 rounded-xl text-sm font-bold border-2 transition-all ${marStatus === s ? s === 'Given' ? 'border-emerald-500 bg-emerald-600 text-white' : s === 'Missed' ? 'border-red-500 bg-red-600 text-white' : s === 'Refused' ? 'border-orange-500 bg-orange-500 text-white' : s === 'Held' ? 'border-slate-400 bg-slate-600 text-white' : 'border-amber-500 bg-amber-500 text-white' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{s}</button>
               ))}
             </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-600 uppercase">Notes</label>
-            <textarea value={marNote} onChange={e=>setMarNote(e.target.value)} rows={2} placeholder="Observations..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 resize-none"/>
+            <textarea value={marNote} onChange={e => setMarNote(e.target.value)} rows={2} placeholder="Observations..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 resize-none" />
           </div>
           <div className="flex gap-3 pt-2 border-t border-slate-100">
-            <button onClick={()=>setShowMARModal(false)} className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50">Cancel</button>
-            <button onClick={saveMAR} className="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 shadow-md flex items-center justify-center gap-2"><Save className="w-4 h-4"/>Save & Record</button>
+            <button onClick={() => setShowMARModal(false)} className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50">Cancel</button>
+            <button onClick={saveMAR} className="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 shadow-md flex items-center justify-center gap-2"><Save className="w-4 h-4" />Save & Record</button>
           </div>
         </div>
       </div>
@@ -1675,7 +1673,7 @@ export const NurseDashboard: React.FC = () => {
   };
 
   const renderView = () => {
-    switch(activeView) {
+    switch (activeView) {
       case 'DASHBOARD': return DashboardV();
       case 'SCHEDULE': return ScheduleV();
       case 'ATTENDANCE': return AttendanceV();
@@ -1700,15 +1698,15 @@ export const NurseDashboard: React.FC = () => {
         // Edit existing nurse
         setNursesList(prev => prev.map(n => n.id === editingNurseId
           ? {
-              ...n,
-              name: newNurse.name || '',
-              email: newNurse.email || '',
-              phone: newNurse.phone || '+91 99999 99999',
-              ward: newNurse.ward || 'General Ward A',
-              shift: newNurse.shift || 'Morning (07-15h)',
-              regNo: newNurse.regNo || n.regNo,
-              status: newNurse.status as any || 'Active'
-            }
+            ...n,
+            name: newNurse.name || '',
+            email: newNurse.email || '',
+            phone: newNurse.phone || '+91 99999 99999',
+            ward: newNurse.ward || 'General Ward A',
+            shift: newNurse.shift || 'Morning (07-15h)',
+            regNo: newNurse.regNo || n.regNo,
+            status: newNurse.status as any || 'Active'
+          }
           : n
         ));
         setEditingNurseId(null);
@@ -1901,13 +1899,12 @@ export const NurseDashboard: React.FC = () => {
                     <td className="px-5 py-3 text-slate-700 font-medium text-xs">{nurse.shift}</td>
                     <td className="px-5 py-3 text-slate-400 text-xs font-mono">{nurse.regNo}</td>
                     <td className="px-5 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        nurse.status === 'Active'
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${nurse.status === 'Active'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : nurse.status === 'On Leave'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : 'bg-slate-100 text-slate-600 border-slate-200'
-                      }`}>
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                        }`}>
                         {nurse.status}
                       </span>
                     </td>
@@ -1959,14 +1956,14 @@ export const NurseDashboard: React.FC = () => {
     <>
       <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}.view-fade{animation:fadeIn 0.25s ease-out}`}</style>
       <div className="flex h-screen bg-slate-50 overflow-hidden">
-        <SidebarEl/>
+        <SidebarEl />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <TopBarEl/>
+          <TopBarEl />
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="max-w-7xl mx-auto view-fade">{renderView()}</div>
           </main>
         </div>
-        <MARModalEl/>
+        <MARModalEl />
       </div>
     </>
   );
