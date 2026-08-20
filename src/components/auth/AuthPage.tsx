@@ -159,17 +159,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
 
-  // Signup step 2
-  const [dob, setDob] = useState('');
-  const [gender, setGender] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [allergies, setAllergies] = useState('');
-  const [conditions, setConditions] = useState('');
-  const [medications, setMedications] = useState('');
-  const [emergencyName, setEmergencyName] = useState('');
-  const [emergencyPhone, setEmergencyPhone] = useState('');
+  // Signup step 2 - Role Selection
+  const [selectedRole, setSelectedRole] = useState<UserRole>('PATIENT');
 
   // Auto rotate features every 5.5 seconds
   useEffect(() => {
@@ -216,8 +207,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
         adminName: name, email, phone,
         orgName: `${name.split(' ')[0]}'s Health Account`,
         orgType: 'CLINIC',
-        medicalProfile: { dob, gender, bloodGroup, height, weight, allergies, conditions, medications },
-        emergencyContact: { name: emergencyName, phone: emergencyPhone },
+        role: selectedRole
       });
     } catch {
       setLoading(false);
@@ -629,7 +619,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                   <div className="au da2 flex items-center gap-3">
                     {([
                       { n: 1, label: 'Personal' },
-                      { n: 2, label: 'Medical' },
+                      { n: 2, label: 'Choose Role' },
                       { n: 3, label: 'Verify OTP' },
                     ] as { n: SignupStep; label: string }[]).map((s, idx) => (
                       <React.Fragment key={s.n}>
@@ -681,78 +671,53 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                       <div className="au da5">
                         <button disabled={!step1Valid} onClick={() => setSignupStep(2)}
                           className="w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 text-white font-bold text-sm shadow-lg shadow-sky-200 hover:shadow-sky-300 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                          <span>Continue to Medical Details</span><ChevronRight className="w-4 h-4" />
+                          <span>Continue to Choose Role</span><ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* ── Step 2: Medical Details ───────────────────────── */}
+                  {/* ── Step 2: Choose Role Selection ──────────────────── */}
                   {signupStep === 2 && (
                     <div className="space-y-4">
-                      <div className="au da1 rounded-xl bg-violet-50 border border-violet-200 p-3 flex items-start gap-2">
-                        <Brain className="w-4 h-4 text-violet-500 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-violet-700 leading-relaxed">
-                          Medical details help clinicians provide accurate care and prevent dangerous drug interactions.
+                      <div className="au da1 rounded-xl bg-sky-50 border border-sky-200 p-3 flex items-start gap-2">
+                        <Shield className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-sky-700 leading-relaxed">
+                          Select the clinical or administrative role you want to register under. This configuration determines your active workspace interface.
                         </p>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="au da2">
-                          <InputField label="Date of Birth" icon={Calendar} type="date" value={dob} onChange={setDob} required />
-                        </div>
-                        <div className="au da2">
-                          <SelectField label="Gender" icon={User} value={gender} onChange={setGender} required
-                            options={[{ label: 'Male', value: 'M' }, { label: 'Female', value: 'F' }, { label: 'Other', value: 'O' }]} />
-                        </div>
+                        {([
+                          { role: 'DOCTOR' as UserRole, label: 'Doctor', icon: Stethoscope, desc: 'EHR, ambient prescriptions & patient charts', activeCls: 'border-blue-500 bg-blue-50/50 text-blue-700 ring-2 ring-blue-500/20' },
+                          { role: 'HOSPITAL_ADMIN' as UserRole, label: 'Hospital Admin', icon: Shield, desc: 'Institutions, white label, billing & staff managers', activeCls: 'border-sky-500 bg-sky-50/50 text-sky-700 ring-2 ring-sky-500/20' },
+                          { role: 'NURSE' as UserRole, label: 'Nurse', icon: HeartPulse, desc: 'Ward telemetry, rosters, MAR, patient directory', activeCls: 'border-emerald-500 bg-emerald-50/50 text-emerald-700 ring-2 ring-emerald-500/20' },
+                          { role: 'PATIENT' as UserRole, label: 'Patient', desc: 'Medical records, billing reports & appointments', icon: User, activeCls: 'border-rose-500 bg-rose-50/50 text-rose-700 ring-2 ring-rose-500/20' },
+                        ] as const).map((r) => {
+                          const Icon = r.icon;
+                          const isSel = selectedRole === r.role;
+                          return (
+                            <button
+                              type="button"
+                              key={r.role}
+                              onClick={() => setSelectedRole(r.role)}
+                              className={`flex flex-col text-left p-3.5 rounded-2xl border transition-all ${
+                                isSel
+                                  ? r.activeCls
+                                  : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-1.5 font-bold text-sm">
+                                <Icon className="w-4 h-4 shrink-0" />
+                                <span>{r.label}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-medium leading-relaxed">{r.desc}</span>
+                            </button>
+                          );
+                        })}
                       </div>
 
-                      <div className="au da3">
-                        <SelectField label="Blood Group" icon={Droplets} value={bloodGroup} onChange={setBloodGroup}
-                          options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => ({ label: b, value: b }))} />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="au da3">
-                          <InputField label="Height (cm)" icon={Ruler} value={height} onChange={setHeight} placeholder="170" />
-                        </div>
-                        <div className="au da4">
-                          <InputField label="Weight (kg)" icon={Weight} value={weight} onChange={setWeight} placeholder="68" />
-                        </div>
-                      </div>
-
-                      <div className="au da4 space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600">Known Allergies</label>
-                        <textarea value={allergies} onChange={(e) => setAllergies(e.target.value)}
-                          placeholder="e.g. Penicillin, Sulfa drugs, Peanuts…" rows={2}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 resize-none transition" />
-                      </div>
-
-                      <div className="au da5 space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600">Chronic Conditions</label>
-                        <textarea value={conditions} onChange={(e) => setConditions(e.target.value)}
-                          placeholder="e.g. Hypertension, Type 2 Diabetes, Asthma…" rows={2}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 resize-none transition" />
-                      </div>
-
-                      <div className="au da5 space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-600">Current Medications</label>
-                        <textarea value={medications} onChange={(e) => setMedications(e.target.value)}
-                          placeholder="e.g. Metformin 500mg, Atenolol 25mg…" rows={2}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 resize-none transition" />
-                      </div>
-
-                      <div className="au da6 border-t border-slate-100 pt-4">
-                        <p className="text-xs font-bold text-slate-700 mb-3 flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-rose-500" />Emergency Contact
-                        </p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <InputField label="Name" icon={User} value={emergencyName} onChange={setEmergencyName} placeholder="Amitabh Verma" />
-                          <InputField label="Phone" icon={Phone} value={emergencyPhone} onChange={setEmergencyPhone} placeholder="+91 98765 00000" />
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3 au da6">
+                      <div className="flex gap-3 au da6 pt-2">
                         <button onClick={() => setSignupStep(1)}
                           className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-sm transition">
                           ← Back
@@ -836,7 +801,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
 
                       <button onClick={() => setSignupStep(2)}
                         className="au da1 w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 font-semibold text-sm transition">
-                        ← Back to Medical Details
+                        ← Back to Choose Role
                       </button>
                     </div>
                   )}

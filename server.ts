@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
@@ -74,7 +74,7 @@ async function startServer() {
   });
 
   app.post('/api/v1/auth/signup', (req, res) => {
-    const { orgName, orgType, adminName, email, phone, city, brandColor } = req.body;
+    const { orgName, orgType, adminName, email, phone, city, brandColor, role } = req.body;
     
     const newOrg = db.createOrganization({
       name: orgName || 'New Medical Center',
@@ -103,7 +103,7 @@ async function startServer() {
       organizationId: newOrg.id,
       email: email || 'admin@newhospital.org',
       name: adminName || 'Hospital Administrator',
-      role: 'HOSPITAL_ADMIN',
+      role: role || 'HOSPITAL_ADMIN',
       status: 'ACTIVE',
       permissions: [
         'PATIENT_VIEW', 'PATIENT_CREATE', 'PATIENT_UPDATE', 'PATIENT_DELETE',
