@@ -584,7 +584,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                         return (
                           <button key={r.role} onClick={() => demoLogin(r.role)} disabled={loading}
                             className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${r.cls} disabled:opacity-50`}>
-                            <Icon className="w-3.5 h-3.5 shrink-0" /><span>{r.label} Demo</span>
+                            <Icon className="w-3.5 h-3.5 shrink-0" /><span>{r.role === 'NURSE' ? `${r.label} Portal` : `${r.label} Demo`}</span>
                           </button>
                         );
                       })}
