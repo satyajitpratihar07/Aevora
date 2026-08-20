@@ -141,6 +141,7 @@ export const NurseDashboard: React.FC = () => {
     { id: 'A1', date: '2026-08-20', ward: 'General Ward A', beds: ['B-101', 'B-102'], nurses: ['Sunita Sharma'] },
     { id: 'A2', date: '2026-08-20', ward: 'ICU', beds: ['B-201'], nurses: ['Anjali Nair'] },
   ]);
+  const [patients, setPatients] = useState<NursePatient[]>(NURSE_PATIENTS);
   const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
   const [assignForm, setAssignForm] = useState({
     date: '2026-08-20',
@@ -177,8 +178,8 @@ export const NurseDashboard: React.FC = () => {
   ];
 
   const pendingMeds = marData.filter(m => m.status === 'Pending').length;
-  const criticalPts = NURSE_PATIENTS.filter(p => p.condition === 'Critical').length;
-  const filteredPatients = NURSE_PATIENTS.filter(p =>
+  const criticalPts = patients.filter(p => p.condition === 'Critical').length;
+  const filteredPatients = patients.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.diagnosis.toLowerCase().includes(searchQuery.toLowerCase())
@@ -239,6 +240,27 @@ export const NurseDashboard: React.FC = () => {
   };
 
   const handleAdmit = () => {
+    const newId = `P0${Math.floor(10 + Math.random() * 90)}`;
+    const newPatient: NursePatient = {
+      id: newId,
+      name: `${admitForm.firstName} ${admitForm.lastName}`,
+      age: admitForm.dob ? new Date().getFullYear() - new Date(admitForm.dob).getFullYear() : 35,
+      gender: admitForm.gender || 'Male',
+      bed: admitForm.bed,
+      ward: admitForm.ward,
+      admissionDate: admitForm.admitDate || new Date().toISOString().split('T')[0],
+      diagnosis: admitForm.diagnosis || 'General Observation',
+      doctor: admitForm.doctor || 'Dr. Anjali Mehta',
+      condition: 'Stable',
+      priority: 'Medium',
+      allergies: admitForm.allergies ? admitForm.allergies.split(',').map(a => a.trim()) : [],
+      phone: admitForm.phone || '+91 99999 88888',
+      bloodGroup: admitForm.bloodGroup || 'O+',
+      weight: 70,
+      height: 170
+    };
+
+    setPatients(p => [...p, newPatient]);
     addToast('Patient Admitted', `${admitForm.firstName} ${admitForm.lastName} admitted to ${admitForm.bed}`, 'success');
     setAdmitStep(1);
     setAdmitForm({ firstName:'',lastName:'',dob:'',gender:'',phone:'',email:'',address:'',emergencyName:'',emergencyPhone:'',bloodGroup:'',allergies:'',medHistory:'',diagnosis:'',doctor:'',admitDate:'',ward:'General Ward A',bed:'B-106' });
