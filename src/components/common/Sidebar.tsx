@@ -45,21 +45,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'Medical Operations',
       items: [
         { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard, roles: ['DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST', 'ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
-        { id: 'DOCTOR_WORKSPACE', label: 'Doctor EHR & Consult', icon: Stethoscope, badge: 'AI Prescribe', roles: ['DOCTOR'] },
-        { id: 'PATIENT_DIRECTORY', label: 'Patients Directory', icon: Users, roles: ['DOCTOR', 'NURSE'] },
-        { id: 'APPOINTMENTS', label: 'Appointments & Queue', icon: Calendar, roles: ['DOCTOR', 'NURSE', 'PATIENT'] },
-        { id: 'PRESCRIPTIONS', label: 'Prescriptions', icon: FileText, roles: ['DOCTOR', 'NURSE', 'PHARMACIST', 'PATIENT'] },
-        { id: 'NURSE_STATION', label: 'Nursing & Vitals', icon: Activity, roles: ['NURSE'] },
-        { id: 'PATIENT_PORTAL', label: 'Patient Portal', icon: UserCheck, roles: ['PATIENT'] },
+        { id: 'DOCTOR_WORKSPACE', label: 'Doctor EHR & Consult', icon: Stethoscope, badge: 'AI Prescribe', roles: ['DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'PATIENT_DIRECTORY', label: 'Patients Directory', icon: Users, roles: ['DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'APPOINTMENTS', label: 'Appointments & Queue', icon: Calendar, roles: ['DOCTOR', 'NURSE', 'PATIENT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'PRESCRIPTIONS', label: 'Prescriptions', icon: FileText, roles: ['DOCTOR', 'NURSE', 'PHARMACIST', 'PATIENT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'NURSE_STATION', label: 'Nursing & Vitals', icon: Activity, roles: ['NURSE', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'PATIENT_PORTAL', label: 'Patient Portal', icon: UserCheck, roles: ['PATIENT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
       ],
     },
     {
       title: 'Diagnostics & Operations',
       items: [
-        { id: 'LAB_ORDERS', label: 'Pathology & Lab', icon: Microscope, badge: 'STAT', roles: ['LAB_TECHNICIAN', 'DOCTOR'] },
-        { id: 'PHARMACY', label: 'Pharmacy & Dispensing', icon: Pill, roles: ['PHARMACIST', 'DOCTOR'] },
-        { id: 'BED_MANAGEMENT', label: 'Ward & Inpatient Beds', icon: BedDouble, roles: ['NURSE', 'DOCTOR'] },
-        { id: 'BILLING', label: 'Finance & Billing', icon: CreditCard, roles: ['ACCOUNTANT'] },
+        { id: 'LAB_ORDERS', label: 'Pathology & Lab', icon: Microscope, badge: 'STAT', roles: ['LAB_TECHNICIAN', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'PHARMACY', label: 'Pharmacy & Dispensing', icon: Pill, roles: ['PHARMACIST', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'BED_MANAGEMENT', label: 'Ward & Inpatient Beds', icon: BedDouble, roles: ['NURSE', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'BILLING', label: 'Finance & Billing', icon: CreditCard, roles: ['ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
       ],
     },
     {
@@ -148,8 +148,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         onClose();
                       }}
                       className={`w-full flex items-center justify-between rounded-md px-3 py-2 text-xs font-semibold transition ${isActive
-                          ? 'bg-blue-50 bg-blue-50/60 text-blue-700 text-blue-700 shadow-2xs font-bold'
-                          : 'text-slate-600 text-slate-500 hover:bg-slate-50 hover:bg-slate-100/60 hover:text-slate-900 hover:text-slate-800'
+                        ? 'bg-blue-50 bg-blue-50/60 text-blue-700 text-blue-700 shadow-2xs font-bold'
+                        : 'text-slate-600 text-slate-500 hover:bg-slate-50 hover:bg-slate-100/60 hover:text-slate-900 hover:text-slate-800'
                         }`}
                     >
                       <div className="flex items-center gap-3 truncate">
@@ -163,8 +163,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       {item.badge && (
                         <span
                           className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${isActive
-                              ? 'bg-blue-200/80 dark:bg-blue-900 text-blue-800 text-blue-600'
-                              : 'bg-slate-100 text-slate-500'
+                            ? 'bg-blue-200/80 dark:bg-blue-900 text-blue-800 text-blue-600'
+                            : 'bg-slate-100 text-slate-500'
                             }`}
                         >
                           {item.badge}

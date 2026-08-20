@@ -46,6 +46,19 @@ async function startServer() {
       user = users.find((u) => u.role === role);
     }
     
+    if (!user && role === 'TECHNICAL_STAFF') {
+      user = {
+        id: 'usr-tech-001',
+        organizationId: orgId,
+        email: email || 'tech.ops@hospital.org',
+        name: 'Alex Rivers',
+        role: 'TECHNICAL_STAFF',
+        department: 'IT & Biomedical Operations',
+        status: 'ACTIVE',
+        permissions: ['SETTINGS_MANAGE', 'AUDIT_VIEW']
+      } as any;
+    }
+    
     if (!user) {
       user = users[0]; // fallback
     }

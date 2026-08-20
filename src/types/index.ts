@@ -8,7 +8,8 @@ export type UserRole =
   | 'LAB_TECHNICIAN'
   | 'ACCOUNTANT'
   | 'RECEPTIONIST'
-  | 'PATIENT';
+  | 'PATIENT'
+  | 'TECHNICAL_STAFF';
 
 export type Permission =
   | 'PATIENT_VIEW'
