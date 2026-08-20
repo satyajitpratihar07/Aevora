@@ -134,7 +134,7 @@ export const NurseDashboard: React.FC = () => {
   ]);
   const [showAddNurse, setShowAddNurse] = useState(false);
   const [newNurse, setNewNurse] = useState<Partial<StaffNurse>>({
-    name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning (07-15h)', status: 'Active'
+    name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning', status: 'Active'
   });
 
   const [assignments, setAssignments] = useState<NurseAssignment[]>([
@@ -1723,7 +1723,7 @@ export const NurseDashboard: React.FC = () => {
           email: newNurse.email,
           phone: newNurse.phone || '+91 99999 99999',
           ward: newNurse.ward || 'General Ward A',
-          shift: newNurse.shift || 'Morning (07-15h)',
+          shift: newNurse.shift || 'Morning',
           regNo: reg,
           status: newNurse.status as any || 'Active'
         };
@@ -1732,7 +1732,7 @@ export const NurseDashboard: React.FC = () => {
       }
 
       setShowAddNurse(false);
-      setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning (07-15h)', status: 'Active' });
+      setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning', status: 'Active' });
     };
 
     return (
@@ -1745,7 +1745,7 @@ export const NurseDashboard: React.FC = () => {
           <button
             onClick={() => {
               setEditingNurseId(null);
-              setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning (07-15h)', status: 'Active' });
+              setNewNurse({ name: '', email: '', phone: '', ward: 'General Ward A', shift: 'Morning', status: 'Active' });
               setShowAddNurse(!showAddNurse);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-xl hover:bg-sky-700 transition shadow-md"
