@@ -141,6 +141,7 @@ export const NurseDashboard: React.FC = () => {
     { id: 'A1', date: '2026-08-20', ward: 'General Ward A', beds: ['B-101', 'B-102'], nurses: ['Sunita Sharma'] },
     { id: 'A2', date: '2026-08-20', ward: 'ICU', beds: ['B-201'], nurses: ['Anjali Nair'] },
   ]);
+  const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
   const [assignForm, setAssignForm] = useState({
     date: '2026-08-20',
     ward: 'General Ward A',
@@ -472,17 +473,36 @@ export const NurseDashboard: React.FC = () => {
         alert('Please select or add at least one bed and select one nurse!');
         return;
       }
-      const newAssign: NurseAssignment = {
-        id: `A${Date.now()}`,
-        date: assignForm.date,
-        ward: finalWard,
-        beds: assignForm.selectedBeds,
-        nurses: assignForm.selectedNurses,
-      };
-      setAssignments(p => [...p, newAssign]);
+
+      if (editingAssignmentId) {
+        // Edit existing assignment
+        setAssignments(p => p.map(a => a.id === editingAssignmentId
+          ? {
+              ...a,
+              date: assignForm.date,
+              ward: finalWard,
+              beds: assignForm.selectedBeds,
+              nurses: assignForm.selectedNurses
+            }
+          : a
+        ));
+        setEditingAssignmentId(null);
+        addToast('Assignment Updated', 'Duty assignment updated successfully.', 'success');
+      } else {
+        // Add new assignment
+        const newAssign: NurseAssignment = {
+          id: `A${Date.now()}`,
+          date: assignForm.date,
+          ward: finalWard,
+          beds: assignForm.selectedBeds,
+          nurses: assignForm.selectedNurses,
+        };
+        setAssignments(p => [...p, newAssign]);
+        addToast('Assignment Saved', 'Nurses assigned successfully to Wards and Beds.', 'success');
+      }
+
       setAssignForm({ date: '2026-08-20', ward: 'General Ward A', customWard: '', selectedBeds: [], selectedNurses: [] });
       setShowAssignForm(false);
-      addToast('Assignment Saved', 'Nurses assigned successfully to Wards and Beds.', 'success');
     };
 
     const handleToggleBed = (bed: string) => {
@@ -753,15 +773,33 @@ export const NurseDashboard: React.FC = () => {
                           <span className="px-2 py-0.5 rounded bg-sky-600 text-white text-[10px] font-bold font-mono">{a.date}</span>
                           <h4 className="font-bold text-slate-800 text-sm mt-1">{a.ward}</h4>
                         </div>
-                        <button
-                          onClick={() => {
-                            setAssignments(p => p.filter(as => as.id !== a.id));
-                            addToast('Assignment Removed', 'Duty assignment cleared.', 'info');
-                          }}
-                          className="text-[10px] text-red-500 font-bold hover:underline"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingAssignmentId(a.id);
+                              setAssignForm({
+                                date: a.date,
+                                ward: a.ward,
+                                customWard: '',
+                                selectedBeds: a.beds,
+                                selectedNurses: a.nurses
+                              });
+                              setShowAssignForm(true);
+                            }}
+                            className="text-[10px] text-sky-600 font-bold hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAssignments(p => p.filter(as => as.id !== a.id));
+                              addToast('Assignment Removed', 'Duty assignment cleared.', 'info');
+                            }}
+                            className="text-[10px] text-red-500 font-bold hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                         <div>
