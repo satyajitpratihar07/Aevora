@@ -82,7 +82,7 @@ export const AvoraLogo: React.FC<AvoraLogoProps> = ({
           lineHeight: 1,
         }}
       >
-        AVORA
+        Aevora
       </span>
     )}
   </div>

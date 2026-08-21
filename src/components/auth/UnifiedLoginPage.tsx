@@ -831,15 +831,21 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
 
       <div className="ulp-root" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f4ff 0%, #fff 50%, #f5feff 100%)', display: 'flex', flexDirection: 'column' }}>
 
+        {/* Welcome Announcement Top Banner */}
+        <div style={{ background: 'linear-gradient(90deg, #1e3a8a, #0369a1)', color: '#fff', padding: '10px 24px', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, letterSpacing: '0.3px', textAlign: 'center' }}>
+          <span style={{ background: '#0284c7', padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase', fontSize: '9px', fontWeight: 800 }}>New Release</span>
+          <span>Welcome to <strong>Aevora HMS v2.4</strong> — Fully integrated HIPAA-certified clinical workspace. Explore the updated Doctor Consult and Nursing MAR portals.</span>
+        </div>
+
         {/* Header */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #f0f0f0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <header style={{ background: '#fff', borderBottom: '1px solid #f0f0f0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }}>
               <Activity size={20} color="#fff" />
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>
-                AVORA <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: 6, marginLeft: 4 }}>HMS</span>
+                Aevora <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: 6, marginLeft: 4 }}>HMS</span>
               </div>
               <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>Enterprise Healthcare Operating System</div>
             </div>
@@ -854,13 +860,14 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         </header>
 
         {/* Main */}
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
           <div className="ulp-fadein" style={{
             width: '100%', maxWidth: 980,
             background: '#fff', borderRadius: 20,
             boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.05)',
             border: '1px solid #f0f0f0', overflow: 'hidden',
             display: 'grid', gridTemplateColumns: '1fr 1.15fr',
+            marginBottom: '40px'
           }}>
             {/* Left: Role Selector — always visible */}
             <div style={{ background: '#f9fafb', borderRight: '1px solid #f0f0f0', padding: '36px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -911,11 +918,38 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
               {pageView === 'RESET_PASSWORD' && renderResetPassword()}
             </div>
           </div>
+
+          {/* Platform Features Details Section */}
+          <div style={{ maxWidth: 980, width: '100%', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '24px 32px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+            <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 12, letterSpacing: '-0.2px' }}>
+              About Aevora Intelligent Clinical Operating System
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
+              <div>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', marginBottom: 4 }}>🤖 Google Gemini AI Core</h4>
+                <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.6 }}>
+                  Aevora natively integrates Gemini 2.0 to draft digital prescriptions, compile SOAP notes from voice recordings, and automate patient clinical journey tracking.
+                </p>
+              </div>
+              <div>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 4 }}>🏢 Isolated Multi-Tenancy</h4>
+                <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.6 }}>
+                  Features state-of-the-art tenant isolation with custom white-label capabilities, dynamic branding customizer, and localized Indian currency formatting.
+                </p>
+              </div>
+              <div>
+                <h4 style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 4 }}>🩺 Integrated 32-Module Suite</h4>
+                <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.6 }}>
+                  Connects pathology labs, ward occupancy telemetry, pharmacy dispensing, outpatient booking, and emergency dispatch under a secure HIPAA dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
         </main>
 
         {/* Footer */}
         <footer style={{ background: '#fff', borderTop: '1px solid #f0f0f0', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>© 2025 AVORA HMS · HIPAA & SOC 2 Certified Healthcare Platform</span>
+          <span style={{ fontSize: 12, color: '#9ca3af' }}>© 2025 Aevora HMS · HIPAA & SOC 2 Certified Healthcare Platform</span>
           <div style={{ display: 'flex', gap: 20 }}>
             {['Privacy Policy', 'Terms of Use', 'Support'].map(link => (
               <a key={link} href="#" style={{ fontSize: 12, color: '#9ca3af', textDecoration: 'none', fontWeight: 500 }}>{link}</a>
