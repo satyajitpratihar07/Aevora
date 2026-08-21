@@ -149,7 +149,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setFirebaseUser(fbUser);
         }
       } catch (fbErr: any) {
-        console.warn('Firebase Google Auth popup failed/blocked:', fbErr?.message || fbErr);
+        setIsLoading(false);
+        // Re-throw user-facing errors (popup closed, blocked, cancelled)
+        // so the calling component can gracefully handle them
+        const code = fbErr?.code || '';
+        if (
+          code === 'auth/popup-closed-by-user' ||
+          code === 'auth/cancelled-popup-request' ||
+          code === 'auth/popup-blocked'
+        ) {
+          throw fbErr; // Let caller decide — no error message needed
+        }
+        console.warn('Firebase Google Auth popup failed:', fbErr?.message || fbErr);
       }
     }
 

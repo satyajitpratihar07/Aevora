@@ -99,21 +99,32 @@ const ROLES = [
    OTP INPUT COMPONENT — 6 individual digit boxes
 ───────────────────────────────────────────────────────────────── */
 const OtpInput: React.FC<{ value: string; onChange: (v: string) => void; color: string }> = ({ value, onChange, color }) => {
-  const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
+  // Single ref holding an array of 6 input elements — avoids hook-in-loop violation
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const digits = value.padEnd(6, '').split('').slice(0, 6);
+  const digits = value.padEnd(6, ' ').split('').slice(0, 6);
+
+  const focusAt = (idx: number) => {
+    if (idx >= 0 && idx < 6) inputRefs.current[idx]?.focus();
+  };
 
   const handleKeyDown = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       e.preventDefault();
       const newDigits = [...digits];
-      if (newDigits[idx] !== '' && newDigits[idx] !== ' ') {
-        newDigits[idx] = '';
+      if (newDigits[idx].trim() !== '') {
+        newDigits[idx] = ' ';
       } else if (idx > 0) {
-        newDigits[idx - 1] = '';
-        refs[idx - 1].current?.focus();
+        newDigits[idx - 1] = ' ';
+        focusAt(idx - 1);
       }
       onChange(newDigits.join('').replace(/ /g, ''));
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      focusAt(idx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      focusAt(idx + 1);
     }
   };
 
@@ -125,48 +136,56 @@ const OtpInput: React.FC<{ value: string; onChange: (v: string) => void; color: 
     if (raw.length > 1) {
       const pasted = raw.slice(0, 6).split('');
       for (let i = 0; i < 6; i++) {
-        newDigits[i] = pasted[i] || '';
+        newDigits[i] = pasted[i] || ' ';
       }
       onChange(newDigits.join('').replace(/ /g, ''));
-      refs[Math.min(pasted.length, 5)].current?.focus();
+      focusAt(Math.min(pasted.length, 5));
       return;
     }
     newDigits[idx] = raw[0];
     onChange(newDigits.join('').replace(/ /g, ''));
-    if (idx < 5) refs[idx + 1].current?.focus();
+    if (idx < 5) focusAt(idx + 1);
   };
 
   return (
     <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-      {digits.map((d, idx) => (
-        <input
-          key={idx}
-          ref={refs[idx]}
-          type="text"
-          inputMode="numeric"
-          maxLength={6}
-          value={d === ' ' ? '' : d}
-          onChange={e => handleInput(idx, e)}
-          onKeyDown={e => handleKeyDown(idx, e)}
-          style={{
-            width: 48,
-            height: 56,
-            textAlign: 'center',
-            fontSize: 22,
-            fontWeight: 800,
-            borderRadius: 10,
-            border: d ? `2px solid ${color}` : '1.5px solid #e5e7eb',
-            background: d ? `${color}10` : '#f9fafb',
-            color: color,
-            outline: 'none',
-            transition: 'all 0.15s',
-            fontFamily: 'monospace',
-          }}
-        />
-      ))}
+      {digits.map((d, idx) => {
+        const filled = d.trim() !== '';
+        return (
+          <input
+            key={idx}
+            ref={el => { inputRefs.current[idx] = el; }}
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={filled ? d : ''}
+            onChange={e => handleInput(idx, e)}
+            onKeyDown={e => handleKeyDown(idx, e)}
+            onFocus={e => e.target.select()}
+            autoComplete="one-time-code"
+            style={{
+              width: 48,
+              height: 56,
+              textAlign: 'center',
+              fontSize: 24,
+              fontWeight: 800,
+              borderRadius: 12,
+              border: filled ? `2.5px solid ${color}` : '1.5px solid #e5e7eb',
+              background: filled ? `${color}12` : '#f9fafb',
+              color: filled ? color : '#374151',
+              outline: 'none',
+              transition: 'all 0.15s',
+              fontFamily: 'monospace',
+              cursor: 'text',
+              boxShadow: filled ? `0 0 0 3px ${color}20` : 'none',
+            }}
+          />
+        );
+      })}
     </div>
   );
 };
+
 
 /* ─────────────────────────────────────────────────────────────────
    MAIN COMPONENT
@@ -230,6 +249,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     setFullName('');
     setConfirmPassword('');
     setOtpCode('');
+    setFallbackOtp('');
   };
 
   /* ── SEND OTP via server ─────────────────────────────── */
@@ -414,15 +434,26 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     clearMessages();
+    setFallbackOtp('');
     try {
       const success = await loginWithGoogle(currentRole.role);
       if (success) {
         onSuccessLogin?.();
-      } else {
-        setError('Google sign-in was cancelled. Please try again.');
       }
-    } catch {
-      setError('Google sign-in failed. Please try again or use email & password.');
+      // If success===false, user simply closed the popup — no error shown
+    } catch (err: any) {
+      const code = err?.code || '';
+      // Ignore user-dismissed popup events gracefully
+      if (
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/popup-blocked'
+      ) {
+        // User cancelled — show nothing or a soft info message
+        setError('');
+      } else {
+        setError('Google sign-in failed. Please try again or use email & password.');
+      }
     } finally {
       setGoogleLoading(false);
     }
