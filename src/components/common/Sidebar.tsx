@@ -48,7 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Medical Operations',
       items: [
-        { id: 'ICON_LAUNCHPAD', label: 'Master Icon Grid (32)', icon: LayoutGrid, badge: '32 Icons', roles: ['DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST', 'ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN', 'TECHNICAL_STAFF'] },
         { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard, roles: ['DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST', 'ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'DOCTOR_WORKSPACE', label: 'Doctor EHR & Consult', icon: Stethoscope, badge: 'AI Prescribe', roles: ['DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'PATIENT_DIRECTORY', label: 'Patients Directory', icon: Users, roles: ['DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
