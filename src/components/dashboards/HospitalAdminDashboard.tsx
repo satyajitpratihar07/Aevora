@@ -39,6 +39,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
+import { useSocket } from '../../context/SocketContext.js';
 import { api } from '../../services/api.js';
 
 interface DashboardProps {
@@ -48,6 +49,7 @@ interface DashboardProps {
 export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { organization } = useAuth();
   const { addToast } = useNotifications();
+  const { lastEvent } = useSocket();
 
   const [analytics, setAnalytics] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -56,6 +58,26 @@ export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate })
   useEffect(() => {
     fetchDashboardData();
   }, [organization]);
+
+  // Re-fetch live stats dynamically when any real-time WebSocket event arrives
+  useEffect(() => {
+    if (lastEvent) {
+      fetchDashboardData();
+      if (lastEvent.type === 'emergency.activated') {
+        addToast({
+          type: 'error',
+          title: '🚨 CODE RED EMERGENCY ACTIVATED',
+          message: lastEvent.payload?.message || 'Emergency response team dispatched to Trauma Ward.'
+        });
+      } else if (lastEvent.type === 'patient.checked_in') {
+        addToast({
+          type: 'info',
+          title: 'Patient Checked In',
+          message: `OPD Token generated for ${lastEvent.payload?.name || 'Patient'}.`
+        });
+      }
+    }
+  }, [lastEvent]);
 
   const fetchDashboardData = async () => {
     setLoading(true);

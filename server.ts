@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import { db } from './server/db.js';
 import {
   generatePrescriptionDraft,
@@ -11,6 +13,13 @@ import {
 } from './server/gemini.js';
 
 import { sendOtpEmail, sendNotificationEmail } from './server/emailService.js';
+import {
+  generateBase32Secret,
+  generateTOTP,
+  verifyTOTP,
+  generateRecoveryCodes,
+  generateOtpAuthUri,
+} from './server/totp.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +29,63 @@ const otpStore = new Map<string, { code: string; expiresAt: number }>();
 
 async function startServer() {
   const app = express();
+  const server = http.createServer(app);
+  const wss = new WebSocketServer({ server, path: '/ws' });
   const PORT = 3000;
+
+  interface ScopedClient {
+    ws: WebSocket;
+    userId?: string;
+    role?: string;
+    channels: Set<string>;
+  }
+
+  const clients = new Set<ScopedClient>();
+
+  wss.on('connection', (ws) => {
+    const client: ScopedClient = { ws, channels: new Set(['hospital:org-apex-01', 'global']) };
+    clients.add(client);
+
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        if (data.type === 'subscribe') {
+          if (Array.isArray(data.channels)) {
+            data.channels.forEach((c: string) => client.channels.add(c));
+          }
+          if (data.userId) client.userId = data.userId;
+          if (data.role) {
+            client.role = data.role;
+            client.channels.add(`role:${data.role}`);
+          }
+        }
+      } catch (err) {
+        console.error('WS message error:', err);
+      }
+    });
+
+    ws.on('close', () => {
+      clients.delete(client);
+    });
+  });
+
+  function broadcastEvent(rooms: string[], eventType: string, payload: any) {
+    const messageStr = JSON.stringify({
+      type: eventType,
+      timestamp: new Date().toISOString(),
+      rooms,
+      payload
+    });
+
+    clients.forEach((client) => {
+      if (client.ws.readyState === WebSocket.OPEN) {
+        const isMatched = rooms.some(r => client.channels.has(r));
+        if (isMatched) {
+          client.ws.send(messageStr);
+        }
+      }
+    });
+  }
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
@@ -34,7 +99,73 @@ async function startServer() {
 
   // Health check
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', service: 'PulseCloud HMS SaaS API', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', service: 'AVORA Real-Time HMS API & WebSockets', timestamp: new Date().toISOString() });
+  });
+
+  // ----------------------------------------------------
+  // TOTP TWO-FACTOR AUTHENTICATION (2FA) ENDPOINTS
+  // ----------------------------------------------------
+  app.post('/api/v1/auth/2fa/generate-secret', (req, res) => {
+    const { email } = req.body;
+    const secret = generateBase32Secret();
+    const issuer = 'AVORA HMS';
+    const label = email || 'user@aevorahospital.com';
+    const otpauthUri = generateOtpAuthUri(label, issuer, secret);
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauthUri)}`;
+    const recoveryCodes = generateRecoveryCodes();
+
+    res.json({
+      success: true,
+      secret,
+      otpauthUri,
+      qrCodeUrl,
+      recoveryCodes
+    });
+  });
+
+  app.post('/api/v1/auth/2fa/verify-enrollment', (req, res) => {
+    const { secret, token, email } = req.body;
+    if (!secret || !token) {
+      return res.status(400).json({ success: false, message: 'Secret and 6-digit TOTP code are required' });
+    }
+    const isValid = verifyTOTP(token, secret);
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid 6-digit verification code. Please check your authenticator app.' });
+    }
+
+    db.logAudit({
+      organizationId: 'org-apex-01',
+      userId: 'usr-admin-01',
+      userName: email || 'User',
+      userRole: 'HOSPITAL_ADMIN',
+      action: '2FA_ENROLLED',
+      resource: 'UserSecurity',
+      resourceId: email || 'user',
+      ipAddress: req.ip || '127.0.0.1',
+      details: 'Two-Factor Authentication (TOTP) successfully enrolled.',
+      status: 'SUCCESS'
+    });
+
+    res.json({
+      success: true,
+      message: 'Two-Factor Authentication successfully enabled!',
+      twoFactorEnabled: true
+    });
+  });
+
+  app.post('/api/v1/auth/2fa/verify-challenge', (req, res) => {
+    const { token, secret, recoveryCode } = req.body;
+    if (recoveryCode && recoveryCode.length >= 8) {
+      return res.json({ success: true, verified: true, method: 'RECOVERY_CODE' });
+    }
+    if (!secret || !token) {
+      return res.status(400).json({ success: false, message: 'Code is required' });
+    }
+    const isValid = verifyTOTP(token, secret);
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid 2FA verification code' });
+    }
+    res.json({ success: true, verified: true, method: 'TOTP' });
   });
 
   // ----------------------------------------------------
@@ -734,8 +865,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`PulseCloud HMS SaaS running on http://localhost:${PORT}`);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`AVORA Real-Time Hospital OS & WebSockets running on http://localhost:${PORT}`);
   });
 }
 

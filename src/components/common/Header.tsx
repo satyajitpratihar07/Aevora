@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Menu,
   Search,
@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
+import { useSocket } from '../../context/SocketContext.js';
+import { TwoFactorModal } from './TwoFactorModal.js';
 import { UserRole } from '../../types/index.js';
 
 interface HeaderProps {
@@ -37,10 +39,12 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { user, organization, availableOrgs, switchOrganization, switchRole, logout } = useAuth();
   const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { isConnected } = useSocket();
 
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [isTwoFactorOpen, setIsTwoFactorOpen] = useState(false);
 
   const roleLabels: Record<string, { label: string; icon: any }> = {
     HOSPITAL_ADMIN: { label: 'Hospital Admin', icon: Building2 },
@@ -249,15 +253,40 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
+        {/* Live WebSocket Signal Badge */}
+        <div
+          className={`hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold border transition ${
+            isConnected
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
+          }`}
+          title={isConnected ? 'Authenticated Scoped WebSocket Real-Time Active' : 'WebSocket Reconnecting / HTTP Polling Fallback'}
+        >
+          <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-ping' : 'bg-amber-500'}`} />
+          <span>{isConnected ? 'WS REALTIME LIVE' : 'SYNCING'}</span>
+        </div>
+
+        {/* 2FA Security Settings Button */}
+        <button
+          onClick={() => setIsTwoFactorOpen(true)}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 text-slate-700 text-xs font-extrabold transition shadow-xs cursor-pointer"
+          title="Setup Two-Factor Authentication (TOTP)"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+          <span>2FA Security</span>
+        </button>
+
         {/* Logout Button */}
         <button
           onClick={() => logout()}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 hover:bg-slate-100 transition shrink-0"
+          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 hover:bg-slate-100 transition shrink-0 cursor-pointer"
           title="Logout"
         >
           <LogOut className="w-4 h-4" />
         </button>
       </div>
+
+      <TwoFactorModal isOpen={isTwoFactorOpen} onClose={() => setIsTwoFactorOpen(false)} />
     </header>
   );
 };

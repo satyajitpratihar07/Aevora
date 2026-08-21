@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
+import { SocketProvider } from './context/SocketContext.js';
 import { NotificationProvider, useNotifications } from './context/NotificationContext.js';
 import { Header } from './components/common/Header.js';
 import { Sidebar } from './components/common/Sidebar.js';
@@ -414,9 +415,11 @@ const ToastContainer: React.FC<{ toasts: any[]; removeToast: (id: string) => voi
 export default function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <MainAppContent />
-      </NotificationProvider>
+      <SocketProvider>
+        <NotificationProvider>
+          <MainAppContent />
+        </NotificationProvider>
+      </SocketProvider>
     </AuthProvider>
   );
 }
