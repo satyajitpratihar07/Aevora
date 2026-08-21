@@ -1,24 +1,3 @@
-import React, { useState } from 'react';
-import {
-  Sparkles,
-  X,
-  Send,
-  Bot,
-  User,
-  ShieldCheck,
-  Activity,
-  AlertTriangle,
-  Lightbulb,
-  FileCheck,
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext.js';
-import { api } from '../../services/api.js';
-
-interface AIAssistantDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
