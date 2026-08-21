@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createServer as createViteServer } from 'vite';
 import { db } from './server/db.js';
 import {
   generatePrescriptionDraft,
@@ -18,7 +17,7 @@ const __dirname = path.dirname(__filename);
 // In-memory OTP store
 const otpStore = new Map<string, { code: string; expiresAt: number }>();
 
-async function startServer() {
+export async function createExpressApp() {
   const app = express();
   const PORT = 3000;
 
@@ -720,7 +719,8 @@ async function startServer() {
   // ----------------------------------------------------
   // VITE DEV MIDDLEWARE / STATIC ASSETS
   // ----------------------------------------------------
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -729,17 +729,22 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get(/^(?!\/api).*/, (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`PulseCloud HMS SaaS running on http://localhost:${PORT}`);
-  });
+  return app;
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start PulseCloud HMS Server:', err);
-});
+if (!process.env.VERCEL) {
+  const PORT = 3000;
+  createExpressApp().then(app => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`PulseCloud HMS SaaS running on http://localhost:${PORT}`);
+    });
+  }).catch((err) => {
+    console.error('Failed to start PulseCloud HMS Server:', err);
+  });
+}
 

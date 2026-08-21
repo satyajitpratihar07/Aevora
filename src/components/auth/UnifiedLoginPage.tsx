@@ -290,7 +290,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     try {
       // Call Firebase native signup and automatic verification email delivery
       await signupWithFirebaseEmail(email, password, currentRole.role, fullName);
-      
+
       setPendingSignupData({ email, password, role: currentRole.role, name: fullName });
       setOtpPurpose('signup');
       setOtpTimer(60);
@@ -317,7 +317,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     try {
       const { checkFirebaseEmailVerification } = useAuth();
       const isVerified = await checkFirebaseEmailVerification();
-      
+
       if (isVerified) {
         setSuccessMsg('Email successfully verified! Redirecting to workspace...');
         setTimeout(() => onSuccessLogin?.(), 1000);
@@ -708,10 +708,10 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
             {googleLoading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Connecting...</> : (
               <>
                 <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
                 Continue with Google
               </>
@@ -780,10 +780,10 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
             {googleLoading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Connecting...</> : (
               <>
                 <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
                 Sign up with Google
               </>
@@ -817,77 +817,19 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         .ulp-slide { animation: ulpSlide 0.35s ease both; }
         .ulp-input {
           width: 100%; padding: 11px 14px 11px 40px;
-          border: 1.5px solid #e2e8f0; border-radius: 10px;
+          border: 1.5px solid #e5e7eb; border-radius: 10px;
           font-size: 14px; font-weight: 500; color: #111827;
-          background: #f8fafc; transition: all 0.2s; outline: none;
+          background: #f9fafb; transition: all 0.2s; outline: none;
           font-family: 'Inter', sans-serif;
         }
         .ulp-input:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.10); }
         .ulp-input::placeholder { color: #9ca3af; font-weight: 400; }
-        
-        .ulp-root {
-          background-color: #f8fafc;
-          background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px), radial-gradient(#e2e8f0 1.2px, #f8fafc 1.2px);
-          background-size: 24px 24px;
-          background-position: 0 0, 12px 12px;
-        }
-        .ulp-header {
-          background: rgba(255, 255, 255, 0.85) !important;
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
-        }
-        .ulp-main-card {
-          background: rgba(255, 255, 255, 0.95) !important;
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(226, 232, 240, 0.8) !important;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.5) !important;
-          border-radius: 24px !important;
-        }
-        .ulp-left-panel {
-          background: rgba(248, 250, 252, 0.65) !important;
-          backdrop-filter: blur(8px);
-        }
-        .ulp-role-tab {
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 14px !important;
-          background: #fff !important;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        .ulp-role-tab:hover {
-          transform: translateY(-1.5px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
-          border-color: #cbd5e1 !important;
-        }
-        .ulp-role-tab.active {
-          background: var(--role-bg) !important;
-          border-color: var(--role-border) !important;
-          transform: scale(1.02) translateY(-1px);
-          box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.08);
-        }
-        .ulp-info-footer {
-          background: rgba(255, 255, 255, 0.95) !important;
-          border: 1px solid rgba(226, 232, 240, 0.8) !important;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02) !important;
-          border-radius: 20px !important;
-        }
-        .ulp-btn-primary {
-          transition: all 0.2s ease-in-out;
-        }
-        .ulp-btn-primary:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.25);
-        }
-        .ulp-btn-google {
-          transition: all 0.2s ease-in-out;
-        }
-        .ulp-btn-google:hover {
-          background: #f8fafc !important;
-          border-color: #cbd5e1 !important;
-          transform: translateY(-1px);
-        }
+        .ulp-role-tab { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #f3f4f6; cursor: pointer; transition: all 0.2s; text-align: left; background: #fff; width: 100%; }
+        .ulp-role-tab:hover { border-color: #e5e7eb; background: #f9fafb; }
+        .ulp-role-tab.active { background: var(--role-bg); border-color: var(--role-border); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
       `}</style>
 
-      <div className="ulp-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="ulp-root" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f4ff 0%, #fff 50%, #f5feff 100%)', display: 'flex', flexDirection: 'column' }}>
 
         {/* Welcome Announcement Top Banner */}
         <div style={{ background: 'linear-gradient(90deg, #1e3a8a, #0369a1)', color: '#fff', padding: '10px 24px', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, letterSpacing: '0.3px', textAlign: 'center' }}>
@@ -896,16 +838,16 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         </div>
 
         {/* Header */}
-        <header className="ulp-header" style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+        <header style={{ background: '#fff', borderBottom: '1px solid #f0f0f0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(37,99,235,0.2)' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #2563eb, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }}>
               <Activity size={20} color="#fff" />
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>
                 Aevora <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: 6, marginLeft: 4 }}>HMS</span>
               </div>
-              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>Enterprise Healthcare Operating System</div>
+              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>Enterprise Healthcare Operating System</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -918,19 +860,21 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         </header>
 
         {/* Main */}
-        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', flex: 1 }}>
-          <div className="ulp-fadein ulp-main-card" style={{
+        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+          <div className="ulp-fadein" style={{
             width: '100%', maxWidth: 980,
-            overflow: 'hidden',
+            background: '#fff', borderRadius: 20,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.05)',
+            border: '1px solid #f0f0f0', overflow: 'hidden',
             display: 'grid', gridTemplateColumns: '1fr 1.15fr',
             marginBottom: '40px'
           }}>
             {/* Left: Role Selector — always visible */}
-            <div className="ulp-left-panel" style={{ borderRight: '1px solid #f0f0f0', padding: '36px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ background: '#f9fafb', borderRight: '1px solid #f0f0f0', padding: '36px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>Select Your Workspace</div>
                 <h2 style={{ fontSize: 19, fontWeight: 800, color: '#111827', margin: 0, lineHeight: 1.3 }}>Choose Your Role</h2>
-                <p style={{ fontSize: 12, color: '#64748b', marginTop: 5, lineHeight: 1.6 }}>Each role provides a dedicated workspace with specialized tools.</p>
+                <p style={{ fontSize: 12, color: '#6b7280', marginTop: 5, lineHeight: 1.6 }}>Each role provides a dedicated workspace with specialized tools.</p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -976,7 +920,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
           </div>
 
           {/* Platform Features Details Section */}
-          <div className="ulp-info-footer" style={{ maxWidth: 980, width: '100%', padding: '24px 32px' }}>
+          <div style={{ maxWidth: 980, width: '100%', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '24px 32px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
             <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 12, letterSpacing: '-0.2px' }}>
               About Aevora Intelligent Clinical Operating System
             </h3>
@@ -1004,11 +948,11 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         </main>
 
         {/* Footer */}
-        <footer style={{ background: '#fff', borderTop: '1px solid #e2e8f0', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
-          <span style={{ fontSize: 12, color: '#94a3b8' }}>© 2025 Aevora HMS · HIPAA & SOC 2 Certified Healthcare Platform</span>
+        <footer style={{ background: '#fff', borderTop: '1px solid #f0f0f0', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 12, color: '#9ca3af' }}>© 2025 Aevora HMS · HIPAA & SOC 2 Certified Healthcare Platform</span>
           <div style={{ display: 'flex', gap: 20 }}>
             {['Privacy Policy', 'Terms of Use', 'Support'].map(link => (
-              <a key={link} href="#" style={{ fontSize: 12, color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }} className="hover:text-slate-600 transition">{link}</a>
+              <a key={link} href="#" style={{ fontSize: 12, color: '#9ca3af', textDecoration: 'none', fontWeight: 500 }}>{link}</a>
             ))}
           </div>
         </footer>
