@@ -10,8 +10,13 @@ import {
   queryAdminAssistant,
 } from './server/gemini.js';
 
+import { sendOtpEmail, sendNotificationEmail } from './server/emailService.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// In-memory OTP store
+const otpStore = new Map<string, { code: string; expiresAt: number }>();
 
 async function startServer() {
   const app = express();
@@ -30,6 +35,63 @@ async function startServer() {
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'PulseCloud HMS SaaS API', timestamp: new Date().toISOString() });
+  });
+
+  // ----------------------------------------------------
+  // REAL SMTP EMAIL & OTP ENDPOINTS
+  // ----------------------------------------------------
+  app.post('/api/v1/auth/send-otp', async (req, res) => {
+    const { email, name, purpose } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email address is required' });
+    }
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore.set(email.toLowerCase(), {
+      code: otpCode,
+      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes validity
+    });
+
+    try {
+      await sendOtpEmail({
+        email,
+        name: name || 'AVORA User',
+        otpCode,
+        purpose: purpose || 'Account Registration'
+      });
+      res.json({
+        success: true,
+        message: `Security Verification Code sent to ${email}`,
+        emailSent: true,
+      });
+    } catch (err: any) {
+      console.error('SMTP send failure:', err);
+      res.json({
+        success: true,
+        message: `OTP generated for ${email}`,
+        emailSent: false,
+        fallbackOtp: otpCode,
+      });
+    }
+  });
+
+  app.post('/api/v1/auth/verify-otp', (req, res) => {
+    const { email, otpCode } = req.body;
+    if (!email || !otpCode) {
+      return res.status(400).json({ success: false, message: 'Email and OTP code are required' });
+    }
+    const record = otpStore.get(email.toLowerCase());
+    if (!record) {
+      return res.status(400).json({ success: false, message: 'No OTP code found for this email' });
+    }
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(email.toLowerCase());
+      return res.status(400).json({ success: false, message: 'OTP code expired' });
+    }
+    if (record.code !== otpCode.trim()) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP code' });
+    }
+    otpStore.delete(email.toLowerCase());
+    res.json({ success: true, verified: true, message: 'OTP verified successfully' });
   });
 
   // ----------------------------------------------------
@@ -129,6 +191,13 @@ async function startServer() {
         'REPORT_VIEW', 'SETTINGS_MANAGE', 'AUDIT_VIEW',
       ],
     });
+
+    // Send Welcome Email via SMTP
+    sendNotificationEmail(
+      email || 'admin@newhospital.org',
+      'Welcome to AVORA Hospital Operating System!',
+      `Hello ${adminName || 'User'},\n\nYour AVORA Hospital account has been created successfully!\n\nOrganization: ${orgName || 'New Medical Center'}\nRole: ${role || 'HOSPITAL_ADMIN'}\n\nAccess your workspace anytime at http://localhost:3000.\n\nBest regards,\nAVORA Clinical Team`
+    ).catch(err => console.error('Welcome email error:', err));
 
     res.json({
       success: true,

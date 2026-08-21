@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NotificationBell } from '../common/NotificationBell.js';
 import {
   LayoutDashboard, CalendarDays, Clock, Pill, Users, UserPlus,
   FileText, User, Settings, LogOut, Menu, X, Bell, Search,
@@ -279,7 +280,7 @@ export const NurseDashboard: React.FC = () => {
               <Activity className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="font-black text-white text-sm">PulseCloud</p>
+              <p className="font-black text-white text-sm">AVORA</p>
               <p className="text-[10px] text-sky-200 font-semibold">Nurse Portal</p>
             </div>
           </div>
@@ -341,30 +342,7 @@ export const NurseDashboard: React.FC = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search patients..." className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-sky-400 w-48" />
         </div>
-        <div className="relative">
-          <button onClick={() => setShowNotif(!showNotif)} className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-          {showNotif && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-                <span className="font-bold text-slate-800 text-sm">Notifications</span>
-                <button onClick={() => setShowNotif(false)}><X className="w-4 h-4 text-slate-400" /></button>
-              </div>
-              {[
-                { msg: 'Mohan Lal vitals critical â€“ check immediately', type: 'critical', time: '5m ago' },
-                { msg: 'Medication due for Ramesh Kumar at 14:00', type: 'warning', time: '10m ago' },
-                { msg: 'New patient admitted to B-106', type: 'info', time: '1h ago' },
-              ].map((n, i) => (
-                <div key={i} className={`px-4 py-3 border-b border-slate-50 flex gap-3 ${n.type === 'critical' ? 'bg-red-50' : n.type === 'warning' ? 'bg-amber-50' : 'bg-sky-50'}`}>
-                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type === 'critical' ? 'bg-red-500 animate-pulse' : n.type === 'warning' ? 'bg-amber-500' : 'bg-sky-500'}`} />
-                  <div><p className="text-xs text-slate-700 font-medium">{n.msg}</p><p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p></div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <NotificationBell dark={false} />
         <div className="flex items-center gap-2 pl-1">
           <div className="hidden sm:block text-right">
             <p className="text-sm font-bold text-slate-800 leading-none">{user?.name || 'Sunita Sharma'}</p>

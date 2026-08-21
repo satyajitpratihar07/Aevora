@@ -512,3 +512,452 @@ export interface AiPrescriptionDraftResponse {
   modelConfidence: 'HIGH' | 'MEDIUM' | 'REQUIRES_CLINICAL_VALIDATION';
   disclaimer: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AVORA PRODUCTION TYPES — Hospital Operating System Core
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type HospitalOperatingMode =
+  | 'NORMAL'
+  | 'WARNING'
+  | 'HIGH_LOAD'
+  | 'CRITICAL'
+  | 'EMERGENCY'
+  | 'RECOVERY';
+
+export type TaskType =
+  | 'VITALS' | 'CONSULTATION' | 'SAMPLE_COLLECTION' | 'LAB_PROCESSING'
+  | 'LAB_RESULT_REVIEW' | 'DISPENSING' | 'BED_PREP' | 'BED_ASSIGNMENT'
+  | 'DISCHARGE' | 'REGISTRATION' | 'TRIAGE' | 'DOCUMENTATION'
+  | 'FOLLOW_UP_REVIEW' | 'PRESCRIPTION_COMPLETION' | 'MEDICATION_ADMINISTRATION'
+  | 'PATIENT_TRANSPORT' | 'EQUIPMENT_CHECK' | 'EMERGENCY_RESPONSE'
+  | 'HANDOVER' | 'CUSTOM';
+
+export type TaskStatus =
+  | 'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED'
+  | 'OVERDUE' | 'ESCALATED' | 'CANCELLED' | 'ON_HOLD';
+
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'EMERGENCY';
+
+export interface AvoraTask {
+  id: string;
+  organizationId: string;
+  taskType: TaskType;
+  title: string;
+  description?: string;
+  patientId?: string;
+  patientName?: string;
+  appointmentId?: string;
+  labOrderId?: string;
+  admissionId?: string;
+  wardBedId?: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  assignedToRole?: UserRole;
+  department?: string;
+  location?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  estimatedDurationMinutes: number;
+  dueAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  escalationLevel: number;
+  escalationHistory: Array<{
+    level: number;
+    escalatedAt: string;
+    escalatedTo: string;
+    reason: string;
+  }>;
+  journeyId?: string;
+  journeyStage?: JourneyStage;
+  workflowTemplateId?: string;
+  workflowStepIndex?: number;
+  nextTaskType?: TaskType;
+  createdAt: string;
+  createdBy: string;
+  notes?: string;
+  completionNotes?: string;
+  aiGenerated?: boolean;
+}
+
+export type JourneyStage =
+  | 'PRE_REGISTERED' | 'REGISTERED' | 'WAITING_NURSE' | 'VITALS_IN_PROGRESS'
+  | 'VITALS_DONE' | 'WAITING_DOCTOR' | 'IN_CONSULTATION' | 'CONSULTATION_DONE'
+  | 'LAB_ORDERED' | 'SAMPLE_COLLECTED' | 'LAB_PROCESSING' | 'LAB_DONE'
+  | 'WAITING_DOCTOR_REVIEW' | 'DOCTOR_REVIEW_DONE' | 'PHARMACY_QUEUED'
+  | 'PHARMACY_DISPENSED' | 'BILLING_PENDING' | 'BILLING_DONE'
+  | 'DISCHARGED' | 'ADMITTED' | 'EMERGENCY_TRIAGE';
+
+export interface JourneyStageRecord {
+  stage: JourneyStage;
+  enteredAt: string;
+  exitedAt?: string;
+  durationMinutes?: number;
+  expectedDurationMinutes: number;
+  isDelayed: boolean;
+  delayMinutes?: number;
+  delayReason?: string;
+  handledBy?: string;
+  handledByRole?: UserRole;
+  taskId?: string;
+}
+
+export interface PatientJourney {
+  id: string;
+  organizationId: string;
+  patientId: string;
+  patientName: string;
+  appointmentId?: string;
+  admissionId?: string;
+  workflowTemplateId?: string;
+  journeyType: 'OPD' | 'EMERGENCY' | 'SPECIAL_CLINIC' | 'INPATIENT' | 'PROCEDURE';
+  currentStage: JourneyStage;
+  stages: JourneyStageRecord[];
+  startedAt: string;
+  expectedCompletionAt?: string;
+  completedAt?: string;
+  totalWaitMinutes: number;
+  totalActiveMinutes: number;
+  isDelayed: boolean;
+  bottleneckStage?: JourneyStage;
+  status: 'ACTIVE' | 'COMPLETED' | 'ABANDONED';
+  createdAt: string;
+}
+
+export interface QueueEntry {
+  id: string;
+  organizationId: string;
+  patientId: string;
+  patientName: string;
+  patientPhone?: string;
+  tokenNumber: string;
+  displayToken: string;
+  queuePosition: number;
+  doctorId?: string;
+  doctorName?: string;
+  departmentId?: string;
+  departmentName?: string;
+  appointmentType: string;
+  priority: TaskPriority;
+  isEmergency: boolean;
+  isWalkIn: boolean;
+  checkedInAt: string;
+  calledAt?: string;
+  consultationStartAt?: string;
+  exitedAt?: string;
+  estimatedWaitMinutes: number;
+  actualWaitMinutes?: number;
+  estimatedCallTime?: string;
+  status: 'WAITING' | 'CALLED' | 'IN_CONSULTATION' | 'COMPLETED' | 'SKIPPED' | 'NO_SHOW';
+  isDelayed: boolean;
+  delayMinutes?: number;
+  journeyId?: string;
+  createdAt: string;
+}
+
+export type DepartmentAlertLevel = 'NORMAL' | 'ELEVATED' | 'HIGH' | 'CRITICAL';
+
+export interface DepartmentLoad {
+  departmentId: string;
+  departmentName: string;
+  organizationId: string;
+  patientsWaiting: number;
+  patientsInConsultation: number;
+  patientsTotal: number;
+  averageWaitMinutes: number;
+  longestWaitMinutes: number;
+  capacityPercentage: number;
+  doctorsOnDuty: number;
+  doctorsAvailable: number;
+  nursesOnDuty: number;
+  nursesAvailable: number;
+  activeTasks: number;
+  overdueTasks: number;
+  tasksInEscalation: number;
+  alertLevel: DepartmentAlertLevel;
+  trend: 'IMPROVING' | 'STABLE' | 'WORSENING';
+  trendPercentage: number;
+  computedAt: string;
+}
+
+export interface HospitalAlert {
+  id: string;
+  organizationId: string;
+  title: string;
+  message: string;
+  severity: 'INFO' | 'WARNING' | 'CRITICAL' | 'EMERGENCY';
+  category: 'DEPARTMENT_LOAD' | 'TASK_OVERDUE' | 'RESOURCE_SHORTAGE' | 'EMERGENCY' | 'SYSTEM';
+  departmentId?: string;
+  departmentName?: string;
+  isAcknowledged: boolean;
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
+  createdAt: string;
+  expiresAt?: string;
+  actionRequired?: string;
+  aiGenerated?: boolean;
+}
+
+export interface HospitalState {
+  organizationId: string;
+  operatingMode: HospitalOperatingMode;
+  modeChangedAt: string;
+  modeChangedReason?: string;
+  computedAt: string;
+  totalPatientsActive: number;
+  totalPatientsWaiting: number;
+  totalTasksActive: number;
+  totalTasksOverdue: number;
+  totalTasksEscalated: number;
+  taskCompletionRateLastHour: number;
+  departments: DepartmentLoad[];
+  resources: {
+    doctorsOnDuty: number;
+    doctorsAvailable: number;
+    nursesOnDuty: number;
+    nursesAvailable: number;
+    bedsAvailable: number;
+    bedsOccupied: number;
+    bedsTotal: number;
+    labCapacityPercentage: number;
+    pharmacyQueueDepth: number;
+    emergencyBedsAvailable: number;
+  };
+  journeyStageDistribution: Partial<Record<JourneyStage, number>>;
+  activeEmergencies: number;
+  emergencyEvents: EmergencyEvent[];
+  activeAlerts: HospitalAlert[];
+}
+
+export type EmergencyType =
+  | 'MASS_CASUALTY' | 'CARDIAC_ARREST' | 'TRAUMA' | 'RESPIRATORY'
+  | 'STROKE' | 'OBSTETRIC' | 'PEDIATRIC' | 'CHEMICAL_EXPOSURE'
+  | 'FIRE' | 'SURGE_CAPACITY' | 'CUSTOM';
+
+export type EmergencySeverity = 'MINOR' | 'MODERATE' | 'MAJOR' | 'CATASTROPHIC';
+
+export interface EmergencyEvent {
+  id: string;
+  organizationId: string;
+  eventType: EmergencyType;
+  severity: EmergencySeverity;
+  title: string;
+  description?: string;
+  declaredBy: string;
+  declaredByRole: UserRole;
+  declaredAt: string;
+  status: 'ACTIVE' | 'CONTAINED' | 'RESOLVED' | 'RECOVERY';
+  resolvedAt?: string;
+  resolvedBy?: string;
+  assignedDoctors: string[];
+  assignedNurses: string[];
+  emergencyBedsActivated: number;
+  labCapacityReserved: boolean;
+  pharmacyAlerted: boolean;
+  firstResponseAt?: string;
+  responseTimeMinutes?: number;
+  createdTaskIds: string[];
+  timeline: Array<{
+    timestamp: string;
+    action: string;
+    performedBy: string;
+    notes?: string;
+  }>;
+  postEventReport?: string;
+  createdAt: string;
+}
+
+export type ShiftType = 'MORNING' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'CUSTOM';
+
+export interface ShiftSchedule {
+  id: string;
+  organizationId: string;
+  staffId: string;
+  staffName: string;
+  staffRole: UserRole;
+  departmentId: string;
+  departmentName: string;
+  shiftType: ShiftType;
+  shiftDate: string;
+  startTime: string;
+  endTime: string;
+  status: 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'ABSENT' | 'ON_LEAVE' | 'EMERGENCY_EXTENDED';
+  checkInTime?: string;
+  checkOutTime?: string;
+  taskCapacity: number;
+  tasksAssigned: number;
+  tasksCompleted: number;
+  overloaded: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface StaffAvailability {
+  staffId: string;
+  staffName: string;
+  staffRole: UserRole;
+  departmentId: string;
+  departmentName: string;
+  isOnDuty: boolean;
+  currentShiftId?: string;
+  status: 'AVAILABLE' | 'BUSY' | 'ON_BREAK' | 'OVERLOADED' | 'IN_CONSULTATION' | 'OFF_DUTY' | 'EMERGENCY';
+  currentTaskId?: string;
+  currentTaskType?: TaskType;
+  pendingTaskCount: number;
+  overdueTaskCount: number;
+  workloadScore: number;
+  shiftEndsAt?: string;
+  minutesUntilShiftEnd?: number;
+  qualifications?: string[];
+  specializations?: string[];
+}
+
+export interface ResourceCandidate {
+  resourceId: string;
+  resourceName: string;
+  resourceType: 'STAFF' | 'BED' | 'ROOM' | 'EQUIPMENT';
+  role?: UserRole;
+  score: number;
+  rank: number;
+  isAvailable: boolean;
+  reason: string;
+  workloadScore?: number;
+  distanceIndicator?: 'SAME_FLOOR' | 'DIFFERENT_FLOOR' | 'DIFFERENT_BUILDING';
+  estimatedAvailableAt?: string;
+}
+
+export interface ResourceSearchResult {
+  searchId: string;
+  requirement: string;
+  candidates: ResourceCandidate[];
+  recommendedId?: string;
+  recommendedReason?: string;
+  searchedAt: string;
+  noResultReason?: string;
+}
+
+export type WorkflowStepRole = UserRole | 'AUTO' | 'SYSTEM';
+
+export interface WorkflowStep {
+  stepIndex: number;
+  stepName: string;
+  taskType: TaskType;
+  assignedRole: WorkflowStepRole;
+  estimatedDurationMinutes: number;
+  isOptional: boolean;
+  dependsOnStepIndex?: number;
+  location?: string;
+  instructions?: string;
+  escalationAfterMinutes?: number;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string;
+  clinicType?: string;
+  journeyType: 'OPD' | 'EMERGENCY' | 'SPECIAL_CLINIC' | 'INPATIENT' | 'PROCEDURE';
+  steps: WorkflowStep[];
+  totalEstimatedMinutes: number;
+  isActive: boolean;
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface EscalationRule {
+  id: string;
+  organizationId: string;
+  name: string;
+  taskType?: TaskType;
+  departmentId?: string;
+  priority: TaskPriority;
+  levels: Array<{
+    level: number;
+    triggerAfterMinutes: number;
+    notifyRole: UserRole;
+    notifyUserId?: string;
+    notifyName: string;
+    message: string;
+  }>;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type SlotCongestion = 'LOW' | 'MEDIUM' | 'HIGH' | 'FULL';
+
+export interface AppointmentSlot {
+  slotId: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  congestion: SlotCongestion;
+  expectedWaitMinutes: number;
+  bookedCount: number;
+  maxCapacity: number;
+  isRecommended: boolean;
+  recommendationReason?: string;
+  congestionScore: number;
+}
+
+export type InsightCategory =
+  | 'DEPARTMENT_LOAD' | 'BOTTLENECK' | 'RESOURCE_OPTIMIZATION'
+  | 'INVENTORY_FORECAST' | 'PATIENT_JOURNEY' | 'SHIFT_PLANNING' | 'EMERGENCY_PREDICTION';
+
+export type InsightUrgency = 'INFORMATIONAL' | 'RECOMMENDATION' | 'ACTION_REQUIRED' | 'URGENT';
+
+export interface AvoraInsight {
+  id: string;
+  organizationId: string;
+  category: InsightCategory;
+  urgency: InsightUrgency;
+  title: string;
+  summary: string;
+  detail?: string;
+  recommendation?: string;
+  affectedDepartment?: string;
+  affectedResource?: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  generatedAt: string;
+  expiresAt?: string;
+  isAcknowledged: boolean;
+  isActedUpon: boolean;
+  aiModelUsed?: string;
+  disclaimer: string;
+}
+
+export type OperationalEventType =
+  | 'PATIENT_ARRIVED' | 'PATIENT_CHECKED_IN' | 'PATIENT_DISCHARGED'
+  | 'APPOINTMENT_BOOKED' | 'APPOINTMENT_CANCELLED' | 'APPOINTMENT_COMPLETED'
+  | 'DOCTOR_CHECKED_IN' | 'DOCTOR_UNAVAILABLE'
+  | 'NURSE_SHIFT_START' | 'NURSE_TASK_COMPLETED'
+  | 'LAB_ORDER_CREATED' | 'LAB_RESULT_READY'
+  | 'PRESCRIPTION_CREATED' | 'PHARMACY_DISPENSED'
+  | 'BED_OCCUPIED' | 'BED_RELEASED'
+  | 'EMERGENCY_DECLARED' | 'EMERGENCY_RESOLVED'
+  | 'TASK_CREATED' | 'TASK_COMPLETED' | 'TASK_OVERDUE' | 'TASK_ESCALATED'
+  | 'ESCALATION_TRIGGERED' | 'MODE_CHANGED';
+
+export interface OperationalEvent {
+  id: string;
+  organizationId: string;
+  eventType: OperationalEventType;
+  payload: Record<string, any>;
+  triggeredBy?: string;
+  triggeredByRole?: UserRole;
+  departmentId?: string;
+  patientId?: string;
+  taskId?: string;
+  timestamp: string;
+  processed: boolean;
+  processedAt?: string;
+}
+

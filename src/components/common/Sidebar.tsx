@@ -1,6 +1,8 @@
 import React from 'react';
+import { AvoraLogo } from './AvoraLogo.js';
 import {
   LayoutDashboard,
+  LayoutGrid,
   Stethoscope,
   Users,
   Calendar,
@@ -20,6 +22,8 @@ import {
   Sliders,
   X,
   LogOut,
+  Zap,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 
@@ -44,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Medical Operations',
       items: [
+        { id: 'ICON_LAUNCHPAD', label: 'Master Icon Grid (32)', icon: LayoutGrid, badge: '32 Icons', roles: ['DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST', 'ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN', 'TECHNICAL_STAFF'] },
         { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard, roles: ['DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST', 'ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'DOCTOR_WORKSPACE', label: 'Doctor EHR & Consult', icon: Stethoscope, badge: 'AI Prescribe', roles: ['DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'PATIENT_DIRECTORY', label: 'Patients Directory', icon: Users, roles: ['DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
@@ -60,6 +65,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'PHARMACY', label: 'Pharmacy & Dispensing', icon: Pill, roles: ['PHARMACIST', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'BED_MANAGEMENT', label: 'Ward & Inpatient Beds', icon: BedDouble, roles: ['NURSE', 'DOCTOR', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
         { id: 'BILLING', label: 'Finance & Billing', icon: CreditCard, roles: ['ACCOUNTANT', 'HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+      ],
+    },
+    {
+      title: '⚡ AVORA Intelligence',
+      items: [
+        { id: 'COMMAND_CENTER', label: 'Hospital Command Center', icon: Zap, badge: 'LIVE', roles: ['HOSPITAL_ADMIN', 'SUPER_ADMIN'] },
+        { id: 'EMERGENCY', label: 'Emergency Coordinator', icon: AlertTriangle, roles: ['HOSPITAL_ADMIN', 'SUPER_ADMIN', 'DOCTOR'] },
       ],
     },
     {
@@ -95,20 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClose();
             }}
           >
-            <div
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-900 font-bold text-sm shadow-xs"
-              style={{ backgroundColor: organization?.brandColor || '#2563eb' }}
-            >
-              {organization?.name?.charAt(0) || 'H'}
-            </div>
-            <div className="leading-tight">
-              <span className="text-base font-bold tracking-tight text-slate-900 text-slate-800">
-                PulseCloud
-              </span>
-              <span className="block text-[10px] font-semibold text-blue-600 text-blue-600">
-                Enterprise HMS
-              </span>
-            </div>
+            <AvoraLogo size={32} nameSize={16} />
           </div>
 
           <button

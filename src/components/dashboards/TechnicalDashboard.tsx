@@ -154,7 +154,7 @@ export const TechnicalDashboard: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-white text-base tracking-tight">PulseCloud</span>
+              <span className="font-black text-white text-base tracking-tight">AVORA</span>
               <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                 Technical Ops Console
               </span>

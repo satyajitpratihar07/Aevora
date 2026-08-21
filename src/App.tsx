@@ -33,6 +33,12 @@ import { SuperAdminDashboard } from './components/dashboards/SuperAdminDashboard
 import { StaffManager } from './components/dashboards/StaffManager.js';
 import { SettingsAndWhiteLabel } from './components/dashboards/SettingsAndWhiteLabel.js';
 import { PrescriptionList } from './components/dashboards/PrescriptionList.js';
+import { HospitalCommandCenter } from './components/avora/HospitalCommandCenter.js';
+import { SmartBooking } from './components/avora/SmartBooking.js';
+import { EmergencyCoordinator } from './components/avora/EmergencyCoordinator.js';
+import { WorkflowDesigner } from './components/avora/WorkflowDesigner.js';
+import { ReceptionistWorkspace } from './components/avora/ReceptionistWorkspace.js';
+import { AvoraIconLaunchpad } from './components/avora/AvoraIconLaunchpad.js';
 import { UserRole } from './types/index.js';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
 
@@ -47,16 +53,21 @@ type AppRoute =
   | '/nurse/dashboard'
   | '/technical/dashboard'
   | '/landing'
-  | '/auth-general';
+  | '/auth-general'
+  | '/avora/command-center'
+  | '/avora/smart-booking'
+  | '/avora/emergency'
+  | '/avora/workflow-designer'
+  | '/avora/icon-dashboard';
 
 const MainAppContent: React.FC = () => {
   const { user, login, logout, switchRole } = useAuth();
   const { toasts, removeToast } = useNotifications();
 
   // Active navigation route state
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/role-selection');
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/landing');
   const [activeView, setActiveView] = useState<string>('DASHBOARD');
-  
+
   // Modals state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -69,7 +80,7 @@ const MainAppContent: React.FC = () => {
   useEffect(() => {
     if (!user) {
       if (currentRoute.includes('/dashboard')) {
-        setCurrentRoute('/role-selection');
+        setCurrentRoute('/landing');
       }
     } else {
       // Auto-route logged in user to their role dashboard if not on a valid dashboard
@@ -125,14 +136,14 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/technical/login') {
       return <TechnicalLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/technical/dashboard')} />;
     }
-    if (currentRoute === '/landing') {
-      return <LandingPage onLaunchApp={() => setCurrentRoute('/role-selection')} onSelectRole={handleRoleCardSelect} />;
+    if (currentRoute === '/role-selection') {
+      return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} onGoToLanding={() => setCurrentRoute('/landing')} />;
     }
     if (currentRoute === '/auth-general') {
-      return <AuthPage onLogin={async (email, role) => { await login(email, role); }} onSignup={async () => {}} onGoToLanding={() => setCurrentRoute('/role-selection')} />;
+      return <AuthPage onLogin={async (email, role) => { await login(email, role); }} onSignup={async () => {}} onGoToLanding={() => setCurrentRoute('/landing')} />;
     }
-    // Default entry point
-    return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} />;
+    // Default entry point: AVORA Home Page
+    return <LandingPage onLaunchApp={() => setCurrentRoute('/role-selection')} onSelectRole={handleRoleCardSelect} />;
   }
 
   // 2. STRICT ROLE-BASED ROUTE GUARD & PROTECTION
@@ -223,7 +234,53 @@ const MainAppContent: React.FC = () => {
     );
   }
 
+  if (user.role === 'RECEPTIONIST') {
+    return (
+      <>
+        <ReceptionistWorkspace />
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+      </>
+    );
+  }
+
   if (user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN') {
+    // AVORA standalone full-screen routes
+    if (currentRoute === '/avora/command-center') {
+      return (
+        <>
+          <HospitalCommandCenter
+            organizationId={user.organizationId}
+            organizationName="Aevora Medical Centre"
+            onClose={() => setCurrentRoute('/admin/dashboard')}
+          />
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </>
+      );
+    }
+    if (currentRoute === '/avora/emergency') {
+      return (
+        <>
+          <EmergencyCoordinator organizationId={user.organizationId} />
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </>
+      );
+    }
+    if (currentRoute === '/avora/smart-booking') {
+      return (
+        <>
+          <SmartBooking organizationId={user.organizationId} />
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </>
+      );
+    }
+    if (currentRoute === '/avora/workflow-designer') {
+      return (
+        <>
+          <WorkflowDesigner organizationId={user.organizationId} />
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </>
+      );
+    }
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
         <Header
@@ -241,7 +298,55 @@ const MainAppContent: React.FC = () => {
             onOpenAIAssistant={() => setIsAIDrawerOpen(true)}
           />
           <main className="flex-1 overflow-y-auto">
-            {activeView === 'STAFF_DIRECTORY' ? <StaffManager /> :
+            {activeView === 'ICON_LAUNCHPAD' ? (
+              <AvoraIconLaunchpad
+                onNavigateModule={(modId) => {
+                  const map: Record<string, string> = {
+                    appointment: 'APPOINTMENTS',
+                    patient_registration: 'PATIENT_DIRECTORY',
+                    outpatient: 'APPOINTMENTS',
+                    health_checkup: 'PATIENT_DIRECTORY',
+                    laboratory: 'LAB_ORDERS',
+                    radiology: 'LAB_ORDERS',
+                    inpatient: 'BED_MANAGEMENT',
+                    inpatient_billing: 'BILLING',
+                    nurse_station: 'NURSE_STATION',
+                    operation_theatre: 'EMERGENCY',
+                    blood_bank: 'LAB_ORDERS',
+                    review_doctor: 'DOCTOR_WORKSPACE',
+                    mis_reports: 'DASHBOARD',
+                    pharmacy: 'PHARMACY',
+                    software_management: 'SETTINGS',
+                    system_control: 'SUPER_ADMIN',
+                    phlebotomy: 'LAB_ORDERS',
+                    store_management: 'PHARMACY',
+                    opd_clinical: 'DOCTOR_WORKSPACE',
+                    tally: 'BILLING',
+                    mrd: 'PATIENT_DIRECTORY',
+                    doctor_accounting: 'BILLING',
+                    asset_management: 'SETTINGS',
+                    cssd: 'SETTINGS',
+                    equipment_maintenance: 'SETTINGS',
+                    doctor_management: 'STAFF_DIRECTORY',
+                    physiotherapy: 'DOCTOR_WORKSPACE',
+                    hr_management: 'STAFF_DIRECTORY',
+                    discharge_summary: 'BED_MANAGEMENT',
+                    housekeeping: 'BED_MANAGEMENT',
+                    canteen: 'SETTINGS',
+                    ambulance: 'EMERGENCY'
+                  };
+                  if (map[modId]) setActiveView(map[modId]);
+                }}
+                onLogout={logout}
+              />
+            ) : activeView === 'COMMAND_CENTER' ? (
+              <HospitalCommandCenter
+                organizationId={user.organizationId}
+                organizationName="Aevora Medical Centre"
+              />
+            ) : activeView === 'EMERGENCY' ? (
+              <EmergencyCoordinator organizationId={user.organizationId} />
+            ) : activeView === 'STAFF_DIRECTORY' ? <StaffManager /> :
              activeView === 'SETTINGS' ? <SettingsAndWhiteLabel /> :
              activeView === 'SUPER_ADMIN' ? <SuperAdminDashboard /> :
              <HospitalAdminDashboard />}
@@ -255,6 +360,7 @@ const MainAppContent: React.FC = () => {
       </div>
     );
   }
+
 
   // Fallback for other roles (Pharmacist, Lab Tech, Patient)
   return (

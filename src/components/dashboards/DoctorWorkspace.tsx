@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { NotificationBell } from '../common/NotificationBell.js';
 import {
   Stethoscope,
   Sparkles,
@@ -36,7 +37,8 @@ import {
   Send,
   Radio,
   FileSpreadsheet,
-  CheckSquare
+  CheckSquare,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
@@ -87,7 +89,7 @@ interface NurseAssignment {
 }
 
 export const DoctorWorkspace: React.FC = () => {
-  const { user, organization } = useAuth();
+  const { user, organization, logout } = useAuth();
   const { addToast } = useNotifications();
 
   // Active Navigation Tab inside Doctor Workspace
@@ -486,7 +488,7 @@ export const DoctorWorkspace: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-slate-900 text-base tracking-tight">PulseCloud</span>
+              <span className="font-black text-slate-900 text-base tracking-tight">AVORA</span>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                 Doctor Panel Studio
               </span>
@@ -513,6 +515,16 @@ export const DoctorWorkspace: React.FC = () => {
           >
             <Mic className="w-4 h-4 text-rose-600 animate-pulse" />
             <span>Voice Dictation</span>
+          </button>
+
+          <NotificationBell dark={false} />
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold hover:bg-slate-200 transition"
+          >
+            <LogOut className="w-4 h-4 text-slate-600" />
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>
@@ -1105,7 +1117,7 @@ export const DoctorWorkspace: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <Stethoscope className="w-6 h-6 text-indigo-600" />
-                        <span className="font-black text-2xl text-slate-900">PulseCloud Hospital</span>
+                        <span className="font-black text-2xl text-slate-900">AVORA Hospital</span>
                       </div>
                       <p className="text-xs text-slate-500 font-semibold">Institutional Health System & Medical Research Center</p>
                     </div>

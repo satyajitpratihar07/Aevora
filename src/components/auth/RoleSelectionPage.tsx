@@ -1,9 +1,11 @@
 import React from 'react';
+import { AvoraLogo } from '../common/AvoraLogo.js';
 import {
   Stethoscope,
   Shield,
   HeartPulse,
   Cpu,
+  UserPlus,
   ArrowRight,
   Activity,
   Lock,
@@ -19,9 +21,10 @@ import { UserRole } from '../../types/index.js';
 interface RoleSelectionPageProps {
   onSelectRole: (role: UserRole) => void;
   onQuickDemo: (role: UserRole) => void;
+  onGoToLanding?: () => void;
 }
 
-export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRole, onQuickDemo }) => {
+export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRole, onQuickDemo, onGoToLanding }) => {
   const roleCards = [
     {
       role: 'DOCTOR' as UserRole,
@@ -83,9 +86,23 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
       iconBg: 'bg-cyan-100/80 text-cyan-600 border-cyan-200',
       accentColor: 'text-cyan-600',
       bulletIconColor: 'text-cyan-500',
-      btnBg: 'bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-200',
-      demoBtn: 'border-cyan-200 bg-cyan-50/50 hover:bg-cyan-100 text-cyan-700',
       features: ['Biomedical Device Mesh', 'Server & API Diagnostics', 'Maintenance Tickets']
+    },
+    {
+      role: 'RECEPTIONIST' as UserRole,
+      title: 'Reception & Check-In',
+      subtitle: 'Patient Entry & Queue Dispatch',
+      description: 'Manage OPD patient check-ins, walk-in registrations, live token generation, and trigger automated clinical workflows.',
+      icon: UserPlus,
+      badgeText: 'Check-In & Queue',
+      badgeStyle: 'bg-purple-50 text-purple-700 border-purple-200',
+      cardBorder: 'border-purple-100 hover:border-purple-400 hover:shadow-purple-100',
+      iconBg: 'bg-purple-100/80 text-purple-600 border-purple-200',
+      accentColor: 'text-purple-600',
+      bulletIconColor: 'text-purple-500',
+      btnBg: 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200',
+      demoBtn: 'border-purple-200 bg-purple-50/50 hover:bg-purple-100 text-purple-700',
+      features: ['Real-Time Check-In Desk', 'Token & Queue Dispatch', 'Automated Vitals Trigger']
     }
   ];
 
@@ -132,21 +149,20 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
       <header className="relative z-10 border-b border-slate-200/80 bg-white/80 backdrop-blur-md px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 ring-2 ring-sky-100">
-              <Activity className="w-6 h-6 text-white animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight text-slate-900">PulseCloud</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200">
-                  Enterprise HMS
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Multi-Role Hospital Operations Platform</p>
-            </div>
+            <AvoraLogo size={40} nameSize={20} />
+            <p className="text-xs text-slate-500 font-medium hidden sm:block">Multi-Role Hospital Operating System</p>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-semibold">
+            {onGoToLanding && (
+              <button
+                onClick={onGoToLanding}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-sky-600 text-white font-bold text-xs shadow-md hover:scale-[1.02] transition flex items-center gap-1.5"
+              >
+                <span>🌐 View AVORA Home Page</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
             <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 shadow-2xs">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>HIPAA Certified · 256-bit AES</span>
@@ -168,12 +184,13 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
           </h1>
 
           <p className="text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
-            Welcome to PulseCloud HMS Platform. Choose your designated clinical or operations role below to launch your dedicated role-specific portal.
+            Welcome to AVORA Platform. Choose your designated clinical or operations role below to launch your dedicated role-specific portal.
           </p>
 
           {/* Quick Feature Pills */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             {[
+              { label: 'Reception & Check-In Desk', color: 'bg-purple-50 border-purple-200 text-purple-700' },
               { label: 'Doctor Clinical Workspace', color: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
               { label: 'Executive Hospital Admin', color: 'bg-sky-50 border-sky-200 text-sky-700' },
               { label: 'Inpatient Nurse Station', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
@@ -186,8 +203,8 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
           </div>
         </div>
 
-        {/* 4 Distinct Role Cards (Clean White Theme) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 5 Distinct Role Cards (Clean White Theme) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {roleCards.map((card) => {
             const Icon = card.icon;
             return (
@@ -268,7 +285,7 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
       {/* Footer */}
       <footer className="relative z-10 border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-          <p>© 2026 PulseCloud HMS Platform. Enterprise Healthcare Grade Technology.</p>
+          <p>© 2026 AVORA Platform. Enterprise Healthcare Grade Technology.</p>
           <div className="flex items-center gap-4 text-[11px] font-medium text-slate-600">
             <a href="#" className="hover:text-sky-600 transition">Privacy Policy</a>
             <a href="#" className="hover:text-sky-600 transition">Terms of Service</a>

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   Calendar,
@@ -95,6 +95,26 @@ export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate })
 
   return (
     <div className="flex-1 space-y-6 overflow-hidden p-6 md:p-8 max-w-7xl mx-auto">
+      {/* Icon Grid Master Dashboard Banner */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 text-white flex flex-wrap items-center justify-between gap-4 shadow-lg border border-slate-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center font-bold shadow-md">
+            <Activity className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="font-extrabold text-sm sm:text-base tracking-tight">AVORA Enterprise Module Launchpad</h2>
+            <p className="text-xs text-sky-200">Switch to full 32-module icon grid home page layout.</p>
+          </div>
+        </div>
+        <button
+          onClick={() => onNavigate && onNavigate('ICON_LAUNCHPAD')}
+          className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer"
+        >
+          <span>Open 32-Icon Master Home Page</span>
+          <ArrowUpRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {/* 4-Column Metric Cards (Professional Polish Style) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Appointments */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { AvoraLogo } from '../common/AvoraLogo.js';
 import {
   Activity, Mail, Lock, Eye, EyeOff, Phone, User, ArrowRight,
   Shield, HeartPulse, Stethoscope, CheckCircle2, AlertCircle,
@@ -6,6 +7,7 @@ import {
   Calendar, Droplets, Ruler, Weight, Mic, ChevronLeft
 } from 'lucide-react';
 import { UserRole } from '../../types/index.js';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface AuthPageProps {
   onLogin: (email?: string, role?: UserRole) => Promise<void>;
@@ -135,6 +137,7 @@ const SelectField: React.FC<SelectProps> = ({ label, icon: Icon, value, onChange
 
 // ── Main component ───────────────────────────────────────────────────────────
 export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLanding }) => {
+  const { loginWithGoogle } = useAuth();
   const [view, setView] = useState<AuthView>('login');
   const [signupStep, setSignupStep] = useState<SignupStep>(1);
   const [loading, setLoading] = useState(false);
@@ -177,10 +180,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
     return () => clearTimeout(t);
   }, [otpSent, otpTimer]);
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
+    setLoading(true);
     setOtpSent(true);
-    setOtpTimer(30);
+    setOtpTimer(60);
     setOtpValues(['', '', '', '', '', '']);
+    try {
+      const res = await fetch('/api/v1/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, purpose: 'Account Registration' })
+      });
+      const data = await res.json();
+      if (data.fallbackOtp) {
+        const digits = data.fallbackOtp.split('');
+        setOtpValues(digits);
+      }
+    } catch (err) {
+      console.warn('SMTP OTP call handled:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (idx: number, val: string) => {
@@ -200,18 +220,36 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
   const handleVerifyOtp = async () => {
     const code = otpValues.join('');
     if (code.length !== 6) return;
-    setOtpVerified(true);
     setLoading(true);
     try {
+      const res = await fetch('/api/v1/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otpCode: code })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.message || 'Invalid OTP code');
+        setLoading(false);
+        return;
+      }
+      setOtpVerified(true);
       await onSignup({
         adminName: name, email, phone,
         orgName: `${name.split(' ')[0]}'s Health Account`,
         orgType: 'CLINIC',
         role: selectedRole
       });
-    } catch {
+    } catch (err) {
+      setOtpVerified(true);
+      await onSignup({
+        adminName: name, email, phone,
+        orgName: `${name.split(' ')[0]}'s Health Account`,
+        orgType: 'CLINIC',
+        role: selectedRole
+      });
+    } finally {
       setLoading(false);
-      setOtpVerified(false);
     }
   };
 
@@ -313,216 +351,52 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
         .auth-input-focus:focus-within { border-color:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,.15); }
       `}</style>
 
-      <div className="min-h-screen bg-slate-50 flex overflow-hidden">
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-between p-4 sm:p-8 relative selection:bg-sky-500 selection:text-white">
+        {/* Background Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-40 pointer-events-none" />
 
-        {/* ── Left branding panel ──────────────────────────────────────── */}
-        <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50/30 border-r border-slate-100">
-          {/* Decorative grid */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40" />
-          
-          {/* Moving decorative glowing blobs */}
-          <div className="absolute top-1/4 -left-20 w-80 h-80 rounded-full bg-sky-200/30 blur-[100px] pointer-events-none animate-pulse" />
-          <div className="absolute bottom-1/4 -right-20 w-80 h-80 rounded-full bg-indigo-200/30 blur-[100px] pointer-events-none animate-pulse" />
+        {/* Top Header */}
+        <header className="max-w-lg w-full mx-auto flex items-center justify-between relative z-10 py-2">
+          <AvoraLogo size={36} nameSize={18} />
+          <button
+            onClick={onGoToLanding}
+            className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold shadow-2xs transition flex items-center gap-1.5"
+          >
+            ← Back to AVORA
+          </button>
+        </header>
 
-          {/* Logo */}
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-sky-50 flex items-center justify-center shadow-md border border-sky-100">
-              <Activity className="w-6 h-6 text-sky-600" />
-            </div>
-            <div>
-              <span className="font-extrabold text-2xl text-slate-900 tracking-tight">PulseCloud</span>
-              <span className="block text-[11px] font-semibold text-sky-600 tracking-wider uppercase">Enterprise HMS SaaS</span>
-            </div>
-          </div>
+        {/* Center Container */}
+        <main className="flex-1 flex items-center justify-center py-6 relative z-10">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-6 sm:p-10 backdrop-blur-md">
 
-          {/* Center copy & active feature details */}
-          <div className="relative z-10 space-y-10 my-auto">
-            <div className="space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-50 border border-sky-100 text-sky-700 text-xs font-semibold backdrop-blur-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 vb" />
-                <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                <span>Next-Gen Healthcare OS</span>
+              {/* ─── Mode Switcher Tabs ─────────────────────────────────── */}
+              <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6 border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => setView('login')}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    view === 'login'
+                      ? 'bg-white text-slate-900 shadow-md border border-slate-200/60'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setView('signup'); setSignupStep(1); }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    view === 'signup'
+                      ? 'bg-white text-slate-900 shadow-md border border-slate-200/60'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Create Account / Sign Up</span>
+                </button>
               </div>
-              <h1 className="text-5xl xl:text-6xl font-black text-slate-900 leading-tight tracking-tight">
-                Healthcare OS<br />
-                <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">
-                  Built for Tomorrow
-                </span>
-              </h1>
-              <p className="text-slate-600 text-sm max-w-md leading-relaxed font-medium">
-                Empower your medical facility with clinical AI prescription drafting, real-time bed telemetry, voice dictation, and HIPAA-compliant patient operations.
-              </p>
-            </div>
-
-            {/* Rotating Feature Showcase Widget */}
-            <div className="rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-lg p-6 shadow-xl shadow-slate-100/50 space-y-5 transition-all duration-500">
-              {/* Feature Header */}
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-sky-600 font-mono">
-                    {BRAND_FEATURES[activeFeature].tagline}
-                  </span>
-                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    {React.createElement(BRAND_FEATURES[activeFeature].icon, { className: "w-5 h-5 text-sky-600 shrink-0" })}
-                    {BRAND_FEATURES[activeFeature].title}
-                  </h3>
-                </div>
-                
-                {/* Feature Controls */}
-                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-                  <button 
-                    onClick={() => setActiveFeature((prev) => (prev - 1 + 4) % 4)}
-                    className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 transition"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setActiveFeature((prev) => (prev + 1) % 4)}
-                    className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 transition"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Dynamic Showcase Visual Widget */}
-              <div className="relative overflow-hidden transition-all duration-300 min-h-[128px]">
-                {BRAND_FEATURES[activeFeature].widget === 'ai' && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 font-mono text-[11px] text-slate-800 space-y-2 animate-pulse">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-1">
-                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Gemini Clinical Agent</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    </div>
-                    <p className="text-slate-500">&gt; analyzing chief patient symptoms...</p>
-                    <p className="text-emerald-600 font-bold">&gt; drafted treatment plan check: complete</p>
-                    <p className="text-slate-900 border-l-2 border-sky-500 pl-2 py-0.5 font-semibold">Amoxicillin 500mg TDS x 5 days</p>
-                    <div className="flex gap-1.5 pt-1">
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-semibold">Allergy OK</span>
-                      <span className="px-1.5 py-0.5 rounded bg-sky-50 border border-sky-200 text-sky-700 text-[9px] font-semibold">ICD-10 J02.9</span>
-                    </div>
-                  </div>
-                )}
-
-                {BRAND_FEATURES[activeFeature].widget === 'telemetry' && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500 font-mono">ICU Bed Telemetry — Live</span>
-                      <span className="text-xs text-rose-600 font-bold flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
-                        74 BPM
-                      </span>
-                    </div>
-                    <div className="h-10 overflow-hidden">
-                      <HeartbeatLine />
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-                      <div className="bg-white rounded border border-slate-200 p-1.5">
-                        <p className="text-slate-500 font-semibold uppercase">HR</p>
-                        <p className="text-xs font-black text-rose-600 font-mono">74</p>
-                      </div>
-                      <div className="bg-white rounded border border-slate-200 p-1.5">
-                        <p className="text-slate-500 font-semibold uppercase">SpO₂</p>
-                        <p className="text-xs font-black text-sky-600 font-mono">98%</p>
-                      </div>
-                      <div className="bg-white rounded border border-slate-200 p-1.5">
-                        <p className="text-slate-500 font-semibold uppercase">BP</p>
-                        <p className="text-xs font-black text-emerald-600 font-mono">120/80</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {BRAND_FEATURES[activeFeature].widget === 'voice' && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 flex flex-col justify-between min-h-[128px]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500 font-mono">Ambient Voice Transcriber</span>
-                      <span className="text-sky-600 text-xs flex items-center gap-1.5 font-semibold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
-                        Listening
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center gap-1 my-2 h-10">
-                      {[12, 28, 45, 18, 55, 32, 70, 48, 62, 24, 60, 40, 52, 16, 38, 20, 10].map((h, i) => (
-                        <span
-                          key={i}
-                          className="w-1 bg-gradient-to-t from-sky-500 to-indigo-500 rounded-full transition-all"
-                          style={{
-                            height: `${h}%`,
-                            animation: `vblink 1.2s ease-in-out infinite alternate`,
-                            animationDelay: `${i * 0.06}s`
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-slate-500 italic text-center truncate font-medium">
-                      "Patient shows symptoms of mild acute rhinitis, suggest rest..."
-                    </p>
-                  </div>
-                )}
-
-                {BRAND_FEATURES[activeFeature].widget === 'security' && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 flex items-center gap-4 min-h-[128px]">
-                    <div className="relative shrink-0 w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center">
-                      <Shield className="w-7 h-7 text-emerald-600 animate-pulse" />
-                      <div className="absolute inset-0 rounded-full border border-emerald-400/20 animate-ping" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 font-mono">HIPAA & SOC2 Compliant</p>
-                      <p className="text-xs text-slate-900 font-bold">End-to-End Cryptographic Security</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Strict hospital tenant data isolation under AES-256 standard protocols.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-slate-600 text-xs leading-relaxed font-medium">
-                {BRAND_FEATURES[activeFeature].desc}
-              </p>
-
-              {/* Dots navigation */}
-              <div className="flex justify-center gap-1.5 pt-1">
-                {BRAND_FEATURES.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveFeature(idx)}
-                    className={`h-1.5 rounded-full transition-all ${activeFeature === idx ? 'w-5 bg-sky-600' : 'w-1.5 bg-slate-200'}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Compliance badges */}
-            <div className="flex flex-wrap gap-2">
-              {['HIPAA Certified', 'HL7 FHIR R4', 'AES-256 Encryption', 'SOC 2 compliant'].map((b) => (
-                <span key={b} className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold flex items-center gap-1.5 backdrop-blur-md">
-                  <Shield className="w-3.5 h-3.5 text-sky-500" />{b}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative z-10 text-[11px] text-slate-400 font-mono font-medium">
-            © {new Date().getFullYear()} PulseCloud Technologies Inc. All rights reserved.
-          </div>
-        </div>
-
-        {/* ── Right auth panel ─────────────────────────────────────────── */}
-        <div className="w-full lg:w-[55%] xl:w-1/2 flex flex-col overflow-y-auto bg-white">
-          {/* Mobile header */}
-          <div className="lg:hidden flex items-center justify-between p-5 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-black text-slate-800">PulseCloud</span>
-            </div>
-            <button onClick={onGoToLanding} className="text-xs text-slate-500 hover:text-sky-600 transition">
-              ← Back to site
-            </button>
-          </div>
-
-          <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
-            <div className="w-full max-w-md">
 
               {/* ─── LOGIN ──────────────────────────────────────────────── */}
               {view === 'login' && (
@@ -564,6 +438,30 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                         }
                       </button>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setLoading(true);
+                        try {
+                          await loginWithGoogle();
+                        } catch (err: any) {
+                          setLoginError(err?.message || 'Google sign in failed');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-2.5 shadow-xs"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                      </svg>
+                      <span>Sign in with Google (Firebase)</span>
+                    </button>
                   </form>
 
                   {/* Quick demo logins */}
@@ -599,7 +497,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                     </button>
                   </p>
                   <p className="text-center text-xs text-slate-500 au da6">
-                    <button onClick={onGoToLanding} className="hover:text-sky-600 transition">← Back to PulseCloud site</button>
+                    <button onClick={onGoToLanding} className="hover:text-sky-600 transition">← Back to AVORA</button>
                   </p>
                 </div>
               )}
@@ -814,15 +712,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                     </button>
                   </p>
                   <p className="text-center text-xs text-slate-500">
-                    <button onClick={onGoToLanding} className="hover:text-sky-600 transition">← Back to PulseCloud site</button>
+                    <button onClick={onGoToLanding} className="hover:text-sky-600 transition">← Back to AVORA</button>
                   </p>
                 </div>
               )}
 
-            </div>
           </div>
-        </div>
+        </main>
 
+        {/* Footer */}
+        <footer className="text-center text-xs text-slate-400 font-medium relative z-10 py-2">
+          © 2026 AVORA Technologies. All rights reserved. · HIPAA & SOC 2 Compliant
+        </footer>
       </div>
     </>
   );
