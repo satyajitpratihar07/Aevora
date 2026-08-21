@@ -8,6 +8,7 @@ import { AIAssistantDrawer } from './components/common/AIAssistantDrawer.js';
 import { QrCodeModal } from './components/common/QrCodeModal.js';
 import { VoiceRecorderModal } from './components/common/VoiceRecorderModal.js';
 
+import { AvoraSplashScreen } from './components/common/AvoraSplashScreen.js';
 import { AnimatedLogoLoginPage } from './components/auth/AnimatedLogoLoginPage.js';
 
 type AppRoute =
