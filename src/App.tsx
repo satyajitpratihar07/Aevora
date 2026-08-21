@@ -307,10 +307,35 @@ const MainAppContent: React.FC = () => {
               />
             ) : activeView === 'EMERGENCY' ? (
               <EmergencyCoordinator organizationId={user.organizationId} />
-            ) : activeView === 'STAFF_DIRECTORY' ? <StaffManager /> :
-             activeView === 'SETTINGS' ? <SettingsAndWhiteLabel /> :
-             activeView === 'SUPER_ADMIN' ? <SuperAdminDashboard /> :
-             <HospitalAdminDashboard />}
+            ) : activeView === 'STAFF_DIRECTORY' ? (
+              <StaffManager />
+            ) : activeView === 'SETTINGS' ? (
+              <SettingsAndWhiteLabel />
+            ) : activeView === 'SUPER_ADMIN' ? (
+              <SuperAdminDashboard />
+            ) : activeView === 'DOCTOR_WORKSPACE' ? (
+              <DoctorWorkspace onOpenVoiceRecorder={handleOpenVoice} />
+            ) : activeView === 'PATIENT_DIRECTORY' ? (
+              <PatientDirectory />
+            ) : activeView === 'APPOINTMENTS' ? (
+              <AppointmentManager />
+            ) : activeView === 'PRESCRIPTIONS' ? (
+              <PrescriptionList />
+            ) : activeView === 'NURSE_STATION' ? (
+              <NurseDashboard />
+            ) : activeView === 'PATIENT_PORTAL' ? (
+              <PatientPortal />
+            ) : activeView === 'LAB_ORDERS' ? (
+              <LabTechDashboard />
+            ) : activeView === 'PHARMACY' ? (
+              <PharmacistDashboard />
+            ) : activeView === 'BED_MANAGEMENT' ? (
+              <InpatientBedManager />
+            ) : activeView === 'BILLING' ? (
+              <AccountantDashboard />
+            ) : (
+              <HospitalAdminDashboard />
+            )}
           </main>
         </div>
 
