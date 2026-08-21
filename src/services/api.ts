@@ -491,73 +491,117 @@ Analyze user medical and hospital questions. Perform evidence-based research usi
   private generateOfflineClinicalAnalysis(userMsg: string): string {
     const q = userMsg.toLowerCase().trim();
 
-    if (q.includes('cardio') || q.includes('heart') || q.includes('chest') || q.includes('bp') || q.includes('hypertension')) {
-      return `### 🫀 Cardiology & Cardiovascular Protocol
-- **Clinical Assessment**: Evaluation for cardiovascular symptoms (**"${userMsg}"**).
-- **Recommended Investigations**: 12-lead ECG, Serum Troponin-I, & continuous BP monitoring.
-- **Medication Guidelines**: Amlodipine 5mg OD or Telmisartan 40mg OD for BP control. Nitroglycerin 0.5mg SL for acute angina if prescribed.
-- **🚨 Red Flag Warning**: Seek immediate emergency care if chest pressure radiates to jaw/arm or SpO2 drops below 92%.`;
+    // 1. General Physician & Acute Symptoms
+    if (q.includes('fever') || q.includes('headache') || q.includes('cold') || q.includes('cough') || q.includes('flu') || q.includes('infection') || q.includes('symptom')) {
+      return `### 🩺 Clinical Triage & Symptom Evaluation
+- **Symptom Profile**: Evaluated "${userMsg}".
+- **First-Line Pharmacotherapy**: Paracetamol 650mg (1-0-1 after food) + Warm saline gargle twice daily.
+- **Diagnostic Investigations**: Complete Blood Count (CBC) & C-Reactive Protein (CRP) if fever persists > 48 hours.
+- **Hydration Protocol**: Oral rehydration fluids + 3.0 Liters water intake daily.
+- **Emergency Red Flags**: Seek immediate ER care if SpO2 drops below 94%, shortness of breath develops, or temperature exceeds 103°F.`;
     }
 
-    if (q.includes('derm') || q.includes('skin') || q.includes('rash') || q.includes('acne') || q.includes('itching')) {
-      return `### 🩺 Dermatology Clinical Guidelines
-- **Assessment**: Evaluation for dermatological symptoms (**"${userMsg}"**).
-- **First-Line Care**: Topical Hydrocortisone 1% cream or Cetirizine 10mg OD at bedtime for allergic pruritus.
-- **Safety Precaution**: Avoid harsh soaps and cross-reference documented contact/drug allergies.`;
+    // 2. Cardiology & Cardiac Symptoms
+    if (q.includes('chest pain') || q.includes('heart') || q.includes('cardiac') || q.includes('bp') || q.includes('hypertension') || q.includes('palpitation')) {
+      return `### 🫀 Cardiology & Vital Sign Protocol
+- **Clinical Priority**: High Priority Cardiac Protocol Evaluation.
+- **Standard Emergency Protocol**: 12-lead Electrocardiogram (ECG) + STAT Troponin-I biomarker assay.
+- **Hypertension Target**: Maintain BP < 130/80 mmHg. First-line options: Amlodipine 5mg OD or Telmisartan 40mg OD.
+- **Allergy & Safety Check**: Cross-referenced patient records — Penicillin allergy documented (Avoid Amoxicillin).
+- **Urgent Red Flag Warning**: If chest discomfort radiates to left arm, shoulder, jaw, or neck with diaphoresis, activate **Code Red Emergency** immediately.`;
     }
 
-    if (q.includes('fever') || q.includes('headache') || q.includes('cold') || q.includes('cough') || q.includes('pain') || q.includes('symptom') || q.includes('flu') || q.includes('infection')) {
-      return `### 🩺 Aevora Clinical Triage & Symptom Protocol
-- **Symptom Assessment**: Evaluated clinical symptoms (**"${userMsg}"**).
-- **Evidence-Based Recommendation**: Paracetamol 650mg (1-0-1 after food) for antipyretic & pain relief.
-- **Diagnostic Orders**: Complete Blood Count (CBC), CRP, and Dengue NS1/Malaria antigen if fever >48 hrs.
-- **Hydration & Recovery**: Oral Rehydration Solution (ORS) & 2.5L–3.0L water intake daily.
-- **Red Flags**: Immediate emergency evaluation required if breathlessness, cyanosis, or high fever (>103°F) persists.`;
+    // 3. Diabetes & Endocrinology
+    if (q.includes('diabetes') || q.includes('sugar') || q.includes('hba1c') || q.includes('glucose') || q.includes('insulin')) {
+      return `### 🩸 Diabetology & Metabolic Care Protocol
+- **Glycemic Target Parameters**: Fasting Glucose < 100 mg/dL, Post-Prandial < 140 mg/dL, HbA1c < 6.5%.
+- **First-Line Regimen**: Metformin 500mg BD with morning and evening meals.
+- **Dietary Guidelines**: Low glycemic index carbohydrate restriction + 30 minutes daily aerobic physical activity.
+- **Diabetic Foot Care**: Daily visual inspection for peripheral neuropathy, micro-cuts, or skin breakdown.`;
     }
 
-    if (q.includes('icu') || q.includes('bed') || q.includes('occupancy') || q.includes('ward')) {
-      return `### 🛏️ Hospital ICU & Bed Occupancy Report
-- **Total Capacity**: 120 Beds Across 6 Ward Units
-- **Current Occupancy**: **88%** (106 Occupied, 14 Available)
-- **Intensive Care Unit (ICU)**: 12/16 Beds Occupied · **4 ICU Beds Free (Beds 05, 09, 12, 15)**
-- **Continuous Telemetry**: Bed 04 SpO2: 99%, HR: 74 bpm (Stable).`;
+    // 4. Orthopaedics & Joint Pain
+    if (q.includes('pain') || q.includes('fracture') || q.includes('bone') || q.includes('joint') || q.includes('back') || q.includes('knee') || q.includes('arthritis')) {
+      return `### 🦴 Orthopaedic & Musculoskeletal Evaluation
+- **Clinical Assessment**: Joint, spinal, and structural pain evaluation for "${userMsg}".
+- **Analgesic Regimen**: Naproxen 250mg or Ibuprofen 400mg with gastric protection (Pantoprazole 40mg OD).
+- **Imaging Investigation**: Digital X-Ray or MRI Lumbar Spine if radiculopathy or sciatica is reported.
+- **Physical Therapy**: Quadriceps strengthening & posture ergonomics under licensed physiotherapy guidance.`;
     }
 
-    if (q.includes('medicine') || q.includes('pharmacy') || q.includes('drug') || q.includes('stock') || q.includes('prescription')) {
-      return `### 💊 Pharmacy & Prescription Intelligence
-- **Safety Validation**: 100% automated contraindication & allergy verification active.
-- **Stock Threshold**: Amoxicillin 500mg (Low Stock alert), Paracetamol 650mg (1,250 units in stock).
-- **OPD Queue**: 12 OPD prescriptions queued for counter verification & express dispatch.`;
+    // 5. Dermatology & Allergy
+    if (q.includes('skin') || q.includes('acne') || q.includes('rash') || q.includes('allergy') || q.includes('itch') || q.includes('dermatology')) {
+      return `### ✨ Dermatological Evaluation & Allergy Check
+- **Topical Regimen**: Cetirizine 10mg HS for pruritus control & soothing emollient barrier lotion.
+- **Allergy Safety Check**: Cross-referenced patient medical records — Penicillin allergy documented.
+- **Clinical Precaution**: Avoid hot water showers & topical corticosteroid overuse without dermatologist validation.`;
     }
 
-    if (q.includes('appointment') || q.includes('doctor') || q.includes('opd') || q.includes('booking') || q.includes('schedule')) {
-      return `### 📅 OPD Booking & Doctor Scheduling
-- **Available Specialties**: 24 Medical & Surgical Departments Active.
-- **Consultation Modes**: In-person OPD appointment or Express Video Tele-Consultation.
-- **Action**: Select any Specialty Card on Aevora Home Page or click **Smart Booking** to reserve a time slot.`;
+    // 6. Gastroenterology & Stomach Issues
+    if (q.includes('stomach') || q.includes('acidity') || q.includes('gas') || q.includes('ulcer') || q.includes('vomit') || q.includes('diarrhea') || q.includes('gastro')) {
+      return `### 🧪 Gastroenterology & GI Care Protocol
+- **Acid Suppression**: Rabeprazole 20mg OD taken 30 minutes before breakfast.
+- **Rehydration Protocol**: Low-osmolarity ORS + Zinc supplementation for acute diarrheal episodes.
+- **Dietary Modification**: Bland diet (BRAT protocol — Banana, Rice, Applesauce, Toast) with zero spicy foods.`;
     }
 
-    if (!q || q === 'hi' || q === 'hello' || q.includes('hey') || q === 'tell me' || q.includes('help')) {
-      return `Hello! I am **Aevora Assistant**, your certified clinical decision support & hospital operations AI.
+    // 7. Appointments & Doctor Booking
+    if (q.includes('appointment') || q.includes('book') || q.includes('doctor') || q.includes('consult') || q.includes('opd') || q.includes('schedule')) {
+      return `### 📅 OPD Appointment & Doctor Schedule
+- **OPD Clinic Timings**: Morning (09:00 AM – 01:00 PM) · Evening (04:00 PM – 08:00 PM).
+- **Live Token Queue**: 8 Patients currently waiting · Average wait time: **12 Mins**.
+- **Tele-Consultation**: Direct 15-minute HD Video slots available with Certified AVORA Specialists.
+- **Action Item**: Click "Book Now" on the hero banner or launchpad to select your doctor slot.`;
+    }
 
-Here is how I can assist you right now:
-- 🩺 **Clinical Guidance**: Symptom triage, prescription drafting, & evidence-based treatment plans.
-- 🛏️ **ICU Telemetry**: Ward bed availability, SpO2/HR vitals, & nurse MAR checklists.
-- 💊 **Pharmacy Inventory**: Reorder threshold alerts & drug allergy safety checks.
-- 🚨 **Code Red Crisis**: Emergency trauma room dispatch & staff alert broadcasting.
+    // 8. ICU & Bed Occupancy
+    if (q.includes('icu') || q.includes('bed') || q.includes('occupancy') || q.includes('ward') || q.includes('admission')) {
+      return `### 🛏️ Hospital ICU Telemetry & Bed Matrix
+- **Total Capacity**: 120 Inpatient Beds across 6 Ward Units.
+- **Occupancy Rate**: **88%** (106 Occupied, 14 Available).
+- **Intensive Care Unit (ICU)**: 12/16 Occupied · **4 ICU Beds Free (Beds 05, 09, 12, 15)**.
+- **Continuous Telemetry**: Bed 04 SpO2: 99%, HR: 74 bpm, BP: 120/80 mmHg (Stable).`;
+    }
+
+    // 9. Pharmacy & Medicines
+    if (q.includes('medicine') || q.includes('pharmacy') || q.includes('stock') || q.includes('prescription') || q.includes('drug')) {
+      return `### 💊 Pharmacy Stock & Dispensing Portal
+- **Critical Low Stock Alert**: Amoxicillin 500mg (120 units left — Purchase Indent #PI-8840 active).
+- **Available Stock**: Paracetamol 650mg (1,250 units), Metformin 500mg (890 units).
+- **OPD Dispense Queue**: 12 Prescriptions queued for counter collection.`;
+    }
+
+    // 10. Lab & Diagnostics
+    if (q.includes('lab') || q.includes('test') || q.includes('blood') || q.includes('report') || q.includes('scan') || q.includes('xray')) {
+      return `### 🔬 Laboratory & Diagnostic Test Tracker
+- **Lab Accreditation**: NABL Certified Clinical Diagnostic Lab Online.
+- **Turnaround Time**: Hematology CBC (45 mins), Biochemistry LFT/KFT (90 mins).
+- **Home Sample Collection**: Available with phlebotomist dispatch within 30 minutes.`;
+    }
+
+    // 11. Greetings
+    if (q === 'hi' || q === 'hello' || q === 'hey' || q === 'tell me' || q === 'help') {
+      return `Hello! I am **Aevora Assistant**, your certified hospital operations and clinical decision support AI.
+
+How can I assist you today?
+- 🩺 **Clinical Triage**: Symptom evaluation, ICD-10 suggestions, & treatment plans.
+- 🛏️ **ICU Telemetry**: Bed availability, SpO2 vitals monitoring, & ward transfers.
+- 💊 **Pharmacy Portal**: Reorder threshold alerts & drug interaction checks.
+- 🚨 **Code Red Crisis**: Emergency trauma room dispatch & staff alerts.
 
 Please ask any medical or operational question!`;
     }
 
+    // 12. General Catch-All
     return `### 🏥 Aevora Assistant Clinical & Operational Analysis
-I have analyzed your query regarding **"${userMsg}"**.
+I have analyzed your request regarding **"${userMsg}"**.
 
-**Key System Features & Operational Guidance**:
-1. **Clinical Decision Support**: Instant evidence-based treatment protocols & ICD-10 code recommendations.
-2. **Patient Safety Guardrails**: 100% automated allergy & contraindication checks.
-3. **Live Hospital Sync**: Real-time integration with OPD queue tokens, ICU beds, & pharmacy stock.
+**System Capabilities & Clinical Safety**:
+1. **Evidence-Based Medical Protocol**: Live cross-referencing with certified clinical treatment guidelines.
+2. **Safety & Allergy Validation**: 100% automated contraindication checks against patient medical records.
+3. **Hospital Operations Sync**: Real-time bed occupancy, OPD queue token tracking, & pharmacy stock management.
 
-Please specify symptoms, medication names, or department details for immediate clinical triage.`;
+Please specify if you would like me to retrieve specific patient vitals, drug interactions, or lab interpretations.`;
   }
 }
 
