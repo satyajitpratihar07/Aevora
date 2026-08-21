@@ -15,7 +15,7 @@ import {
   Wifi,
   HardDrive
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext.js';
+import { GoogleAccountModal } from './GoogleAccountModal.js';
 
 interface TechnicalLoginPageProps {
   onBackToRoles: () => void;
@@ -31,6 +31,7 @@ export const TechnicalLoginPage: React.FC<TechnicalLoginPageProps> = ({ onBackTo
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +63,23 @@ export const TechnicalLoginPage: React.FC<TechnicalLoginPageProps> = ({ onBackTo
     setLoading(true);
     setError('');
     try {
-      await loginWithGoogle('TECHNICAL_STAFF');
-      onSuccessLogin();
+      const success = await loginWithGoogle('TECHNICAL_STAFF');
+      if (success) {
+        onSuccessLogin();
+      } else {
+        setIsGoogleModalOpen(true);
+      }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Google Sign-In failed');
+      setIsGoogleModalOpen(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectGoogleAccount = async (email: string, name: string) => {
+    await loginWithGoogle('TECHNICAL_STAFF', email, name);
+    onSuccessLogin();
   };
 
   return (
@@ -301,6 +311,13 @@ export const TechnicalLoginPage: React.FC<TechnicalLoginPageProps> = ({ onBackTo
       <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white font-mono">
         AVORA HMS Technical Operations · Infrastructure Monitoring Core
       </footer>
+
+      <GoogleAccountModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleSelectGoogleAccount}
+        role="TECHNICAL_STAFF"
+      />
     </div>
   );
 };

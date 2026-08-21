@@ -14,7 +14,7 @@ import {
   BarChart3,
   KeyRound
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext.js';
+import { GoogleAccountModal } from './GoogleAccountModal.js';
 
 interface AdminLoginPageProps {
   onBackToRoles: () => void;
@@ -30,6 +30,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onBackToRoles, o
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,14 +62,23 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onBackToRoles, o
     setLoading(true);
     setError('');
     try {
-      await loginWithGoogle('HOSPITAL_ADMIN');
-      onSuccessLogin();
+      const success = await loginWithGoogle('HOSPITAL_ADMIN');
+      if (success) {
+        onSuccessLogin();
+      } else {
+        setIsGoogleModalOpen(true);
+      }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Google Sign-In failed');
+      setIsGoogleModalOpen(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectGoogleAccount = async (email: string, name: string) => {
+    await loginWithGoogle('HOSPITAL_ADMIN', email, name);
+    onSuccessLogin();
   };
 
   return (
@@ -294,6 +304,13 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onBackToRoles, o
       <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         AVORA HMS Executive Admin · Institutional Governance Node
       </footer>
+
+      <GoogleAccountModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleSelectGoogleAccount}
+        role="HOSPITAL_ADMIN"
+      />
     </div>
   );
 };

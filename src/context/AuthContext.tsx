@@ -25,7 +25,7 @@ interface AuthContextType {
   switchOrganization: (orgId: string) => Promise<void>;
   login: (email?: string, role?: UserRole, orgId?: string) => Promise<void>;
   signup: (formData: any) => Promise<void>;
-  loginWithGoogle: (role?: UserRole) => Promise<void>;
+  loginWithGoogle: (role?: UserRole, emailOverride?: string, nameOverride?: string) => Promise<boolean>;
   loginWithFirebaseEmail: (email: string, pass: string, role?: UserRole) => Promise<void>;
   signupWithFirebaseEmail: (email: string, pass: string, role?: UserRole, name?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -132,40 +132,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Firebase Google Sign-In
-  // Firebase Google Sign-In with Automatic Fallback
-  const loginWithGoogle = async (role?: UserRole) => {
+  // Firebase Google Sign-In with Automatic Account Selector Fallback
+  const loginWithGoogle = async (role?: UserRole, emailOverride?: string, nameOverride?: string): Promise<boolean> => {
     setIsLoading(true);
     const targetRole = role || activeRole || 'HOSPITAL_ADMIN';
     const targetOrg = organization?.id || 'org-apex-01';
 
     let fbUser: any = null;
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      if (result && result.user) {
-        fbUser = result.user;
-        setFirebaseUser(fbUser);
+
+    if (!emailOverride) {
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        if (result && result.user) {
+          fbUser = result.user;
+          setFirebaseUser(fbUser);
+        }
+      } catch (fbErr: any) {
+        console.warn('Firebase Google Auth popup failed/blocked:', fbErr?.message || fbErr);
       }
-    } catch (fbErr: any) {
-      console.warn('Firebase Google Auth popup skipped/blocked, proceeding with Google Verified Account SSO:', fbErr?.message || fbErr);
+    }
+
+    const finalEmail = fbUser?.email || emailOverride;
+    const finalName = fbUser?.displayName || nameOverride;
+    const finalAvatar = fbUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${finalEmail || 'google'}`;
+
+    if (!finalEmail) {
+      setIsLoading(false);
+      return false; // Signals caller to open GoogleAccountModal
     }
 
     try {
-      const userEmail = fbUser?.email || 'satyajitpratihar200@gmail.com';
-      const userName = fbUser?.displayName || 'Google Verified User';
-      const userAvatar = fbUser?.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200';
-
-      const res = await api.login({ email: userEmail, role: targetRole, organizationId: targetOrg });
+      const res = await api.login({ email: finalEmail, role: targetRole, organizationId: targetOrg });
       const fullUser: User = {
         ...res.user,
-        name: userName,
-        email: userEmail,
-        avatarUrl: userAvatar,
+        name: finalName || res.user.name || 'Google Verified User',
+        email: finalEmail,
+        avatarUrl: finalAvatar,
         role: targetRole
       };
       
       setUser(fullUser);
       setActiveRole(targetRole);
       sessionStorage.setItem('avora_user', JSON.stringify(fullUser));
+      return true;
     } catch (error: any) {
       console.error('AVORA Google Auth error:', error);
       throw error;

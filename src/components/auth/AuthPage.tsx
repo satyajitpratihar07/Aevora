@@ -136,12 +136,15 @@ const SelectField: React.FC<SelectProps> = ({ label, icon: Icon, value, onChange
 );
 
 // ── Main component ───────────────────────────────────────────────────────────
+import { GoogleAccountModal } from './GoogleAccountModal.js';
+
 export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLanding }) => {
   const { loginWithGoogle } = useAuth();
   const [view, setView] = useState<AuthView>('login');
   const [signupStep, setSignupStep] = useState<SignupStep>(1);
   const [loading, setLoading] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   // OTP state
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
@@ -444,9 +447,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
                       onClick={async () => {
                         setLoading(true);
                         try {
-                          await loginWithGoogle();
+                          const success = await loginWithGoogle('HOSPITAL_ADMIN');
+                          if (!success) {
+                            setIsGoogleModalOpen(true);
+                          }
                         } catch (err: any) {
-                          setLoginError(err?.message || 'Google sign in failed');
+                          setIsGoogleModalOpen(true);
                         } finally {
                           setLoading(false);
                         }
@@ -724,6 +730,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, onGoToLan
         <footer className="text-center text-xs text-slate-400 font-medium relative z-10 py-2">
           © 2026 AVORA Technologies. All rights reserved. · HIPAA & SOC 2 Compliant
         </footer>
+
+        <GoogleAccountModal
+          isOpen={isGoogleModalOpen}
+          onClose={() => setIsGoogleModalOpen(false)}
+          onSelectAccount={async (email, name) => {
+            await loginWithGoogle('HOSPITAL_ADMIN', email, name);
+          }}
+          role="HOSPITAL_ADMIN"
+        />
       </div>
     </>
   );

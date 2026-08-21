@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 
+import { GoogleAccountModal } from './GoogleAccountModal.js';
+
 interface DoctorLoginPageProps {
   onBackToRoles: () => void;
   onSuccessLogin: () => void;
@@ -31,6 +33,7 @@ export const DoctorLoginPage: React.FC<DoctorLoginPageProps> = ({ onBackToRoles,
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +65,23 @@ export const DoctorLoginPage: React.FC<DoctorLoginPageProps> = ({ onBackToRoles,
     setLoading(true);
     setError('');
     try {
-      await loginWithGoogle('DOCTOR');
-      onSuccessLogin();
+      const success = await loginWithGoogle('DOCTOR');
+      if (success) {
+        onSuccessLogin();
+      } else {
+        setIsGoogleModalOpen(true);
+      }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Google Sign-In failed');
+      setIsGoogleModalOpen(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectGoogleAccount = async (email: string, name: string) => {
+    await loginWithGoogle('DOCTOR', email, name);
+    onSuccessLogin();
   };
 
   return (
@@ -299,6 +311,13 @@ export const DoctorLoginPage: React.FC<DoctorLoginPageProps> = ({ onBackToRoles,
       <footer className="relative z-10 py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         AVORA HMS Doctor Portal · Protected Medical Access System
       </footer>
+
+      <GoogleAccountModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleSelectGoogleAccount}
+        role="DOCTOR"
+      />
     </div>
   );
 };
