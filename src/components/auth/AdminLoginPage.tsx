@@ -15,6 +15,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { GoogleAccountModal } from './GoogleAccountModal.js';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface AdminLoginPageProps {
   onBackToRoles: () => void;

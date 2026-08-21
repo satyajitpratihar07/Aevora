@@ -15,6 +15,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { GoogleAccountModal } from './GoogleAccountModal.js';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface NurseLoginPageProps {
   onBackToRoles: () => void;
