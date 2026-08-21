@@ -83,19 +83,21 @@ const MainAppContent: React.FC = () => {
   useEffect(() => {
     if (!user) {
       if (currentRoute.includes('/dashboard')) {
-        setCurrentRoute('/landing');
+        setCurrentRoute('/role-selection');
       }
     } else {
       // Auto-route logged in user to their role dashboard if not on a valid dashboard
-      if (user.role === 'DOCTOR' && currentRoute !== '/doctor/dashboard') {
+      if (user.role === 'DOCTOR') {
         setCurrentRoute('/doctor/dashboard');
-      } else if (user.role === 'HOSPITAL_ADMIN' && currentRoute !== '/admin/dashboard') {
+      } else if (user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN') {
         setCurrentRoute('/admin/dashboard');
-      } else if (user.role === 'NURSE' && currentRoute !== '/nurse/dashboard') {
+      } else if (user.role === 'NURSE') {
         setCurrentRoute('/nurse/dashboard');
-      } else if (user.role === 'TECHNICAL_STAFF' && currentRoute !== '/technical/dashboard') {
+      } else if (user.role === 'TECHNICAL_STAFF') {
         setCurrentRoute('/technical/dashboard');
-      } else if (user.role === 'SUPER_ADMIN' && currentRoute !== '/admin/dashboard') {
+      } else if (user.role === 'RECEPTIONIST') {
+        setCurrentRoute('/patient/dashboard');
+      } else {
         setCurrentRoute('/admin/dashboard');
       }
     }
@@ -117,6 +119,7 @@ const MainAppContent: React.FC = () => {
     else if (role === 'HOSPITAL_ADMIN') setCurrentRoute('/admin/dashboard');
     else if (role === 'NURSE') setCurrentRoute('/nurse/dashboard');
     else if (role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
+    else if (role === 'RECEPTIONIST') setCurrentRoute('/patient/dashboard');
     else setCurrentRoute('/admin/dashboard');
   };
 
@@ -149,10 +152,7 @@ const MainAppContent: React.FC = () => {
       return (
         <AnimatedLogoLoginPage 
           onSuccessLogin={() => {
-            if (user?.role === 'DOCTOR') setCurrentRoute('/doctor/dashboard');
-            else if (user?.role === 'NURSE') setCurrentRoute('/nurse/dashboard');
-            else if (user?.role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
-            else setCurrentRoute('/admin/dashboard');
+            // useEffect will auto-route to the authorized dashboard based on user.role
           }} 
           onGoToLanding={() => setCurrentRoute('/landing')} 
         />
