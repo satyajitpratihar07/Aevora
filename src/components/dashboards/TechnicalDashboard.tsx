@@ -145,26 +145,26 @@ export const TechnicalDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col selection:bg-cyan-500 selection:text-white">
       {/* Top Telemetry Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 py-3 sticky top-0 z-40 flex items-center justify-between">
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur-md px-6 py-3 sticky top-0 z-40 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-lg shadow-cyan-950/50">
+          <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 border border-cyan-200 flex items-center justify-center shadow-xs">
             <Cpu className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-white text-base tracking-tight">AVORA</span>
-              <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <span className="font-black text-slate-900 text-base tracking-tight">Aevora</span>
+              <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200">
                 Technical Ops Console
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">Infrastructure & Biomedical Mesh Monitor</p>
+            <p className="text-[11px] text-slate-500 font-mono">Infrastructure & Biomedical Mesh Monitor</p>
           </div>
         </div>
 
         {/* Center Nav Tabs */}
-        <div className="hidden lg:flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
+        <div className="hidden lg:flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-semibold">
           {[
             { id: 'OVERVIEW', label: 'System Telemetry', icon: Activity },
             { id: 'DEVICES', label: 'Biomedical Devices', icon: HardDrive },
@@ -179,7 +179,7 @@ export const TechnicalDashboard: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl transition ${
-                  isActive ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  isActive ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -191,15 +191,15 @@ export const TechnicalDashboard: React.FC = () => {
 
         {/* Right User & Role Info */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300">Role:</span>
-            <span className="text-cyan-400 font-bold uppercase">{user?.role || 'TECHNICAL_STAFF'}</span>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-slate-500">Role:</span>
+            <span className="text-cyan-700 font-bold uppercase">{user?.role || 'TECHNICAL_STAFF'}</span>
           </div>
 
           <button
             onClick={() => { if (window.confirm('Logout from Technical Ops Console?')) logout(); }}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-900/60 bg-rose-950/30 text-rose-300 hover:bg-rose-900/60 text-xs font-bold transition"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold transition"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Logout</span>
@@ -208,7 +208,7 @@ export const TechnicalDashboard: React.FC = () => {
       </header>
 
       {/* Mobile Sub-Navigation */}
-      <div className="lg:hidden flex overflow-x-auto gap-2 p-3 bg-slate-900 border-b border-slate-800 text-xs">
+      <div className="lg:hidden flex overflow-x-auto gap-2 p-3 bg-white border-b border-slate-200 text-xs">
         {[
           { id: 'OVERVIEW', label: 'Overview' },
           { id: 'DEVICES', label: 'Devices' },
@@ -220,7 +220,7 @@ export const TechnicalDashboard: React.FC = () => {
             key={t.id}
             onClick={() => setActiveTab(t.id as any)}
             className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap ${
-              activeTab === t.id ? 'bg-cyan-600 text-white' : 'bg-slate-950 text-slate-400'
+              activeTab === t.id ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-600'
             }`}
           >
             {t.label}
@@ -236,33 +236,33 @@ export const TechnicalDashboard: React.FC = () => {
             {/* Top Metric Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'System Uptime SLA', value: '99.98%', icon: Server, color: 'text-emerald-400', sub: 'Cluster 01 Operational' },
-                { label: 'FHIR API Latency', value: '24 ms', icon: Activity, color: 'text-cyan-400', sub: 'Average response' },
-                { label: 'Database Load', value: '18%', icon: Database, color: 'text-amber-400', sub: '1,420 QPS' },
-                { label: 'Connected Bio-Mesh Nodes', value: '142', icon: Radio, color: 'text-indigo-400', sub: '5 Wards Active' }
+                { label: 'System Uptime SLA', value: '99.98%', icon: Server, color: 'text-emerald-600', sub: 'Cluster 01 Operational' },
+                { label: 'FHIR API Latency', value: '24 ms', icon: Activity, color: 'text-cyan-600', sub: 'Average response' },
+                { label: 'Database Load', value: '18%', icon: Database, color: 'text-amber-600', sub: '1,420 QPS' },
+                { label: 'Connected Bio-Mesh Nodes', value: '142', icon: Radio, color: 'text-indigo-600', sub: '5 Wards Active' }
               ].map(card => {
                 const Icon = card.icon;
                 return (
-                  <div key={card.label} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
+                  <div key={card.label} className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
                       <span>{card.label}</span>
                       <Icon className={`w-4 h-4 ${card.color}`} />
                     </div>
-                    <p className="text-2xl font-black text-white font-mono">{card.value}</p>
-                    <p className="text-[11px] text-slate-500 font-mono">{card.sub}</p>
+                    <p className="text-2xl font-black text-slate-900 font-mono">{card.value}</p>
+                    <p className="text-[11px] text-slate-400 font-mono">{card.sub}</p>
                   </div>
                 );
               })}
             </div>
 
             {/* Core Infrastructure Services Status */}
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-2xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-white text-base">Hospital Microservice Cluster & API Gateways</h3>
-                  <p className="text-xs text-slate-400">Live health heartbeat monitoring across core healthcare services</p>
+                  <h3 className="font-bold text-slate-900 text-base">Hospital Microservice Cluster & API Gateways</h3>
+                  <p className="text-xs text-slate-500">Live health heartbeat monitoring across core healthcare services</p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold">
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-mono font-bold">
                   All Systems Operational
                 </span>
               </div>
@@ -276,13 +276,13 @@ export const TechnicalDashboard: React.FC = () => {
                   { name: 'Ward Telemetry WebSockets', status: 'HEALTHY', latency: '8ms', ip: '10.0.3.05' },
                   { name: 'Ambient AI Inference Engine', status: 'HEALTHY', latency: '45ms', ip: '10.0.4.11' }
                 ].map(service => (
-                  <div key={service.name} className="p-4 rounded-2xl border border-slate-800 bg-slate-950 flex items-center justify-between">
+                  <div key={service.name} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between shadow-3xs">
                     <div>
-                      <p className="text-xs font-bold text-white">{service.name}</p>
+                      <p className="text-xs font-bold text-slate-800">{service.name}</p>
                       <p className="text-[10px] text-slate-500 font-mono mt-0.5">{service.ip} · {service.latency}</p>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold border ${
-                      service.status === 'HEALTHY' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      service.status === 'HEALTHY' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
                       {service.status}
                     </span>
@@ -294,41 +294,41 @@ export const TechnicalDashboard: React.FC = () => {
             {/* Maintenance Tickets & Biomedical Quick Glance Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Active Incident Tickets */}
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
                     <span>Active Incident Tickets ({tickets.filter(t => t.status !== 'Resolved').length})</span>
                   </h3>
                   <button
                     onClick={() => setShowCreateTicketModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition shadow"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>New Ticket</span>
                   </button>
                 </div>
 
-                <div className="divide-y divide-slate-800/80">
+                <div className="divide-y divide-slate-100">
                   {tickets.slice(0, 3).map(ticket => (
                     <div key={ticket.id} className="py-3 flex items-center justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-cyan-400">{ticket.id}</span>
+                          <span className="font-mono text-xs font-bold text-cyan-600">{ticket.id}</span>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            ticket.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                            ticket.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}>
                             {ticket.severity}
                           </span>
                         </div>
-                        <p className="text-xs font-semibold text-white mt-1">{ticket.title}</p>
-                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">{ticket.reportedBy} · SLA: {ticket.slaRemaining}</p>
+                        <p className="text-xs font-semibold text-slate-800 mt-1">{ticket.title}</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">{ticket.reportedBy} · SLA: {ticket.slaRemaining}</p>
                       </div>
 
                       {ticket.status !== 'Resolved' && (
                         <button
                           onClick={() => handleResolveTicket(ticket.id)}
-                          className="px-2.5 py-1 rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-300 text-[11px] font-bold hover:bg-emerald-900 transition shrink-0"
+                          className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold hover:bg-emerald-100 transition shrink-0"
                         >
                           Resolve
                         </button>
@@ -339,31 +339,31 @@ export const TechnicalDashboard: React.FC = () => {
               </div>
 
               {/* Bio Equipment Status Summary */}
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                    <HardDrive className="w-4 h-4 text-cyan-400" />
+                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-cyan-600" />
                     <span>Biomedical Equipment Mesh ({devices.length})</span>
                   </h3>
-                  <button onClick={() => setActiveTab('DEVICES')} className="text-xs text-cyan-400 font-semibold hover:underline">
+                  <button onClick={() => setActiveTab('DEVICES')} className="text-xs text-cyan-600 font-semibold hover:underline">
                     View All Devices →
                   </button>
                 </div>
 
                 <div className="space-y-2.5">
                   {devices.slice(0, 3).map(dev => (
-                    <div key={dev.id} className="p-3 rounded-2xl border border-slate-800 bg-slate-950 flex items-center justify-between text-xs">
+                    <div key={dev.id} className="p-3 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between text-xs shadow-3xs">
                       <div>
-                        <p className="font-bold text-white">{dev.name}</p>
-                        <p className="text-[10px] text-slate-500 font-mono">{dev.location} · {dev.ip}</p>
+                        <p className="font-bold text-slate-800">{dev.name}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">{dev.location} · {dev.ip}</p>
                       </div>
                       <div className="text-right">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                          dev.status === 'ONLINE' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          dev.status === 'ONLINE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                         }`}>
                           {dev.status}
                         </span>
-                        <p className="text-[10px] text-slate-500 font-mono mt-1">Battery {dev.battery}%</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-1">Battery {dev.battery}%</p>
                       </div>
                     </div>
                   ))}
@@ -378,53 +378,53 @@ export const TechnicalDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-black text-white">Biomedical Device Telemetry Mesh</h2>
-                <p className="text-xs text-slate-400">Live monitoring for ICU monitors, ventilators, smart beds & DICOM gateways</p>
+                <h2 className="text-xl font-black text-slate-900">Biomedical Device Telemetry Mesh</h2>
+                <p className="text-xs text-slate-500">Live monitoring for ICU monitors, ventilators, smart beds & DICOM gateways</p>
               </div>
               <div className="relative">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Filter device ID, ward or IP..."
-                  className="pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 w-64"
+                  className="pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-cyan-500 w-64 shadow-2xs"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {devices.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.id.toLowerCase().includes(searchQuery.toLowerCase())).map(device => (
-                <div key={device.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 space-y-4">
+                <div key={device.id} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[10px] font-mono font-bold text-cyan-400">{device.id}</span>
-                      <h3 className="font-bold text-white text-sm mt-0.5">{device.name}</h3>
+                      <span className="text-[10px] font-mono font-bold text-cyan-600">{device.id}</span>
+                      <h3 className="font-bold text-slate-900 text-sm mt-0.5">{device.name}</h3>
                     </div>
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
-                      device.status === 'ONLINE' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      device.status === 'ONLINE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
                       {device.status}
                     </span>
                   </div>
 
-                  <div className="space-y-1.5 text-xs text-slate-400 font-mono border-t border-b border-slate-800 py-3">
-                    <div className="flex justify-between"><span>Location:</span><span className="text-white font-sans">{device.location}</span></div>
-                    <div className="flex justify-between"><span>IP Address:</span><span className="text-cyan-300">{device.ip}</span></div>
-                    <div className="flex justify-between"><span>Firmware:</span><span className="text-slate-300">{device.firmware}</span></div>
-                    <div className="flex justify-between"><span>Last Ping:</span><span className="text-slate-300">{device.lastPing}</span></div>
+                  <div className="space-y-1.5 text-xs text-slate-500 font-mono border-t border-b border-slate-100 py-3">
+                    <div className="flex justify-between"><span>Location:</span><span className="text-slate-800 font-sans">{device.location}</span></div>
+                    <div className="flex justify-between"><span>IP Address:</span><span className="text-cyan-600">{device.ip}</span></div>
+                    <div className="flex justify-between"><span>Firmware:</span><span className="text-slate-600">{device.firmware}</span></div>
+                    <div className="flex justify-between"><span>Last Ping:</span><span className="text-slate-600">{device.lastPing}</span></div>
                   </div>
 
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="w-16 h-2 rounded-full bg-slate-100 overflow-hidden">
                         <div className={`h-full ${device.battery > 50 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${device.battery}%` }} />
                       </div>
                       <span className="font-mono text-[11px] text-slate-400">{device.battery}% Battery</span>
                     </div>
                     <button
                       onClick={() => addToast('Device Ping', `Ping sent to ${device.id}. Response time 4ms.`, 'info')}
-                      className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px]"
+                      className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-[11px]"
                     >
                       Ping Node
                     </button>
@@ -440,8 +440,8 @@ export const TechnicalDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-white">IT & Equipment Maintenance Tickets</h2>
-                <p className="text-xs text-slate-400">Manage hardware, software & network service requests</p>
+                <h2 className="text-xl font-black text-slate-900">IT & Equipment Maintenance Tickets</h2>
+                <p className="text-xs text-slate-500">Manage hardware, software & network service requests</p>
               </div>
               <button
                 onClick={() => setShowCreateTicketModal(true)}
@@ -452,9 +452,9 @@ export const TechnicalDashboard: React.FC = () => {
               </button>
             </div>
 
-            <div className="rounded-3xl border border-slate-800 bg-slate-900 overflow-hidden">
+            <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-950 text-slate-400 font-mono border-b border-slate-800">
+                <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
                   <tr>
                     <th className="px-5 py-3.5">Ticket ID</th>
                     <th className="px-5 py-3.5">Title & Issue</th>
@@ -465,23 +465,23 @@ export const TechnicalDashboard: React.FC = () => {
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-300">
+                <tbody className="divide-y divide-slate-100 text-slate-700">
                   {tickets.map(ticket => (
-                    <tr key={ticket.id} className="hover:bg-slate-950/50 transition">
-                      <td className="px-5 py-4 font-mono font-bold text-cyan-400">{ticket.id}</td>
-                      <td className="px-5 py-4 font-semibold text-white">{ticket.title}</td>
+                    <tr key={ticket.id} className="hover:bg-slate-50/50 transition">
+                      <td className="px-5 py-4 font-mono font-bold text-cyan-600">{ticket.id}</td>
+                      <td className="px-5 py-4 font-semibold text-slate-900">{ticket.title}</td>
                       <td className="px-5 py-4 font-mono">{ticket.category}</td>
                       <td className="px-5 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          ticket.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                          ticket.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                         }`}>
                           {ticket.severity}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-400">{ticket.reportedBy}</td>
+                      <td className="px-5 py-4 text-slate-500">{ticket.reportedBy}</td>
                       <td className="px-5 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          ticket.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/20 text-cyan-300'
+                          ticket.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700' : 'bg-cyan-50 text-cyan-700'
                         }`}>
                           {ticket.status}
                         </span>
@@ -508,23 +508,23 @@ export const TechnicalDashboard: React.FC = () => {
         {activeTab === 'AUDIT' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-black text-white">Real-Time Audit & Security Event Stream</h2>
-              <p className="text-xs text-slate-400">Cryptographically logged system actions, authentication & network events</p>
+              <h2 className="text-xl font-black text-slate-900">Real-Time Audit & Security Event Stream</h2>
+              <p className="text-xs text-slate-500">Cryptographically logged system actions, authentication & network events</p>
             </div>
 
-            <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 space-y-3 font-mono text-xs">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-3 font-mono text-xs shadow-2xs">
               {auditLogs.map(log => (
-                <div key={log.id} className="p-3 rounded-2xl border border-slate-800 bg-slate-950 flex flex-wrap items-center justify-between gap-3">
+                <div key={log.id} className="p-3 rounded-2xl border border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-500">{log.time}</span>
-                    <span className="text-cyan-400 font-bold">{log.id}</span>
-                    <span className="text-white">{log.event}</span>
+                    <span className="text-slate-400">{log.time}</span>
+                    <span className="text-cyan-600 font-bold">{log.id}</span>
+                    <span className="text-slate-800">{log.event}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-400">User: {log.user}</span>
-                    <span className="text-slate-500">IP: {log.ip}</span>
+                    <span className="text-slate-500">User: {log.user}</span>
+                    <span className="text-slate-400">IP: {log.ip}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      log.status === 'SUCCESS' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                      log.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                     }`}>
                       {log.status}
                     </span>
@@ -539,33 +539,33 @@ export const TechnicalDashboard: React.FC = () => {
         {activeTab === 'BACKUP' && (
           <div className="space-y-6 max-w-3xl mx-auto">
             <div>
-              <h2 className="text-xl font-black text-white">Database Backup & Disaster Recovery</h2>
-              <p className="text-xs text-slate-400">Automated backup schedules, cold storage snapshots & restore triggers</p>
+              <h2 className="text-xl font-black text-slate-900">Database Backup & Disaster Recovery</h2>
+              <p className="text-xs text-slate-500">Automated backup schedules, cold storage snapshots & restore triggers</p>
             </div>
 
-            <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-6 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
-                  <h3 className="font-bold text-white text-sm">Automated Hourly Snapshot Service</h3>
+                  <h3 className="font-bold text-slate-950 text-sm">Automated Hourly Snapshot Service</h3>
                   <p className="text-xs text-slate-400">Encrypted AES-256 backup stored across dual availability zones</p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold">
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-mono font-bold">
                   ACTIVE (Next in 32m)
                 </span>
               </div>
 
-              <div className="space-y-3 text-xs text-slate-300">
-                <div className="flex justify-between py-2 border-b border-slate-800">
+              <div className="space-y-3 text-xs text-slate-700">
+                <div className="flex justify-between py-2 border-b border-slate-100">
                   <span className="text-slate-400">Last Successful Snapshot:</span>
-                  <span className="font-mono text-cyan-300">2026-08-20 14:00:00 UTC (Size: 4.82 GB)</span>
+                  <span className="font-mono text-cyan-600">2026-08-20 14:00:00 UTC (Size: 4.82 GB)</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-800">
+                <div className="flex justify-between py-2 border-b border-slate-100">
                   <span className="text-slate-400">Recovery Point Objective (RPO):</span>
-                  <span className="font-mono text-emerald-400">&lt; 15 Minutes</span>
+                  <span className="font-mono text-emerald-600">&lt; 15 Minutes</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-800">
+                <div className="flex justify-between py-2 border-b border-slate-100">
                   <span className="text-slate-400">Recovery Time Objective (RTO):</span>
-                  <span className="font-mono text-emerald-400">&lt; 2 Minutes</span>
+                  <span className="font-mono text-emerald-600">&lt; 2 Minutes</span>
                 </div>
               </div>
 
@@ -583,34 +583,34 @@ export const TechnicalDashboard: React.FC = () => {
 
       {/* New Ticket Modal */}
       {showCreateTicketModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-base">Open Technical Maintenance Ticket</h3>
-              <button onClick={() => setShowCreateTicketModal(false)} className="text-slate-400 hover:text-white">
+              <h3 className="font-bold text-slate-950 text-base">Open Technical Maintenance Ticket</h3>
+              <button onClick={() => setShowCreateTicketModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Issue Title & Details</label>
+                <label className="text-xs font-semibold text-slate-600">Issue Title & Details</label>
                 <input
                   type="text"
                   value={newTicket.title}
                   onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
                   placeholder="e.g. ICU Bed #3 Telemetry Monitor Offline"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 outline-none focus:border-cyan-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Category</label>
+                  <label className="text-xs font-semibold text-slate-600">Category</label>
                   <select
                     value={newTicket.category}
                     onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 outline-none"
                   >
                     <option value="Hardware">Hardware</option>
                     <option value="Server/API">Server/API</option>
@@ -621,11 +621,11 @@ export const TechnicalDashboard: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Severity</label>
+                  <label className="text-xs font-semibold text-slate-600">Severity</label>
                   <select
                     value={newTicket.severity}
                     onChange={(e) => setNewTicket({ ...newTicket, severity: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 outline-none"
                   >
                     <option value="LOW">LOW</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -637,10 +637,10 @@ export const TechnicalDashboard: React.FC = () => {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => setShowCreateTicketModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-800 text-slate-300 text-xs font-bold">
+              <button onClick={() => setShowCreateTicketModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">
                 Cancel
               </button>
-              <button onClick={handleCreateTicket} className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow">
+              <button onClick={handleCreateTicket} className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs">
                 Submit Ticket
               </button>
             </div>
