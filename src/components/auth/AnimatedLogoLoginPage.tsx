@@ -4,6 +4,7 @@ import {
   Shield, 
   Stethoscope, 
   HeartPulse, 
+  Heart,
   Cpu, 
   Lock, 
   Mail, 
@@ -170,6 +171,13 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
       icon: Cpu,
       gradient: 'from-cyan-600 to-blue-700',
       badge: 'IT Infrastructure'
+    },
+    {
+      role: 'PATIENT' as UserRole,
+      label: 'Patient Portal',
+      icon: Heart,
+      gradient: 'from-rose-600 to-pink-600',
+      badge: 'Personal EMR & Labs'
     }
   ];
 
