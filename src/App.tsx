@@ -10,6 +10,11 @@ import { VoiceRecorderModal } from './components/common/VoiceRecorderModal.js';
 
 import { AvoraSplashScreen } from './components/common/AvoraSplashScreen.js';
 import { AnimatedLogoLoginPage } from './components/auth/AnimatedLogoLoginPage.js';
+import { RoleSelectionPage } from './components/auth/RoleSelectionPage.js';
+import { DoctorLoginPage } from './components/auth/DoctorLoginPage.js';
+import { AdminLoginPage } from './components/auth/AdminLoginPage.js';
+import { NurseLoginPage } from './components/auth/NurseLoginPage.js';
+import { TechnicalLoginPage } from './components/auth/TechnicalLoginPage.js';
 
 type AppRoute =
   | '/role-selection'
