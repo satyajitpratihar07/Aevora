@@ -27,6 +27,7 @@ interface Specialty {
   symptoms: string[];
   iconBg: string;
   iconColor: string;
+  icon: React.ElementType;
   badge?: string;
   featuredDoctors: string[];
 }
@@ -118,6 +119,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Fever & Chills", "Cold & Cough", "Body Pain & Fatigue", "High Blood Pressure", "General Wellness"],
     iconBg: "bg-blue-50 border-blue-100",
     iconColor: "text-blue-600",
+    icon: Stethoscope,
     badge: "24/7 Available",
     featuredDoctors: ["Dr. Rajesh Sharma", "Dr. Meera Patel"]
   },
@@ -129,6 +131,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Acne & Pimple Breakouts", "Hair Loss & Dandruff", "Skin Rashes & Allergies", "Pigmentation", "Fungal Infection"],
     iconBg: "bg-amber-50 border-amber-100",
     iconColor: "text-amber-600",
+    icon: Sparkles,
     badge: "Top Rated",
     featuredDoctors: ["Dr. Arvind Kejriwal", "Dr. Shalini Rai"]
   },
@@ -140,6 +143,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Irregular Periods", "Pregnancy Care & ANC", "PCOD / PCOS", "Pelvic Pain", "Menopause Guidance"],
     iconBg: "bg-rose-50 border-rose-100",
     iconColor: "text-rose-600",
+    icon: Baby,
     badge: "Women Care",
     featuredDoctors: ["Dr. Priya Sharma", "Dr. Anita Desai"]
   },
@@ -151,6 +155,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Joint & Knee Pain", "Backache & Sciatica", "Bone Fractures", "Arthritis", "Sports Injury"],
     iconBg: "bg-sky-50 border-sky-100",
     iconColor: "text-sky-600",
+    icon: Bone,
     featuredDoctors: ["Dr. Vikramaditya Roy", "Dr. Suresh Nambiar"]
   },
   {
@@ -161,6 +166,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Ear Pain & Infection", "Sinus & Nasal Block", "Sore Throat & Tonsils", "Vertigo & Dizziness", "Hearing Issues"],
     iconBg: "bg-teal-50 border-teal-100",
     iconColor: "text-teal-600",
+    icon: Microscope,
     featuredDoctors: ["Dr. Alok Verma", "Dr. Ritu Malhotra"]
   },
   {
@@ -171,6 +177,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Severe Headache / Migraine", "Numbness & Tingling", "Seizures & Fits", "Memory Loss", "Tremors & Parkinsonism"],
     iconBg: "bg-purple-50 border-purple-100",
     iconColor: "text-purple-600",
+    icon: Brain,
     badge: "Specialized",
     featuredDoctors: ["Dr. Rajesh Kumar", "Dr. Sunita Rao"]
   },
@@ -182,6 +189,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Chest Pain & Discomfort", "Shortness of Breath", "High BP / Palpitations", "Dizziness", "Swollen Legs"],
     iconBg: "bg-emerald-50 border-emerald-100",
     iconColor: "text-emerald-600",
+    icon: HeartPulse,
     badge: "AVORA Core",
     featuredDoctors: ["Dr. Ananya Deshmukh", "Dr. K. S. Reddy"]
   },
@@ -193,6 +201,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Kidney Stones", "Burning Urination", "Prostate Enlargement", "Blood in Urine", "Male Infertility"],
     iconBg: "bg-orange-50 border-orange-100",
     iconColor: "text-orange-600",
+    icon: Activity,
     featuredDoctors: ["Dr. Nitin Saxena", "Dr. Ramesh Gupta"]
   },
   {
@@ -203,6 +212,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Acidity & Gas", "Stomach Pain & Ulcers", "Fatty Liver & Jaundice", "Constipation / Diarrhea", "GERD & Heartburn"],
     iconBg: "bg-yellow-50 border-yellow-100",
     iconColor: "text-yellow-700",
+    icon: Pill,
     featuredDoctors: ["Dr. Mahesh Joshi", "Dr. Kavita Shenoy"]
   },
   {
@@ -213,6 +223,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Anxiety & Panic Attacks", "Depression & Low Mood", "Insomnia / Sleep Issues", "Stress & Burnout", "Mood Swings"],
     iconBg: "bg-indigo-50 border-indigo-100",
     iconColor: "text-indigo-600",
+    icon: Smile,
     featuredDoctors: ["Dr. Sameer Parikh", "Dr. Rohini Iyengar"]
   },
   {
@@ -223,6 +234,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Child Fever & Cold", "Infant Vaccination", "Growth Delay", "Pediatric Asthma", "Loss of Appetite"],
     iconBg: "bg-cyan-50 border-cyan-100",
     iconColor: "text-cyan-600",
+    icon: Baby,
     badge: "Child Care",
     featuredDoctors: ["Dr. Sunita Menon", "Dr. Harish Kapoor"]
   },
@@ -234,6 +246,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Chronic Cough", "Wheezing & Asthma", "Difficulty Breathing", "Sleep Apnea / Snoring", "Post-COVID Lung Care"],
     iconBg: "bg-blue-50 border-blue-100",
     iconColor: "text-blue-700",
+    icon: Activity,
     featuredDoctors: ["Dr. Zarir Udwadia", "Dr. Vikas Goyal"]
   },
   {
@@ -244,6 +257,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Thyroid Imbalance", "Unexplained Weight Gain/Loss", "Diabetes Control", "Hormonal Hair Growth", "Adrenal Issues"],
     iconBg: "bg-violet-50 border-violet-100",
     iconColor: "text-violet-600",
+    icon: Zap,
     featuredDoctors: ["Dr. Shashank Joshi", "Dr. Archana Roy"]
   },
   {
@@ -254,6 +268,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Swelling in Ankles & Eyes", "High Creatinine", "Dialysis Consultation", "Proteinuria", "Polycystic Kidney"],
     iconBg: "bg-amber-50 border-amber-100",
     iconColor: "text-amber-700",
+    icon: Shield,
     featuredDoctors: ["Dr. Sandeep Guleria", "Dr. Vivek Pathak"]
   },
   {
@@ -264,6 +279,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Brain Tumor Symptoms", "Slipped Disc / Sciatica", "Spinal Cord Injury", "Aneurysm", "Trigeminal Neuralgia"],
     iconBg: "bg-slate-100 border-slate-200",
     iconColor: "text-slate-700",
+    icon: Brain,
     badge: "Surgical",
     featuredDoctors: ["Dr. B. K. Misra", "Dr. Rana Patir"]
   },
@@ -275,6 +291,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Morning Joint Stiffness", "Rheumatoid Arthritis", "Lupus (SLE)", "Gout & High Uric Acid", "Muscle Inflammation"],
     iconBg: "bg-rose-50 border-rose-100",
     iconColor: "text-rose-700",
+    icon: Heart,
     featuredDoctors: ["Dr. Rohini Handa", "Dr. S. K. Das"]
   },
   {
@@ -285,6 +302,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Blurry Vision", "Cataract", "Redness & Eye Pain", "Dry Eyes", "Glaucoma Checkup"],
     iconBg: "bg-emerald-50 border-emerald-100",
     iconColor: "text-emerald-700",
+    icon: Eye,
     featuredDoctors: ["Dr. Mahipal Sachdev", "Dr. Ritika Sharma"]
   },
   {
@@ -295,6 +313,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Gallstones", "Hernia", "Appendicitis", "Bariatric Surgery", "Colon & Liver Surgery"],
     iconBg: "bg-lime-50 border-lime-100",
     iconColor: "text-lime-700",
+    icon: Crosshair,
     featuredDoctors: ["Dr. Adarsh Chaudhary", "Dr. P. S. Rao"]
   },
   {
@@ -305,6 +324,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Dengue / Chikungunya", "Typhoid & Malaria", "Unexplained High Fever", "Tuberculosis (TB)", "Fungal & Viral Outbreaks"],
     iconBg: "bg-red-50 border-red-100",
     iconColor: "text-red-600",
+    icon: Thermometer,
     featuredDoctors: ["Dr. Camilla Rodrigues", "Dr. V. Ramasubramanian"]
   },
   {
@@ -315,6 +335,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Laparoscopic Surgery", "Hernia Repair", "Piles & Fissures", "Gallbladder Stones", "Swelling & Cysts"],
     iconBg: "bg-cyan-50 border-cyan-100",
     iconColor: "text-cyan-700",
+    icon: Activity,
     featuredDoctors: ["Dr. Pradeep Chowbey", "Dr. Sanjay Kumar"]
   },
   {
@@ -325,6 +346,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Relationship Issues", "Behavioral Therapy", "Child Counseling", "Grief & Trauma", "Career Anxiety"],
     iconBg: "bg-pink-50 border-pink-100",
     iconColor: "text-pink-600",
+    icon: Smile,
     featuredDoctors: ["Dr. Rachna Singh", "Dr. Neerja Birla"]
   },
   {
@@ -335,6 +357,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Cancer Screening", "Chemotherapy Consult", "Tumor Evaluation", "Immunotherapy", "Second Opinion"],
     iconBg: "bg-purple-50 border-purple-100",
     iconColor: "text-purple-700",
+    icon: ShieldCheck,
     badge: "Cancer Care",
     featuredDoctors: ["Dr. Suresh Advani", "Dr. Harit Chaturvedi"]
   },
@@ -346,6 +369,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["High Blood Sugar (HbA1c)", "Frequent Urination & Thirst", "Diabetic Foot Care", "Insulin Dosage Adjustment", "Hypoglycemia"],
     iconBg: "bg-sky-50 border-sky-100",
     iconColor: "text-sky-700",
+    icon: FlaskConical,
     featuredDoctors: ["Dr. V. Mohan", "Dr. Ambrish Mithal"]
   },
   {
@@ -356,6 +380,7 @@ const SPECIALTIES: Specialty[] = [
     symptoms: ["Toothache & Cavity", "Root Canal (RCT)", "Dental Implants", "Bleeding Gums", "Braces & Aligners"],
     iconBg: "bg-emerald-50 border-emerald-100",
     iconColor: "text-emerald-600",
+    icon: Smile,
     featuredDoctors: ["Dr. Gunita Singh", "Dr. Rajesh Kedia"]
   }
 ];
@@ -1075,8 +1100,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchApp, onSelectR
                         </span>
                       )}
 
-                      <div className={`w-10 h-10 rounded-xl ${spec.iconBg} border flex items-center justify-center mb-2.5 transition-transform group-hover:scale-110`}>
-                        <Stethoscope className={`w-5 h-5 ${spec.iconColor}`} />
+                      <div className={`w-10 h-10 rounded-xl ${spec.iconBg} border flex items-center justify-center mb-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                        <spec.icon className={`w-5 h-5 ${spec.iconColor} group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300`} />
                       </div>
 
                       <div>
