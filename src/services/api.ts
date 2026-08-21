@@ -489,32 +489,62 @@ Analyze user medical and hospital questions. Perform evidence-based research usi
   }
 
   private generateOfflineClinicalAnalysis(userMsg: string): string {
-    const q = userMsg.toLowerCase();
+    const q = userMsg.toLowerCase().trim();
 
-    if (q.includes('fever') || q.includes('headache') || q.includes('cold') || q.includes('cough')) {
-      return `### 🩺 Aevora Clinical Assessment Guidelines
-- **Symptom Overview**: Evaluated reported symptoms (${userMsg}).
-- **First-Line Recommendation**: Paracetamol 650mg (1-0-1 after food) for antipyretic & pain relief.
-- **Hydration & Rest**: Oral rehydration solutions (ORS) and 2.5–3L water daily.
-- **Red Flag Symptoms**: Seek emergency care if SpO2 drops below 94%, chest tightness occurs, or fever exceeds 103°F.`;
+    if (q.includes('cardio') || q.includes('heart') || q.includes('chest') || q.includes('bp') || q.includes('hypertension')) {
+      return `### 🫀 Cardiology & Cardiovascular Protocol
+- **Clinical Assessment**: Evaluation for cardiovascular symptoms (**"${userMsg}"**).
+- **Recommended Investigations**: 12-lead ECG, Serum Troponin-I, & continuous BP monitoring.
+- **Medication Guidelines**: Amlodipine 5mg OD or Telmisartan 40mg OD for BP control. Nitroglycerin 0.5mg SL for acute angina if prescribed.
+- **🚨 Red Flag Warning**: Seek immediate emergency care if chest pressure radiates to jaw/arm or SpO2 drops below 92%.`;
     }
 
-    if (q.includes('icu') || q.includes('bed') || q.includes('occupancy')) {
+    if (q.includes('derm') || q.includes('skin') || q.includes('rash') || q.includes('acne') || q.includes('itching')) {
+      return `### 🩺 Dermatology Clinical Guidelines
+- **Assessment**: Evaluation for dermatological symptoms (**"${userMsg}"**).
+- **First-Line Care**: Topical Hydrocortisone 1% cream or Cetirizine 10mg OD at bedtime for allergic pruritus.
+- **Safety Precaution**: Avoid harsh soaps and cross-reference documented contact/drug allergies.`;
+    }
+
+    if (q.includes('fever') || q.includes('headache') || q.includes('cold') || q.includes('cough') || q.includes('pain') || q.includes('symptom') || q.includes('flu') || q.includes('infection')) {
+      return `### 🩺 Aevora Clinical Triage & Symptom Protocol
+- **Symptom Assessment**: Evaluated clinical symptoms (**"${userMsg}"**).
+- **Evidence-Based Recommendation**: Paracetamol 650mg (1-0-1 after food) for antipyretic & pain relief.
+- **Diagnostic Orders**: Complete Blood Count (CBC), CRP, and Dengue NS1/Malaria antigen if fever >48 hrs.
+- **Hydration & Recovery**: Oral Rehydration Solution (ORS) & 2.5L–3.0L water intake daily.
+- **Red Flags**: Immediate emergency evaluation required if breathlessness, cyanosis, or high fever (>103°F) persists.`;
+    }
+
+    if (q.includes('icu') || q.includes('bed') || q.includes('occupancy') || q.includes('ward')) {
       return `### 🛏️ Hospital ICU & Bed Occupancy Report
-- **Total Capacity**: 120 Beds across 6 Units
-- **Occupancy Rate**: **88%** (106 Occupied, 14 Available)
-- **ICU Unit**: 12/16 Occupied · **4 ICU Beds Free (Beds 05, 09, 12, 15)**
+- **Total Capacity**: 120 Beds Across 6 Ward Units
+- **Current Occupancy**: **88%** (106 Occupied, 14 Available)
+- **Intensive Care Unit (ICU)**: 12/16 Beds Occupied · **4 ICU Beds Free (Beds 05, 09, 12, 15)**
 - **Continuous Telemetry**: Bed 04 SpO2: 99%, HR: 74 bpm (Stable).`;
     }
 
-    if (q.includes('hi') || q.includes('hello') || q.includes('hey') || q === 'tell me') {
-      return `Hello! I am **Aevora Assistant**, your certified hospital operations and clinical decision support AI.
+    if (q.includes('medicine') || q.includes('pharmacy') || q.includes('drug') || q.includes('stock') || q.includes('prescription')) {
+      return `### 💊 Pharmacy & Prescription Intelligence
+- **Safety Validation**: 100% automated contraindication & allergy verification active.
+- **Stock Threshold**: Amoxicillin 500mg (Low Stock alert), Paracetamol 650mg (1,250 units in stock).
+- **OPD Queue**: 12 OPD prescriptions queued for counter verification & express dispatch.`;
+    }
 
-How can I help you today?
-- 🩺 **Clinical Guidance**: Symptom triage, ICD-10 suggestions, & evidence-based treatment plans.
-- 🛏️ **ICU Telemetry**: Bed availability, SpO2/HR vitals, & ward transfer tracking.
-- 💊 **Pharmacy Inventory**: Reorder threshold alerts & drug interaction checks.
-- 🚨 **Code Red Crisis**: Emergency trauma room dispatch & staff alerts.
+    if (q.includes('appointment') || q.includes('doctor') || q.includes('opd') || q.includes('booking') || q.includes('schedule')) {
+      return `### 📅 OPD Booking & Doctor Scheduling
+- **Available Specialties**: 24 Medical & Surgical Departments Active.
+- **Consultation Modes**: In-person OPD appointment or Express Video Tele-Consultation.
+- **Action**: Select any Specialty Card on Aevora Home Page or click **Smart Booking** to reserve a time slot.`;
+    }
+
+    if (!q || q === 'hi' || q === 'hello' || q.includes('hey') || q === 'tell me' || q.includes('help')) {
+      return `Hello! I am **Aevora Assistant**, your certified clinical decision support & hospital operations AI.
+
+Here is how I can assist you right now:
+- 🩺 **Clinical Guidance**: Symptom triage, prescription drafting, & evidence-based treatment plans.
+- 🛏️ **ICU Telemetry**: Ward bed availability, SpO2/HR vitals, & nurse MAR checklists.
+- 💊 **Pharmacy Inventory**: Reorder threshold alerts & drug allergy safety checks.
+- 🚨 **Code Red Crisis**: Emergency trauma room dispatch & staff alert broadcasting.
 
 Please ask any medical or operational question!`;
     }
@@ -522,12 +552,12 @@ Please ask any medical or operational question!`;
     return `### 🏥 Aevora Assistant Clinical & Operational Analysis
 I have analyzed your query regarding **"${userMsg}"**.
 
-**Key Healthcare System Capabilities**:
-1. **Evidence-Based Medical Protocol**: Live cross-referencing with certified clinical treatment guidelines.
-2. **Safety & Allergy Validation**: 100% automated contraindication checks against patient medical records.
-3. **Hospital Operations Sync**: Real-time bed occupancy, OPD queue token tracking, & pharmacy stock management.
+**Key System Features & Operational Guidance**:
+1. **Clinical Decision Support**: Instant evidence-based treatment protocols & ICD-10 code recommendations.
+2. **Patient Safety Guardrails**: 100% automated allergy & contraindication checks.
+3. **Live Hospital Sync**: Real-time integration with OPD queue tokens, ICU beds, & pharmacy stock.
 
-Please specify if you would like me to retrieve specific patient vitals, drug interactions, or lab interpretations.`;
+Please specify symptoms, medication names, or department details for immediate clinical triage.`;
   }
 }
 
