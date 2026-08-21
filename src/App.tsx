@@ -15,8 +15,6 @@ import { DoctorLoginPage } from './components/auth/DoctorLoginPage.js';
 import { AdminLoginPage } from './components/auth/AdminLoginPage.js';
 import { NurseLoginPage } from './components/auth/NurseLoginPage.js';
 import { TechnicalLoginPage } from './components/auth/TechnicalLoginPage.js';
-import { PatientLoginPage } from './components/auth/PatientLoginPage.js';
-import { SignUpPage } from './components/auth/SignUpPage.js';
 
 type AppRoute =
   | '/role-selection'
@@ -24,13 +22,10 @@ type AppRoute =
   | '/admin/login'
   | '/nurse/login'
   | '/technical/login'
-  | '/patient/login'
-  | '/signup'
   | '/doctor/dashboard'
   | '/admin/dashboard'
   | '/nurse/dashboard'
   | '/technical/dashboard'
-  | '/patient/dashboard'
   | '/landing'
   | '/auth-general'
   | '/avora/command-center'
@@ -100,8 +95,6 @@ const MainAppContent: React.FC = () => {
         setCurrentRoute('/nurse/dashboard');
       } else if (user.role === 'TECHNICAL_STAFF' && currentRoute !== '/technical/dashboard') {
         setCurrentRoute('/technical/dashboard');
-      } else if (user.role === 'PATIENT' && currentRoute !== '/patient/dashboard') {
-        setCurrentRoute('/patient/dashboard');
       } else if (user.role === 'SUPER_ADMIN' && currentRoute !== '/admin/dashboard') {
         setCurrentRoute('/admin/dashboard');
       }
@@ -114,7 +107,6 @@ const MainAppContent: React.FC = () => {
     else if (role === 'HOSPITAL_ADMIN') setCurrentRoute('/admin/login');
     else if (role === 'NURSE') setCurrentRoute('/nurse/login');
     else if (role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/login');
-    else if (role === 'PATIENT') setCurrentRoute('/patient/login');
     else setCurrentRoute('/auth-general');
   };
 
@@ -125,7 +117,6 @@ const MainAppContent: React.FC = () => {
     else if (role === 'HOSPITAL_ADMIN') setCurrentRoute('/admin/dashboard');
     else if (role === 'NURSE') setCurrentRoute('/nurse/dashboard');
     else if (role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
-    else if (role === 'PATIENT') setCurrentRoute('/patient/dashboard');
     else setCurrentRoute('/admin/dashboard');
   };
 
@@ -151,23 +142,6 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/technical/login') {
       return <TechnicalLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/technical/dashboard')} />;
     }
-    if (currentRoute === '/patient/login') {
-      return (
-        <PatientLoginPage 
-          onBackToRoles={() => setCurrentRoute('/role-selection')} 
-          onSuccessLogin={() => setCurrentRoute('/patient/dashboard')} 
-          onGoToSignUp={() => setCurrentRoute('/signup')}
-        />
-      );
-    }
-    if (currentRoute === '/signup') {
-      return (
-        <SignUpPage 
-          onBackToLogin={() => setCurrentRoute('/role-selection')} 
-          onSuccessSignUp={() => setCurrentRoute('/patient/dashboard')} 
-        />
-      );
-    }
     if (currentRoute === '/role-selection') {
       return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} onGoToLanding={() => setCurrentRoute('/landing')} />;
     }
@@ -178,7 +152,6 @@ const MainAppContent: React.FC = () => {
             if (user?.role === 'DOCTOR') setCurrentRoute('/doctor/dashboard');
             else if (user?.role === 'NURSE') setCurrentRoute('/nurse/dashboard');
             else if (user?.role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
-            else if (user?.role === 'PATIENT') setCurrentRoute('/patient/dashboard');
             else setCurrentRoute('/admin/dashboard');
           }} 
           onGoToLanding={() => setCurrentRoute('/landing')} 
@@ -202,7 +175,6 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/admin/dashboard') return user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN';
     if (currentRoute === '/nurse/dashboard') return user.role === 'NURSE';
     if (currentRoute === '/technical/dashboard') return user.role === 'TECHNICAL_STAFF';
-    if (currentRoute === '/patient/dashboard') return user.role === 'PATIENT';
     return true;
   };
 
@@ -231,7 +203,6 @@ const MainAppContent: React.FC = () => {
                 else if (user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN') setCurrentRoute('/admin/dashboard');
                 else if (user.role === 'NURSE') setCurrentRoute('/nurse/dashboard');
                 else if (user.role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
-                else if (user.role === 'PATIENT') setCurrentRoute('/patient/dashboard');
               }}
               className="w-full py-3 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-2"
             >
@@ -252,16 +223,7 @@ const MainAppContent: React.FC = () => {
     );
   }
 
-  // 3. FIVE DISTINCT STANDALONE DASHBOARDS
-  if (user.role === 'PATIENT') {
-    return (
-      <>
-        <PatientPortal />
-        <ToastContainer toasts={toasts} removeToast={removeToast} />
-      </>
-    );
-  }
-
+  // 3. FOUR DISTINCT STANDALONE DASHBOARDS
   if (user.role === 'NURSE') {
     return (
       <>
@@ -297,7 +259,7 @@ const MainAppContent: React.FC = () => {
   if (user.role === 'RECEPTIONIST') {
     return (
       <>
-        <ReceptionistWorkspace />
+        <PatientPortal />
         <ToastContainer toasts={toasts} removeToast={removeToast} />
       </>
     );

@@ -4,7 +4,6 @@ import {
   Stethoscope,
   Shield,
   HeartPulse,
-  Heart,
   Cpu,
   UserPlus,
   ArrowRight,
@@ -90,20 +89,20 @@ export const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRo
       features: ['Biomedical Device Mesh', 'Server & API Diagnostics', 'Maintenance Tickets']
     },
     {
-      role: 'PATIENT' as UserRole,
-      title: 'Patient Portal',
-      subtitle: 'Personal Health Records & Labs',
-      description: 'View your medical history, diagnostic lab test reports, digital prescriptions, upcoming OPD visits & Gemini AI health recommendations.',
-      icon: Heart,
-      badgeText: 'Patient Health Portal',
-      badgeStyle: 'bg-rose-50 text-rose-700 border-rose-200',
-      cardBorder: 'border-rose-100 hover:border-rose-400 hover:shadow-rose-100',
-      iconBg: 'bg-rose-100/80 text-rose-600 border-rose-200',
-      accentColor: 'text-rose-600',
-      bulletIconColor: 'text-rose-500',
-      btnBg: 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-200',
-      demoBtn: 'border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-700',
-      features: ['EMR Diagnostic Reports', 'Digital Prescription List', 'Doctor OPD Appointments']
+      role: 'RECEPTIONIST' as UserRole,
+      title: 'Reception & Check-In',
+      subtitle: 'Patient Entry & Queue Dispatch',
+      description: 'Manage OPD patient check-ins, walk-in registrations, live token generation, and trigger automated clinical workflows.',
+      icon: UserPlus,
+      badgeText: 'Check-In & Queue',
+      badgeStyle: 'bg-purple-50 text-purple-700 border-purple-200',
+      cardBorder: 'border-purple-100 hover:border-purple-400 hover:shadow-purple-100',
+      iconBg: 'bg-purple-100/80 text-purple-600 border-purple-200',
+      accentColor: 'text-purple-600',
+      bulletIconColor: 'text-purple-500',
+      btnBg: 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200',
+      demoBtn: 'border-purple-200 bg-purple-50/50 hover:bg-purple-100 text-purple-700',
+      features: ['Real-Time Check-In Desk', 'Token & Queue Dispatch', 'Automated Vitals Trigger']
     }
   ];
 

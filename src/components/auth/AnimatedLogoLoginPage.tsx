@@ -4,7 +4,6 @@ import {
   Shield, 
   Stethoscope, 
   HeartPulse, 
-  Heart,
   Cpu, 
   Lock, 
   Mail, 
@@ -20,7 +19,10 @@ import {
   ShieldCheck,
   RefreshCw,
   Zap,
-  Globe
+  Globe,
+  Heart,
+  User,
+  UserPlus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { UserRole } from '../../types/index.js';
@@ -35,17 +37,22 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
   onSuccessLogin,
   onGoToLanding 
 }) => {
-  const { login, loginWithGoogle, loginWithFirebaseEmail } = useAuth();
+  const { login, signup, loginWithGoogle, loginWithFirebaseEmail, signupWithFirebaseEmail } = useAuth();
 
   // Splash screen animation state
   const [showSplash, setShowSplash] = useState(true);
   const [splashProgress, setSplashProgress] = useState(0);
   const [splashStatus, setSplashStatus] = useState('Initializing AVORA AI Telemetry...');
 
+  // Auth Mode: SIGN_IN vs SIGN_UP
+  const [authMode, setAuthMode] = useState<'SIGN_IN' | 'SIGN_UP'>('SIGN_IN');
+
   // Form state
   const [selectedRole, setSelectedRole] = useState<UserRole>('HOSPITAL_ADMIN');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('admin@hospital.org');
   const [password, setPassword] = useState('admin123');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -89,6 +96,9 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
     } else if (role === 'TECHNICAL_STAFF') {
       setEmail('tech.ops@hospital.org');
       setPassword('tech123');
+    } else if (role === 'RECEPTIONIST') {
+      setEmail('patient.smith@gmail.com');
+      setPassword('patient123');
     }
   };
 
@@ -98,23 +108,43 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
       setError('Please enter your Email or User ID');
       return;
     }
+
+    if (authMode === 'SIGN_UP') {
+      if (!fullName.trim()) {
+        setError('Please enter your Full Name');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match. Please check your entries.');
+        return;
+      }
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      if (password && password.length >= 6) {
+      if (authMode === 'SIGN_UP') {
         try {
-          await loginWithFirebaseEmail(email, password, selectedRole);
+          await signupWithFirebaseEmail(email, password, selectedRole, fullName);
         } catch {
-          await login(email, selectedRole);
+          await signup({ email, name: fullName, role: selectedRole });
         }
       } else {
-        await login(email, selectedRole);
+        if (password && password.length >= 6) {
+          try {
+            await loginWithFirebaseEmail(email, password, selectedRole);
+          } catch {
+            await login(email, selectedRole);
+          }
+        } else {
+          await login(email, selectedRole);
+        }
       }
       onSuccessLogin();
     } catch (err: any) {
       console.error(err);
-      setError('Invalid credentials. Please verify your Email and Password.');
+      setError(authMode === 'SIGN_UP' ? 'Registration failed. Email may already be in use.' : 'Invalid credentials. Please verify your Email and Password.');
     } finally {
       setLoading(false);
     }
@@ -142,14 +172,14 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
     onSuccessLogin();
   };
 
-  // Role Configurations for Switcher
+  // 5 Complete Roles including Patient Portal
   const rolesConfig = [
     {
       role: 'HOSPITAL_ADMIN' as UserRole,
       label: 'Hospital Admin',
       icon: Shield,
       gradient: 'from-blue-600 to-sky-600',
-      badge: 'Executive Node'
+      badge: 'Executive Control'
     },
     {
       role: 'DOCTOR' as UserRole,
@@ -166,18 +196,18 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
       badge: 'MAR Telemetry'
     },
     {
+      role: 'RECEPTIONIST' as UserRole,
+      label: 'Patient Portal',
+      icon: Heart,
+      gradient: 'from-rose-600 to-pink-600',
+      badge: 'Personal Health Record'
+    },
+    {
       role: 'TECHNICAL_STAFF' as UserRole,
       label: 'Tech Operations',
       icon: Cpu,
       gradient: 'from-cyan-600 to-blue-700',
       badge: 'IT Infrastructure'
-    },
-    {
-      role: 'PATIENT' as UserRole,
-      label: 'Patient Portal',
-      icon: Heart,
-      gradient: 'from-rose-600 to-pink-600',
-      badge: 'Personal EMR & Labs'
     }
   ];
 
@@ -266,7 +296,7 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
 
         </div>
       ) : (
-        /* ── 2. HIGH-TECH FUTURISTIC LOGIN INTERFACE ────────────────────────────── */
+        /* ── 2. HIGH-TECH FUTURISTIC LOGIN & SIGN UP INTERFACE ──────────────────── */
         <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans selection:bg-sky-500 selection:text-white">
           
           {/* Glowing Background Radial Orbs */}
@@ -326,7 +356,7 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                   </p>
 
                   {/* Role Selector Tabs */}
-                  <div className="space-y-2.5 mt-6">
+                  <div className="space-y-2 MT-6">
                     {rolesConfig.map((r) => {
                       const Icon = r.icon;
                       const active = selectedRole === r.role;
@@ -334,14 +364,14 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                         <button
                           key={r.role}
                           onClick={() => handleRoleChange(r.role)}
-                          className={`w-full p-3.5 rounded-2xl border text-left transition duration-200 flex items-center justify-between cursor-pointer ${
+                          className={`w-full p-3 rounded-2xl border text-left transition duration-200 flex items-center justify-between cursor-pointer ${
                             active
                               ? `bg-gradient-to-r ${r.gradient} text-white border-transparent shadow-lg shadow-sky-950`
                               : 'bg-slate-900/80 hover:bg-slate-800 border-slate-800 text-slate-300'
                           }`}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-white/20 text-white' : 'bg-slate-800 text-sky-400'}`}>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-white/20 text-white' : 'bg-slate-800 text-sky-400'}`}>
                               <Icon className="w-4 h-4" />
                             </div>
                             <div>
@@ -368,17 +398,41 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                 </div>
               </div>
 
-              {/* Right Column: Login Form */}
+              {/* Right Column: Sign In vs Sign Up Form */}
               <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
                 
-                {/* Form Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                {/* Mode Selector Header Toggle (Sign In vs Sign Up) */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                   <div>
-                    <h3 className="text-xl font-black text-white">Sign In to {currentRoleObj.label}</h3>
-                    <p className="text-xs text-slate-400 font-medium mt-0.5">Enter your credentials or use Google Account SSO</p>
+                    <h3 className="text-xl font-black text-white">
+                      {authMode === 'SIGN_IN' ? `Sign In to ${currentRoleObj.label}` : `Create ${currentRoleObj.label} Account`}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium mt-0.5">
+                      {authMode === 'SIGN_IN' ? 'Enter your credentials or use Google SSO' : 'Register your new hospital profile & credentials'}
+                    </p>
                   </div>
-                  <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
-                    <Lock className="w-5 h-5" />
+
+                  {/* Segmented Toggle Tabs */}
+                  <div className="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('SIGN_IN'); setError(''); }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                        authMode === 'SIGN_IN' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('SIGN_UP'); setError(''); }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 ${
+                        authMode === 'SIGN_UP' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Sign Up</span>
+                    </button>
                   </div>
                 </div>
 
@@ -389,9 +443,28 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                 )}
 
                 {/* Main Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3.5">
+                  
+                  {/* Full Name field in Sign Up mode */}
+                  {authMode === 'SIGN_UP' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">Full Name</label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                        <input
+                          type="text"
+                          required
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder="Dr. John Smith / Admin Name"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">User Email / Badge ID</label>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">User Email / Badge ID</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                       <input
@@ -406,7 +479,7 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">Security Password</label>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Security Password</label>
                     <div className="relative">
                       <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                       <input
@@ -427,18 +500,38 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1">
-                    <label className="flex items-center space-x-2 text-slate-400 font-medium cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="rounded bg-slate-900 border-slate-800 text-sky-500 focus:ring-sky-500"
-                      />
-                      <span>Remember Session</span>
-                    </label>
-                    <a href="#" className="text-sky-400 hover:underline font-bold">Forgot Password?</a>
-                  </div>
+                  {/* Confirm Password field in Sign Up mode */}
+                  {authMode === 'SIGN_UP' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">Confirm Password</label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {authMode === 'SIGN_IN' && (
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <label className="flex items-center space-x-2 text-slate-400 font-medium cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="rounded bg-slate-900 border-slate-800 text-sky-500 focus:ring-sky-500"
+                        />
+                        <span>Remember Session</span>
+                      </label>
+                      <a href="#" className="text-sky-400 hover:underline font-bold">Forgot Password?</a>
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <button
@@ -449,29 +542,29 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                     {loading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Authenticating Credentials...</span>
+                        <span>Processing Credentials...</span>
                       </>
                     ) : (
                       <>
-                        <span>Sign In to {currentRoleObj.label}</span>
+                        <span>{authMode === 'SIGN_IN' ? `Sign In to ${currentRoleObj.label}` : `Create ${currentRoleObj.label} Account`}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
 
-                  <div className="relative py-2">
+                  <div className="relative py-1">
                     <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800" /></div>
                     <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-extrabold">
                       <span className="bg-slate-950 px-3 text-slate-500">OR CONTINUE WITH GOOGLE</span>
                     </div>
                   </div>
 
-                  {/* Google Sign In Button */}
+                  {/* Google Sign In/Up Button */}
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full py-3 px-4 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs transition flex items-center justify-center space-x-3 cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs transition flex items-center justify-center space-x-3 cursor-pointer"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -479,7 +572,7 @@ export const AnimatedLogoLoginPage: React.FC<AnimatedLogoLoginPageProps> = ({
                       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                     </svg>
-                    <span>Sign in with Google (Firebase)</span>
+                    <span>{authMode === 'SIGN_IN' ? 'Sign in with Google (Firebase)' : 'Sign up with Google (Firebase)'}</span>
                   </button>
                 </form>
 
