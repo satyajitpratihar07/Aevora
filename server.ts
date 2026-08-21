@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenAI } from '@google/genai';
 import { db } from './server/db.js';
 import {
   generatePrescriptionDraft,
@@ -16,6 +17,29 @@ const __dirname = path.dirname(__filename);
 
 // In-memory OTP store
 const otpStore = new Map<string, { code: string; expiresAt: number }>();
+
+async function queryAdminAssistant(query: string, contextData: any): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+  if (!apiKey) {
+    console.warn('Gemini API key missing in environment variables.');
+    return 'Gemini API key is not configured on the server.';
+  }
+  const ai = new GoogleGenAI({ apiKey });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Context Data: ${JSON.stringify(contextData)}\nQuery: ${query}`,
+      config: {
+        systemInstruction: 'You are Aevora Assistant — a certified Hospital Operations & Administrative Management AI. Provide clear, concise answers to administrative questions.',
+        temperature: 0.2
+      }
+    });
+    return response.text || 'No response text generated.';
+  } catch (err: any) {
+    console.error('Gemini Admin Assistant failure:', err);
+    return `Error querying Admin Assistant: ${err.message || err}`;
+  }
+}
 
 export async function createExpressApp() {
   const app = express();
