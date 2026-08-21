@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   FileText,
   User,
+  LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
@@ -19,7 +20,7 @@ import { api } from '../../services/api.js';
 import { Patient, Prescription, LabOrder, Invoice, Appointment } from '../../types/index.js';
 
 export const PatientPortal: React.FC = () => {
-  const { user, organization } = useAuth();
+  const { user, organization, logout } = useAuth();
   const { addToast } = useNotifications();
 
   const [patientData, setPatientData] = useState<Patient | null>(null);
@@ -100,6 +101,17 @@ export const PatientPortal: React.FC = () => {
             >
               <QrCode className="w-4 h-4" />
               <span>Digital Check-In QR</span>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={async () => {
+                await logout();
+              }}
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-xs backdrop-blur-sm transition"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
