@@ -88,11 +88,10 @@ export async function createExpressApp() {
       });
     } catch (err: any) {
       console.error('SMTP send failure:', err);
-      res.json({
-        success: true,
-        message: `OTP generated for ${email}`,
+      res.status(500).json({
+        success: false,
+        message: `Failed to send secure verification code to ${email}: ${err.message || err}`,
         emailSent: false,
-        fallbackOtp: otpCode,
       });
     }
   });

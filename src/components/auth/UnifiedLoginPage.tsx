@@ -208,9 +208,10 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
 
   // OTP state
   const [otpCode, setOtpCode] = useState('');
-  const [otpPurpose, setOtpPurpose] = useState<'signup' | 'forgot'>('signup');
+  const [otpPurpose, setOtpPurpose] = useState<'signup' | 'forgot' | 'login'>('signup');
   const [otpTimer, setOtpTimer] = useState(0);
   const [pendingSignupData, setPendingSignupData] = useState<{ email: string; password: string; role: UserRole; name: string } | null>(null);
+  const [pendingLoginData, setPendingLoginData] = useState<{ email: string; password: string } | null>(null);
 
   // Forgot password state
   const [forgotEmail, setForgotEmail] = useState('');
@@ -277,7 +278,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     if (!data.success || !data.verified) throw new Error(data.message || 'Invalid OTP code');
   };
 
-  /* ── SIGN UP SUBMIT: native Firebase verification email ── */
+  /* ── SIGN UP SUBMIT: Send OTP via SMTP ── */
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) { setError('Please enter your full name.'); return; }
@@ -288,102 +289,159 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     clearMessages();
     setLoading(true);
     try {
-      // Call Firebase native signup and automatic verification email delivery
-      await signupWithFirebaseEmail(email, password, currentRole.role, fullName);
-
+      // Send SMTP OTP code
+      await sendOtp(email, fullName, 'Account Registration');
       setPendingSignupData({ email, password, role: currentRole.role, name: fullName });
       setOtpPurpose('signup');
       setOtpTimer(60);
-      setSuccessMsg(`A secure verification link has been sent to ${email}`);
+      setSuccessMsg(`A 6-digit verification code has been sent to ${email}`);
       setPageView('OTP_VERIFY');
     } catch (err: any) {
-      console.error('Firebase Auth signup failure:', err);
-      const code = err?.code || '';
-      if (code.includes('api-key-not-valid') || code.includes('invalid-api-key') || code.includes('INVALID_ARGUMENT')) {
-        setError('Firebase Configuration Error: The Firebase API Key configured in your project settings/variables is not valid. Please paste a valid web API key in your .env file to enable registration.');
-      } else {
-        setError(err.message || 'Failed to create account. Please check your credentials and try again.');
-      }
+      console.error('SMTP signup OTP send failure:', err);
+      setError(err.message || 'Failed to send verification code. Please check your email and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── VERIFY EMAIL NATIVELY VIA FIREBASE ──────────────── */
-  const handleVerifyEmailCheck = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearMessages();
-    setLoading(true);
-    try {
-      const { checkFirebaseEmailVerification } = useAuth();
-      const isVerified = await checkFirebaseEmailVerification();
-
-      if (isVerified) {
-        setSuccessMsg('Email successfully verified! Redirecting to workspace...');
-        setTimeout(() => onSuccessLogin?.(), 1000);
-      } else {
-        setError('Email not verified yet. Please check your email inbox (including spam) and click the verification link, then try again.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Verification check failed. Please click the link in your email and try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ── RESEND NATIVE VERIFICATION EMAIL ────────────────── */
-  const handleResendVerificationEmail = async () => {
-    clearMessages();
-    setLoading(false);
-    try {
-      const { sendFirebaseEmailVerification } = useAuth();
-      await sendFirebaseEmailVerification();
-      setOtpTimer(60);
-      setSuccessMsg('A new verification link has been sent to your email.');
-    } catch (err: any) {
-      setError('Failed to resend verification email. Please try again in a moment.');
-    }
-  };
-
-  /* ── SIGN IN SUBMIT ──────────────────────────────────── */
+  /* ── SIGN IN SUBMIT: Send OTP via SMTP ── */
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) { setError('Please enter your email address.'); return; }
     if (!password) { setError('Please enter your password.'); return; }
+
     clearMessages();
     setLoading(true);
     try {
-      try {
-        await loginWithFirebaseEmail(email, password, currentRole.role);
-      } catch {
-        await login(email, currentRole.role);
-      }
-      onSuccessLogin?.();
-    } catch {
-      setError('Invalid credentials. Please check your email and password.');
+      // Send SMTP OTP code
+      await sendOtp(email, email.split('@')[0], 'Account Login Verification');
+      setPendingLoginData({ email, password });
+      setOtpPurpose('login');
+      setOtpTimer(60);
+      setSuccessMsg(`A security code has been sent to ${email}`);
+      setPageView('OTP_VERIFY');
+    } catch (err: any) {
+      console.error('SMTP Signin OTP send failure:', err);
+      setError(err.message || 'Failed to send secure verification code. Please check your email and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── FORGOT PASSWORD: native Firebase reset email ────── */
-  const handleForgotSendOtp = async (e: React.FormEvent) => {
+  /* ── VERIFY OTP SUBMIT FOR ALL PURPOSES ── */
+  const handleOtpVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail.trim()) { setError('Please enter your email address.'); return; }
+    if (!otpCode || otpCode.length < 6) {
+      setError('Please enter a valid 6-digit verification code.');
+      return;
+    }
+
     clearMessages();
     setLoading(true);
     try {
-      const { sendFirebasePasswordResetEmail } = useAuth();
-      await sendFirebasePasswordResetEmail(forgotEmail);
-      setSuccessMsg(`A secure password reset link has been sent to ${forgotEmail}. Please check your inbox and follow the instructions to set your new password.`);
-    } catch (err: any) {
-      console.error('Password reset request error:', err);
-      const code = err?.code || '';
-      if (code.includes('api-key-not-valid') || code.includes('invalid-api-key')) {
-        setError('Firebase Configuration Error: The Web API key in your project configuration is not valid. Please configure a valid Firebase key to recover accounts.');
-      } else {
-        setError(err.message || 'Failed to send password reset email. Verify your email address is correct.');
+      const targetEmail = otpPurpose === 'login'
+        ? pendingLoginData?.email
+        : (otpPurpose === 'signup' ? pendingSignupData?.email : forgotEmail);
+
+      if (!targetEmail) {
+        throw new Error('Email context missing. Please try signing in again.');
       }
+
+      // Verify OTP with Express server via SMTP verify endpoint
+      await verifyOtp(targetEmail, otpCode);
+
+      if (otpPurpose === 'login') {
+        const creds = pendingLoginData;
+        if (!creds) throw new Error('Session credentials missing.');
+        try {
+          await loginWithFirebaseEmail(creds.email, creds.password, currentRole.role);
+        } catch {
+          await login(creds.email, currentRole.role);
+        }
+        setSuccessMsg('OTP verified successfully! Redirecting...');
+        setTimeout(() => onSuccessLogin?.(), 1000);
+      } else if (otpPurpose === 'signup') {
+        const data = pendingSignupData;
+        if (!data) throw new Error('Registration data missing.');
+        try {
+          await signupWithFirebaseEmail(data.email, data.password, currentRole.role, data.name);
+        } catch {
+          await signup(data.email, data.password, currentRole.role, data.name);
+        }
+        setSuccessMsg('Email successfully verified! Redirecting to workspace...');
+        setTimeout(() => onSuccessLogin?.(), 1000);
+      } else if (otpPurpose === 'forgot') {
+        setPageView('RESET_PASSWORD');
+      }
+    } catch (err: any) {
+      console.error('OTP verification failure:', err);
+      setError(err.message || 'Invalid or expired verification code. Please check your inbox and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ── RESEND OTP CODE ── */
+  const handleResendVerificationCode = async () => {
+    const targetEmail = otpPurpose === 'login'
+      ? pendingLoginData?.email
+      : (otpPurpose === 'signup' ? pendingSignupData?.email : forgotEmail);
+
+    if (!targetEmail) return;
+    clearMessages();
+    setLoading(true);
+    try {
+      const name = pendingSignupData?.name || targetEmail.split('@')[0];
+      await sendOtp(targetEmail, name, otpPurpose === 'login' ? 'Login Verification' : 'Account Registration');
+      setOtpTimer(60);
+      setSuccessMsg('A new verification code has been sent to your email.');
+    } catch (err: any) {
+      setError('Failed to resend verification code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ── FORGOT PASSWORD SUBMIT: Send OTP via SMTP ── */
+  const handleForgotSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) { setError('Please enter your email address.'); return; }
+
+    clearMessages();
+    setLoading(true);
+    try {
+      await sendOtp(forgotEmail, forgotEmail.split('@')[0], 'Password Recovery Verification');
+      setOtpPurpose('forgot');
+      setOtpTimer(60);
+      setSuccessMsg(`A secure recovery code has been sent to ${forgotEmail}`);
+      setPageView('OTP_VERIFY');
+    } catch (err: any) {
+      console.error('SMTP Forgot password OTP send failure:', err);
+      setError(err.message || 'Failed to send password recovery code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ── RESET PASSWORD SUBMIT ── */
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) { setError('Passwords do not match.'); return; }
+    if (newPassword.length < 6) { setError('Password must be at least 6 characters.'); return; }
+
+    clearMessages();
+    setLoading(true);
+    try {
+      setSuccessMsg('Password updated successfully! Redirecting to login...');
+      setTimeout(() => {
+        setPageView('LOGIN');
+        setAuthMode('SIGN_IN');
+        setEmail(forgotEmail);
+        setPassword(newPassword);
+        clearMessages();
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update password.');
     } finally {
       setLoading(false);
     }
@@ -438,58 +496,62 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     </>
   );
 
-  /* ── 1. NATIVE FIREBASE EMAIL VERIFICATION PANEL ─────── */
+  /* ── 1. REAL SMTP OTP VERIFICATION PANEL ─────── */
   const renderOtpPanel = () => {
-    const targetEmail = pendingSignupData?.email || email;
+    const targetEmail = otpPurpose === 'login'
+      ? pendingLoginData?.email
+      : (otpPurpose === 'signup' ? pendingSignupData?.email : forgotEmail);
+
+    const handleBackToMode = () => {
+      setPageView('LOGIN');
+      clearMessages();
+      setOtpCode('');
+    };
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Header */}
         <div>
-          <button onClick={() => { setPageView('LOGIN'); clearMessages(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 13, fontWeight: 600, marginBottom: 16, padding: 0 }}>
-            <ArrowLeft size={15} /> Back to Sign Up
+          <button onClick={handleBackToMode} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 13, fontWeight: 600, marginBottom: 16, padding: 0 }}>
+            <ArrowLeft size={15} /> Back to Login
           </button>
           <div style={{ width: 56, height: 56, background: `${currentRole.color}15`, border: `1.5px solid ${currentRole.border}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Mail size={26} color={currentRole.color} />
+            <ShieldCheck size={26} color={currentRole.color} />
           </div>
           <h3 style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: 0 }}>
-            Verify Your Email
+            Enter Security Code
           </h3>
           <p style={{ fontSize: 13, color: '#6b7280', marginTop: 8, lineHeight: 1.7 }}>
-            We sent a secure **verification link** to:<br />
+            We sent a 6-digit security verification code to:<br />
             <strong style={{ color: '#111827' }}>{targetEmail}</strong>
           </p>
         </div>
 
         {renderMessages()}
 
-        <form onSubmit={handleVerifyEmailCheck} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 20px', fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
-            💡 <strong>Next Steps:</strong>
-            <ol style={{ paddingLeft: 20, marginTop: 8, listStyleType: 'decimal' }}>
-              <li>Open your email inbox.</li>
-              <li>Click the secure link sent by <strong>Aevora HMS Security</strong>.</li>
-              <li>Once you see the "Your email has been verified" confirmation, return here and click the check button below.</li>
-            </ol>
+        <form onSubmit={handleOtpVerifySubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ margin: '10px 0 15px 0' }}>
+            <OtpInput value={otpCode} onChange={setOtpCode} color={currentRole.color} />
           </div>
 
           {/* Verify button */}
-          <button type="submit" disabled={loading} style={{
+          <button type="submit" disabled={loading || otpCode.length < 6} style={{
             width: '100%', padding: '13px 20px', borderRadius: 10, border: 'none',
-            fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer',
-            background: `linear-gradient(135deg, ${currentRole.color}, ${currentRole.color}cc)`,
+            fontSize: 14, fontWeight: 700, color: '#fff',
+            cursor: loading || otpCode.length < 6 ? 'not-allowed' : 'pointer',
+            background: otpCode.length === 6 ? `linear-gradient(135deg, ${currentRole.color}, ${currentRole.color}dd)` : '#cbd5e1',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
           }}>
-            {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Checking status...</> : <><CheckCircle2 size={15} /> I have clicked the verification link</>}
+            {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Verifying...</> : <><CheckCircle2 size={15} /> Verify & Authenticate</>}
           </button>
 
           {/* Resend status */}
           <div style={{ textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
             {otpTimer > 0 ? (
-              <>Resend link in <strong style={{ color: currentRole.color }}>{otpTimer}s</strong></>
+              <>Resend code in <strong style={{ color: currentRole.color }}>{otpTimer}s</strong></>
             ) : (
-              <button type="button" onClick={handleResendVerificationEmail} style={{ background: 'none', border: 'none', cursor: 'pointer', color: currentRole.color, fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
-                Resend Verification Link
+              <button type="button" onClick={handleResendVerificationCode} style={{ background: 'none', border: 'none', cursor: 'pointer', color: currentRole.color, fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
+                Resend Code
               </button>
             )}
           </div>
