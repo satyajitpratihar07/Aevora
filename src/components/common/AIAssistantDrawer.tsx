@@ -13,6 +13,55 @@ import {
 import { useAuth } from '../../context/AuthContext.js';
 import { api } from '../../services/api.js';
 
+/* ── HELPER: Inline Markdown formatting parser ──────────────── */
+const parseBoldText = (text: string) => {
+  const parts = text.split('**');
+  return parts.map((part, index) => {
+    // Alternate normal and bold text
+    return index % 2 === 1 ? (
+      <strong key={index} className="font-extrabold text-slate-900">
+        {part}
+      </strong>
+    ) : (
+      part
+    );
+  });
+};
+
+const formatMessageText = (text: string) => {
+  const lines = text.split('\n');
+  return lines.map((line, idx) => {
+    let cleanLine = line;
+    
+    // Check for headers (e.g. ### Header)
+    if (cleanLine.startsWith('### ')) {
+      const headerText = cleanLine.substring(4);
+      return (
+        <h3 key={idx} className="font-extrabold text-xs text-slate-900 mt-2 mb-1.5 flex items-center gap-1.5">
+          {parseBoldText(headerText)}
+        </h3>
+      );
+    }
+    
+    // Check for bullet points (e.g. - Bullet)
+    if (cleanLine.startsWith('- ')) {
+      const bulletText = cleanLine.substring(2);
+      return (
+        <div key={idx} className="pl-4 py-0.5 flex items-start gap-1.5 text-xs text-slate-700">
+          <span className="text-sky-600 select-none">•</span>
+          <span>{parseBoldText(bulletText)}</span>
+        </div>
+      );
+    }
+    
+    return (
+      <p key={idx} className="min-h-[1.2em] text-xs text-slate-700 leading-relaxed mb-1">
+        {parseBoldText(cleanLine)}
+      </p>
+    );
+  });
+};
+
 interface AIAssistantDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -181,7 +230,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({ isOpen, on
                   }`}
                 >
                   <div className="whitespace-pre-wrap font-sans">
-                    {m.text}
+                    {formatMessageText(m.text)}
                   </div>
                   <span className={`block text-[8.5px] mt-1.5 text-right ${m.sender === 'user' ? 'text-white/75' : 'text-slate-400'}`}>
                     {m.time}
