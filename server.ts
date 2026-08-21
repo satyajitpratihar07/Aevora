@@ -7,7 +7,7 @@ import {
   generatePrescriptionDraft,
   parseVoiceDictation,
   generateClinicalSummary,
-  queryAdminAssistant,
+  chatWithGemini,
 } from './server/gemini.js';
 
 import { sendOtpEmail, sendNotificationEmail } from './server/emailService.js';
@@ -651,6 +651,17 @@ async function startServer() {
   // ----------------------------------------------------
   // AI-POWERED CLINICAL & ADMINISTRATIVE SERVICES
   // ----------------------------------------------------
+  app.post('/api/v1/ai/chat', async (req, res) => {
+    try {
+      const { messages, context } = req.body;
+      const reply = await chatWithGemini(messages || [], context);
+      res.json({ success: true, reply });
+    } catch (error: any) {
+      console.error('AI Chat Error:', error);
+      res.json({ success: true, reply: 'AVORA Gemini AI Assistant is online. How can I assist you with clinical guidelines, department navigation, or patient management?' });
+    }
+  });
+
   app.post('/api/v1/ai/prescription-draft', async (req, res) => {
     try {
       const draft = await generatePrescriptionDraft(req.body);

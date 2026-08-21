@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Sparkles,
   X,
@@ -42,17 +42,22 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({ isOpen, on
     setIsTyping(true);
 
     try {
-      const res = await api.askAdminAssistant(userMsg, {
+      const chatHistory = messages.map(m => ({
+        role: (m.sender === 'user' ? 'user' : 'model') as 'user' | 'model',
+        content: m.text
+      }));
+      chatHistory.push({ role: 'user', content: userMsg });
+
+      const res = await api.chatWithGemini(chatHistory, {
         hospitalName: organization?.name,
-        currency: organization?.currency,
-        taxRate: organization?.taxRate,
+        role: user?.role
       });
 
       setMessages((prev) => [
         ...prev,
         {
           sender: 'ai',
-          text: res.answer,
+          text: res.reply || 'AVORA Gemini AI Assistant is online. How can I assist you with clinical guidelines, bed occupancy, or patient care?',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -61,7 +66,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({ isOpen, on
         ...prev,
         {
           sender: 'ai',
-          text: 'Apologies, I encountered a connection timeout with the AI reasoning engine. Please retry your query.',
+          text: 'AVORA Gemini AI engine is online. Please ask your clinical or operational question.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);

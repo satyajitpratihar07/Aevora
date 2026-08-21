@@ -39,6 +39,7 @@ import { EmergencyCoordinator } from './components/avora/EmergencyCoordinator.js
 import { WorkflowDesigner } from './components/avora/WorkflowDesigner.js';
 import { ReceptionistWorkspace } from './components/avora/ReceptionistWorkspace.js';
 import { AvoraIconLaunchpad } from './components/avora/AvoraIconLaunchpad.js';
+import { GeminiChatbotWidget } from './components/common/GeminiChatbotWidget.js';
 import { UserRole } from './types/index.js';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
 
@@ -143,7 +144,13 @@ const MainAppContent: React.FC = () => {
       return <AuthPage onLogin={async (email, role) => { await login(email, role); }} onSignup={async () => {}} onGoToLanding={() => setCurrentRoute('/landing')} />;
     }
     // Default entry point: AVORA Home Page
-    return <LandingPage onLaunchApp={() => setCurrentRoute('/role-selection')} onSelectRole={handleRoleCardSelect} />;
+    return (
+      <>
+        <LandingPage onLaunchApp={() => setCurrentRoute('/role-selection')} onSelectRole={handleRoleCardSelect} />
+        <AIAssistantDrawer isOpen={isAIDrawerOpen} onClose={() => setIsAIDrawerOpen(false)} />
+        <GeminiChatbotWidget onClick={() => setIsAIDrawerOpen(true)} />
+      </>
+    );
   }
 
   // 2. STRICT ROLE-BASED ROUTE GUARD & PROTECTION
@@ -356,6 +363,7 @@ const MainAppContent: React.FC = () => {
         <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onNavigate={setActiveView} onOpenAIAssistant={() => setIsAIDrawerOpen(true)} />
         <AIAssistantDrawer isOpen={isAIDrawerOpen} onClose={() => setIsAIDrawerOpen(false)} />
         <QrCodeModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} />
+        <GeminiChatbotWidget onClick={() => setIsAIDrawerOpen(true)} />
         <ToastContainer toasts={toasts} removeToast={removeToast} />
       </div>
     );
@@ -370,6 +378,8 @@ const MainAppContent: React.FC = () => {
        user.role === 'ACCOUNTANT' ? <AccountantDashboard /> :
        user.role === 'PATIENT' ? <PatientPortal /> :
        <HospitalAdminDashboard />}
+      <AIAssistantDrawer isOpen={isAIDrawerOpen} onClose={() => setIsAIDrawerOpen(false)} />
+      <GeminiChatbotWidget onClick={() => setIsAIDrawerOpen(true)} />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );

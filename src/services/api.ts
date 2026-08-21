@@ -410,6 +410,13 @@ class ApiService {
       body: JSON.stringify({ query, contextData }),
     });
   }
+
+  async chatWithGemini(messages: Array<{ role: 'user' | 'model' | 'system'; content: string }>, context?: any): Promise<{ reply: string }> {
+    return this.request<{ reply: string }>('/api/v1/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages, context }),
+    });
+  }
 }
 
 export const api = new ApiService();

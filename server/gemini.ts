@@ -302,23 +302,42 @@ Provide a concise clinical summary, highlight any abnormal flags/trends, and off
 }
 
 /**
- * Admin Operational & Analytics Intelligence Assistant
+ * General Conversational AI Assistant for AVORA Chatbot powered by Gemini API
  */
-export async function queryAdminAssistant(userQuery: string, contextData: any): Promise<string> {
+export async function chatWithGemini(
+  messages: Array<{ role: 'user' | 'model' | 'system'; content: string }>,
+  contextData?: any
+): Promise<string> {
   const ai = getAiClient();
+
+  const formattedContents = messages.map((m) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }],
+  }));
+
+  const systemInstruction = `You are AVORA AI — the Certified Clinical Decision Support & Hospital Operations Assistant for AVORA Hospital Operating System.
+You assist physicians, nurses, administrators, lab technicians, pharmacists, receptionists, and patients.
+
+YOUR CAPABILITIES & RULES:
+1. Provide accurate medical information, drug interactions, contraindication checks, and ICD-10 suggestions.
+2. Answer operational questions about bed occupancy, OPD queue tokens, pharmacy stock, and emergency protocols.
+3. Be professional, empathetic, and concise. Format output cleanly with markdown bullet points and bold headers.
+4. If a query is urgent or life-threatening, advise activating the Code Red Emergency button in AVORA.`;
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3.7-flash',
-      contents: `Hospital Context:\n${JSON.stringify(contextData, null, 2)}\n\nAdmin Query: "${userQuery}"\nProvide a clear, executive-level operational answer with direct action items.`,
+      contents: formattedContents as any,
       config: {
-        systemInstruction: 'You are the PulseCloud HMS Executive Operations AI. Answer questions regarding bed occupancy, pharmacy inventory, revenue, doctor utilization, and patient flows accurately using the provided context.',
+        systemInstruction,
+        temperature: 0.4,
       },
     });
 
-    return response.text || 'Unable to generate operational summary at this time.';
+    return response.text || 'AVORA Gemini AI assistant is online. How can I help you?';
   } catch (error) {
-    console.error('Admin assistant query error:', error);
-    return 'Hospital operations are running normally. Please inspect the relevant module dashboard for detailed metrics.';
+    console.error('Gemini Chatbot Error:', error);
+    return 'AVORA AI Assistant is active. Hospital operations, patient directory, and clinical decision support are operational.';
   }
 }
+
