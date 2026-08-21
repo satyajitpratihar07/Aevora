@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CreditCard,
   DollarSign,
@@ -118,7 +118,7 @@ export const AccountantDashboard: React.FC = () => {
 
       setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
       setShowPayModal(false);
-      addToast('Payment Recorded', `Payment of $${payAmount} processed for Invoice ${selectedInvoice.invoiceNumber}.`, 'success');
+      addToast('Payment Recorded', `Payment of ₹${payAmount} processed for Invoice ${selectedInvoice.invoiceNumber}.`, 'success');
     } catch (err: any) {
       addToast('Payment Failed', err.message, 'error');
     }
@@ -165,7 +165,7 @@ export const AccountantDashboard: React.FC = () => {
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
           <span className="text-xs font-semibold text-slate-500">Total Collected Payments</span>
           <p className="text-2xl font-bold text-slate-900 text-slate-800 mt-1">
-            ${totalCollected.toLocaleString()}
+            ₹{totalCollected.toLocaleString("en-IN")}
           </p>
           <span className="text-[11px] text-emerald-600 font-medium">Real-time cleared funds</span>
         </div>
@@ -173,7 +173,7 @@ export const AccountantDashboard: React.FC = () => {
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
           <span className="text-xs font-semibold text-slate-500">Total Outstanding Receivables</span>
           <p className="text-2xl font-bold text-rose-600 mt-1">
-            ${totalOutstanding.toLocaleString()}
+            ₹{totalOutstanding.toLocaleString("en-IN")}
           </p>
           <span className="text-[11px] text-slate-500">Due from patients & insurers</span>
         </div>
@@ -402,8 +402,8 @@ export const AccountantDashboard: React.FC = () => {
                       <td className="p-3 font-semibold">{item.description}</td>
                       <td className="p-3 text-slate-500">{item.category}</td>
                       <td className="p-3 text-center">{item.quantity}</td>
-                      <td className="p-3 text-right">${item.unitPrice.toFixed(2)}</td>
-                      <td className="p-3 text-right font-bold">${item.totalPrice.toFixed(2)}</td>
+                      <td className="p-3 text-right">₹{item.unitPrice.toLocaleString("en-IN")}</td>
+                      <td className="p-3 text-right font-bold">₹{item.totalPrice.toLocaleString("en-IN")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -414,23 +414,23 @@ export const AccountantDashboard: React.FC = () => {
                 <div className="w-64 space-y-1.5 text-xs text-right">
                   <div className="flex justify-between text-slate-500">
                     <span>Subtotal:</span>
-                    <span>${selectedInvoice.subtotal.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.subtotal.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between text-slate-500">
                     <span>Facility Tax ({organization?.taxRate || 7}%):</span>
-                    <span>${selectedInvoice.taxAmount.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.taxAmount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between font-bold text-sm text-slate-900 text-slate-800 pt-1 border-t border-slate-200">
                     <span>Total Amount:</span>
-                    <span>${selectedInvoice.totalAmount.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.totalAmount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between text-emerald-600 font-bold">
                     <span>Paid to Date:</span>
-                    <span>${selectedInvoice.paidAmount.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.paidAmount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between text-rose-600 font-bold">
                     <span>Balance Due:</span>
-                    <span>${selectedInvoice.balanceDue.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.balanceDue.toLocaleString("en-IN")}</span>
                   </div>
                 </div>
               </div>

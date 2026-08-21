@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
   Building2,
@@ -11,7 +11,7 @@ import {
   Server,
   Zap,
   Globe,
-  DollarSign,
+  IndianRupee,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotifications } from '../../context/NotificationContext.js';
@@ -131,7 +131,7 @@ export const SuperAdminDashboard: React.FC = () => {
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
           <div className="flex justify-between items-center text-emerald-600 mb-1">
             <span className="text-xs font-semibold text-slate-500">Monthly Recurring Revenue</span>
-            <DollarSign className="w-5 h-5" />
+            <IndianRupee className="w-5 h-5" />
           </div>
           <p className="text-2xl font-bold text-slate-900 text-slate-800">₹98,500</p>
           <span className="text-[11px] text-emerald-600 font-medium">+18.4% month over month</span>

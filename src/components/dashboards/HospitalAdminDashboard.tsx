@@ -163,12 +163,12 @@ export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate })
               Target: 95%
             </span>
           </div>
-          <div className="mt-2 text-3xl font-bold text-slate-900 text-slate-800">
-            ${(analytics.totalRevenue ? analytics.totalRevenue / 1000 : 244.5).toFixed(1)}k
+          <div className="mt-2 text-3xl font-bold text-slate-950">
+            ₹{(analytics.totalRevenue ? analytics.totalRevenue / 1000 : 244.5).toFixed(1)}k
           </div>
           <div className="mt-2 flex items-center gap-1 text-xs text-slate-500">
-            <span className="font-semibold text-slate-700 text-slate-600">
-              ${analytics.outstandingInvoices ? (analytics.outstandingInvoices / 1000).toFixed(0) : '12'}k
+            <span className="font-semibold text-slate-800">
+              ₹{analytics.outstandingInvoices ? (analytics.outstandingInvoices / 1000).toFixed(0) : '12'}k
             </span>
             <span>outstanding invoices</span>
           </div>
