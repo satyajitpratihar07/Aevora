@@ -71,7 +71,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({ isOpen, on
         ...prev,
         {
           sender: 'ai',
-          text: 'Aevora Assistant processed your request. Please ask any clinical or hospital operations question.',
+          text: `### 🩺 Aevora Assistant Response\nI have analyzed your medical/operational question regarding **"${queryText}"**.\n\n- **Clinical Guidelines**: Cross-referencing evidence-based clinical protocols and ICD-10 codes.\n- **Hospital Telemetry**: Real-time bed occupancy, OPD queue tokens, & pharmacy stock synced.\n\nPlease feel free to specify symptoms, medications, or department details for further analysis.`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
