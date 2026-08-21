@@ -194,8 +194,8 @@ export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate })
 
       {/* Main Grid (8 Col Queue + 4 Col AI Clinical Assistant) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Real-time Appointment Queue Table (8 cols) */}
-        <div className="lg:col-span-8 flex flex-col rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        {/* Real-time Appointment Queue Table (12 cols) */}
+        <div className="lg:col-span-12 flex flex-col rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-100 border-slate-200 px-6 py-4">
             <div>
               <h2 className="font-bold text-slate-900 text-slate-800">Real-time Appointment Queue</h2>
@@ -283,90 +283,6 @@ export const HospitalAdminDashboard: React.FC<DashboardProps> = ({ onNavigate })
           </div>
         </div>
 
-        {/* AI Clinical Assistant Card (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-          <div className="bg-slate-900 px-6 py-4 text-slate-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-blue-400" />
-                <h2 className="font-bold text-sm">AI Clinical Assistant</h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Voice Active
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 p-6 space-y-4">
-            <div className="flex flex-col rounded-lg bg-slate-50 bg-slate-100/60 p-4 border border-slate-100 border-slate-200">
-              <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">
-                Live Ambient Transcription
-              </div>
-              <p className="text-xs italic text-slate-600 text-slate-600 leading-relaxed">
-                &ldquo;Patient reports sharp pain in the lower abdomen for the past 48 hours... adjusting dosage of Metformin...&rdquo;
-              </p>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-slate-700">
-                  Suggested Prescription Plan
-                </span>
-                <div className="rounded-lg border-l-4 border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 p-3">
-                  <ul className="space-y-1.5 text-slate-700 text-slate-600 text-[11px]">
-                    <li className="flex justify-between">
-                      <span>&bull; Amoxicillin 500mg</span>
-                      <span className="font-semibold">BID x 7d</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>&bull; Ibuprofen 400mg</span>
-                      <span className="font-semibold">PRN</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-slate-700">
-                  Lab Recommendations
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded bg-white bg-slate-100 border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600 text-slate-600">
-                    CBC w/ Differential
-                  </span>
-                  <span className="rounded bg-white bg-slate-100 border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600 text-slate-600">
-                    Metabolic Panel
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 space-y-2">
-                <button
-                  onClick={() => addToast('Prescription Finalized', 'AI draft verified and signed.', 'success')}
-                  className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 py-2 text-xs font-bold text-slate-900 shadow-md shadow-blue-600/30 transition"
-                >
-                  Review &amp; Finalize Order
-                </button>
-                <button
-                  onClick={() => addToast('Suggestion Discarded', 'AI recommendation cleared.', 'info')}
-                  className="w-full rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-600 text-slate-500 hover:bg-slate-50 transition"
-                >
-                  Discard Suggestion
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 bg-slate-100/80 p-3 border-t border-slate-100 border-slate-200">
-            <div className="flex items-center gap-2 text-[10px] text-slate-500">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              <span>AI clinical output requires licensed practitioner approval.</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Revenue Growth Trend Chart */}
