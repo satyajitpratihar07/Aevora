@@ -9,25 +9,16 @@ import { QrCodeModal } from './components/common/QrCodeModal.js';
 import { VoiceRecorderModal } from './components/common/VoiceRecorderModal.js';
 
 import { AvoraSplashScreen } from './components/common/AvoraSplashScreen.js';
-import { AnimatedLogoLoginPage } from './components/auth/AnimatedLogoLoginPage.js';
-import { RoleSelectionPage } from './components/auth/RoleSelectionPage.js';
-import { DoctorLoginPage } from './components/auth/DoctorLoginPage.js';
-import { AdminLoginPage } from './components/auth/AdminLoginPage.js';
-import { NurseLoginPage } from './components/auth/NurseLoginPage.js';
-import { TechnicalLoginPage } from './components/auth/TechnicalLoginPage.js';
+import { UnifiedLoginPage } from './components/auth/UnifiedLoginPage.js';
 
 type AppRoute =
-  | '/role-selection'
-  | '/doctor/login'
-  | '/admin/login'
-  | '/nurse/login'
-  | '/technical/login'
+  | '/login'
+  | '/patient/dashboard'
   | '/doctor/dashboard'
   | '/admin/dashboard'
   | '/nurse/dashboard'
   | '/technical/dashboard'
   | '/landing'
-  | '/auth-general'
   | '/avora/command-center'
   | '/avora/smart-booking'
   | '/avora/emergency'
@@ -59,16 +50,15 @@ import { WorkflowDesigner } from './components/avora/WorkflowDesigner.js';
 import { ReceptionistWorkspace } from './components/avora/ReceptionistWorkspace.js';
 import { AvoraIconLaunchpad } from './components/avora/AvoraIconLaunchpad.js';
 import { GeminiChatbotWidget } from './components/common/GeminiChatbotWidget.js';
-import { UserRole } from './types/index.js';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
 
 const MainAppContent: React.FC = () => {
-  const { user, login, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const { toasts, removeToast } = useNotifications();
 
-  // Active navigation route state - defaults to role-selection after splash loading
+  // Active navigation route state - shows login after splash
   const [showInitialSplash, setShowInitialSplash] = useState(true);
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/role-selection');
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/login');
   const [activeView, setActiveView] = useState<string>('DASHBOARD');
 
   // Modals state
@@ -82,11 +72,10 @@ const MainAppContent: React.FC = () => {
   // Sync route on login/logout
   useEffect(() => {
     if (!user) {
-      if (currentRoute.includes('/dashboard')) {
-        setCurrentRoute('/role-selection');
-      }
+      // Logged out — go back to login
+      setCurrentRoute('/login');
     } else {
-      // Auto-route logged in user to their role dashboard if not on a valid dashboard
+      // Automatically route to the user's authorized role dashboard
       if (user.role === 'DOCTOR') {
         setCurrentRoute('/doctor/dashboard');
       } else if (user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN') {
@@ -103,69 +92,18 @@ const MainAppContent: React.FC = () => {
     }
   }, [user]);
 
-  // Handle selecting a role card from RoleSelectionPage
-  const handleRoleCardSelect = (role: UserRole) => {
-    if (role === 'DOCTOR') setCurrentRoute('/doctor/login');
-    else if (role === 'HOSPITAL_ADMIN') setCurrentRoute('/admin/login');
-    else if (role === 'NURSE') setCurrentRoute('/nurse/login');
-    else if (role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/login');
-    else setCurrentRoute('/auth-general');
-  };
-
-  // Quick Demo Shortcut handler
-  const handleQuickDemo = async (role: UserRole) => {
-    await switchRole(role);
-    if (role === 'DOCTOR') setCurrentRoute('/doctor/dashboard');
-    else if (role === 'HOSPITAL_ADMIN') setCurrentRoute('/admin/dashboard');
-    else if (role === 'NURSE') setCurrentRoute('/nurse/dashboard');
-    else if (role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
-    else if (role === 'RECEPTIONIST') setCurrentRoute('/patient/dashboard');
-    else setCurrentRoute('/admin/dashboard');
-  };
-
   const handleOpenVoice = (contextText?: string) => {
     if (contextText) setVoiceContext(contextText);
     setIsVoiceModalOpen(true);
   };
 
-  // 1. UNAUTHENTICATED & LOGIN ROUTES
+  // 1. UNAUTHENTICATED: Show Splash then Unified Login Page
   if (!user) {
     if (showInitialSplash) {
       return <AvoraSplashScreen onComplete={() => setShowInitialSplash(false)} />;
     }
-    if (currentRoute === '/doctor/login') {
-      return <DoctorLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/doctor/dashboard')} />;
-    }
-    if (currentRoute === '/admin/login') {
-      return <AdminLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/admin/dashboard')} />;
-    }
-    if (currentRoute === '/nurse/login') {
-      return <NurseLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/nurse/dashboard')} />;
-    }
-    if (currentRoute === '/technical/login') {
-      return <TechnicalLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/technical/dashboard')} />;
-    }
-    if (currentRoute === '/role-selection') {
-      return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} onGoToLanding={() => setCurrentRoute('/landing')} />;
-    }
-    if (currentRoute === '/auth-general') {
-      return (
-        <AnimatedLogoLoginPage 
-          onSuccessLogin={() => {
-            // useEffect will auto-route to the authorized dashboard based on user.role
-          }} 
-          onGoToLanding={() => setCurrentRoute('/landing')} 
-        />
-      );
-    }
-    // Default entry point: AVORA Home Page
-    return (
-      <>
-        <LandingPage onLaunchApp={() => setCurrentRoute('/role-selection')} onSelectRole={handleRoleCardSelect} />
-        <AIAssistantDrawer isOpen={isAIDrawerOpen} onClose={() => setIsAIDrawerOpen(false)} />
-        <GeminiChatbotWidget onClick={() => setIsAIDrawerOpen(true)} />
-      </>
-    );
+    // After splash, always show the unified login page with 5 role tabs
+    return <UnifiedLoginPage onSuccessLogin={() => { /* useEffect auto-routes on user state change */ }} />;
   }
 
   // 2. STRICT ROLE-BASED ROUTE GUARD & PROTECTION
@@ -175,6 +113,7 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/admin/dashboard') return user.role === 'HOSPITAL_ADMIN' || user.role === 'SUPER_ADMIN';
     if (currentRoute === '/nurse/dashboard') return user.role === 'NURSE';
     if (currentRoute === '/technical/dashboard') return user.role === 'TECHNICAL_STAFF';
+    if (currentRoute === '/patient/dashboard') return user.role === 'RECEPTIONIST';
     return true;
   };
 
