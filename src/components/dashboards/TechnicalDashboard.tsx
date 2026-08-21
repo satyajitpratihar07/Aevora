@@ -54,7 +54,7 @@ interface BioDevice {
 
 export const TechnicalDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const { addToast } = useNotifications();
+  const { addToast, showConfirm } = useNotifications();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DEVICES' | 'TICKETS' | 'AUDIT' | 'BACKUP'>('OVERVIEW');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
@@ -198,7 +198,7 @@ export const TechnicalDashboard: React.FC = () => {
           </div>
 
           <button
-            onClick={() => { if (window.confirm('Logout from Technical Ops Console?')) logout(); }}
+            onClick={() => showConfirm('Are you sure you want to logout from Technical Ops Console?', () => logout(), 'Logout Confirmation')}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold transition"
           >
             <LogOut className="w-3.5 h-3.5" />
