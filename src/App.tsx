@@ -60,8 +60,9 @@ const MainAppContent: React.FC = () => {
   const { user, login, logout, switchRole } = useAuth();
   const { toasts, removeToast } = useNotifications();
 
-  // Active navigation route state
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/landing');
+  // Active navigation route state - defaults to role-selection after splash loading
+  const [showInitialSplash, setShowInitialSplash] = useState(true);
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>('/role-selection');
   const [activeView, setActiveView] = useState<string>('DASHBOARD');
 
   // Modals state
@@ -120,6 +121,9 @@ const MainAppContent: React.FC = () => {
 
   // 1. UNAUTHENTICATED & LOGIN ROUTES
   if (!user) {
+    if (showInitialSplash) {
+      return <AvoraSplashScreen onComplete={() => setShowInitialSplash(false)} />;
+    }
     if (currentRoute === '/doctor/login') {
       return <DoctorLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/doctor/dashboard')} />;
     }
@@ -132,7 +136,10 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/technical/login') {
       return <TechnicalLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/technical/dashboard')} />;
     }
-    if (currentRoute === '/role-selection' || currentRoute === '/auth-general') {
+    if (currentRoute === '/role-selection') {
+      return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} onGoToLanding={() => setCurrentRoute('/landing')} />;
+    }
+    if (currentRoute === '/auth-general') {
       return (
         <AnimatedLogoLoginPage 
           onSuccessLogin={() => {
