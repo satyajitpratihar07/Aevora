@@ -277,7 +277,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     if (!data.success || !data.verified) throw new Error(data.message || 'Invalid OTP code');
   };
 
-  /* ── SIGN UP SUBMIT: send OTP first ─────────────────── */
+  /* ── SIGN UP SUBMIT: native Firebase verification email ── */
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) { setError('Please enter your full name.'); return; }
@@ -288,71 +288,60 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     clearMessages();
     setLoading(true);
     try {
-      const result = await sendOtp(email, fullName, 'Account Registration');
+      // Call Firebase native signup and automatic verification email delivery
+      await signupWithFirebaseEmail(email, password, currentRole.role, fullName);
+      
       setPendingSignupData({ email, password, role: currentRole.role, name: fullName });
       setOtpPurpose('signup');
-      setOtpCode('');
-      setOtpTimer(120);
-      setFallbackOtp(result.fallbackOtp || '');
-      setSuccessMsg(`Verification code sent to ${email}`);
+      setOtpTimer(60);
+      setSuccessMsg(`A secure verification link has been sent to ${email}`);
       setPageView('OTP_VERIFY');
-    } catch {
-      setError('Failed to send verification code. Please check your email and try again.');
+    } catch (err: any) {
+      console.error('Firebase Auth signup failure:', err);
+      const code = err?.code || '';
+      if (code.includes('api-key-not-valid') || code.includes('invalid-api-key') || code.includes('INVALID_ARGUMENT')) {
+        setError('Firebase Configuration Error: The Firebase API Key configured in your project settings/variables is not valid. Please paste a valid web API key in your .env file to enable registration.');
+      } else {
+        setError(err.message || 'Failed to create account. Please check your credentials and try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── OTP VERIFY SUBMIT ───────────────────────────────── */
-  const handleOtpVerify = async (e: React.FormEvent) => {
+  /* ── VERIFY EMAIL NATIVELY VIA FIREBASE ──────────────── */
+  const handleVerifyEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode.length < 6) { setError('Please enter the complete 6-digit code.'); return; }
     clearMessages();
     setLoading(true);
     try {
-      await verifyOtp(
-        otpPurpose === 'signup' ? (pendingSignupData?.email || email) : forgotEmail,
-        otpCode
-      );
-
-      if (otpPurpose === 'signup' && pendingSignupData) {
-        // OTP verified — create the account
-        try {
-          await signupWithFirebaseEmail(pendingSignupData.email, pendingSignupData.password, pendingSignupData.role, pendingSignupData.name);
-        } catch {
-          await signup({ email: pendingSignupData.email, name: pendingSignupData.name, role: pendingSignupData.role });
-        }
-        setSuccessMsg('Account created successfully! Signing you in...');
-        setTimeout(() => onSuccessLogin?.(), 800);
+      const { checkFirebaseEmailVerification } = useAuth();
+      const isVerified = await checkFirebaseEmailVerification();
+      
+      if (isVerified) {
+        setSuccessMsg('Email successfully verified! Redirecting to workspace...');
+        setTimeout(() => onSuccessLogin?.(), 1000);
       } else {
-        // Forgot password — OTP verified, go to reset password
-        setSuccessMsg('Identity verified! Set your new password below.');
-        setPageView('RESET_PASSWORD');
+        setError('Email not verified yet. Please check your email inbox (including spam) and click the verification link, then try again.');
       }
     } catch (err: any) {
-      setError(err.message || 'Invalid or expired OTP code. Please try again.');
+      setError(err.message || 'Verification check failed. Please click the link in your email and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── RESEND OTP ──────────────────────────────────────── */
-  const handleResendOtp = async () => {
+  /* ── RESEND NATIVE VERIFICATION EMAIL ────────────────── */
+  const handleResendVerificationEmail = async () => {
     clearMessages();
-    setLoading(true);
-    const targetEmail = otpPurpose === 'signup' ? (pendingSignupData?.email || email) : forgotEmail;
-    const targetName = otpPurpose === 'signup' ? (pendingSignupData?.name || fullName) : 'AVORA User';
-    const purpose = otpPurpose === 'signup' ? 'Account Registration' : 'Password Reset';
+    setLoading(false);
     try {
-      const result = await sendOtp(targetEmail, targetName, purpose);
-      setOtpTimer(120);
-      setOtpCode('');
-      setFallbackOtp(result.fallbackOtp || '');
-      setSuccessMsg('A new verification code has been sent.');
-    } catch {
-      setError('Failed to resend OTP. Please try again.');
-    } finally {
-      setLoading(false);
+      const { sendFirebaseEmailVerification } = useAuth();
+      await sendFirebaseEmailVerification();
+      setOtpTimer(60);
+      setSuccessMsg('A new verification link has been sent to your email.');
+    } catch (err: any) {
+      setError('Failed to resend verification email. Please try again in a moment.');
     }
   };
 
@@ -377,56 +366,24 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
     }
   };
 
-  /* ── FORGOT PASSWORD: send OTP ───────────────────────── */
+  /* ── FORGOT PASSWORD: native Firebase reset email ────── */
   const handleForgotSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail.trim()) { setError('Please enter your email address.'); return; }
     clearMessages();
     setLoading(true);
     try {
-      const result = await sendOtp(forgotEmail, 'AVORA User', 'Password Reset');
-      setOtpPurpose('forgot');
-      setOtpCode('');
-      setOtpTimer(120);
-      setFallbackOtp(result.fallbackOtp || '');
-      setSuccessMsg(`Reset code sent to ${forgotEmail}`);
-      setPageView('FORGOT_OTP');
-    } catch {
-      setError('Failed to send reset code. Please verify your email address.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ── RESET PASSWORD SUBMIT ───────────────────────────── */
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 6) { setError('Password must be at least 6 characters.'); return; }
-    if (newPassword !== confirmNewPassword) { setError('Passwords do not match.'); return; }
-    clearMessages();
-    setLoading(true);
-    try {
-      // Update password in Firebase via re-authentication
-      const { auth } = await import('../../services/firebase.js');
-      const { updatePassword, signInWithEmailAndPassword } = await import('firebase/auth');
-      try {
-        const cred = await signInWithEmailAndPassword(auth, forgotEmail, newPassword);
-        await updatePassword(cred.user, newPassword);
-      } catch {
-        // If user doesn't exist in Firebase yet (demo system), just proceed
+      const { sendFirebasePasswordResetEmail } = useAuth();
+      await sendFirebasePasswordResetEmail(forgotEmail);
+      setSuccessMsg(`A secure password reset link has been sent to ${forgotEmail}. Please check your inbox and follow the instructions to set your new password.`);
+    } catch (err: any) {
+      console.error('Password reset request error:', err);
+      const code = err?.code || '';
+      if (code.includes('api-key-not-valid') || code.includes('invalid-api-key')) {
+        setError('Firebase Configuration Error: The Web API key in your project configuration is not valid. Please configure a valid Firebase key to recover accounts.');
+      } else {
+        setError(err.message || 'Failed to send password reset email. Verify your email address is correct.');
       }
-      setSuccessMsg('Password updated successfully! You can now sign in.');
-      setTimeout(() => {
-        setPageView('LOGIN');
-        setAuthMode('SIGN_IN');
-        setEmail(forgotEmail);
-        setPassword(newPassword);
-        setForgotEmail('');
-        setNewPassword('');
-        setConfirmNewPassword('');
-      }, 1500);
-    } catch {
-      setError('Failed to update password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -478,81 +435,64 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
           <span style={{ fontSize: 13, color: '#047857', fontWeight: 600 }}>{successMsg}</span>
         </div>
       )}
-      {fallbackOtp && (
-        <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', fontSize: 12 }}>
-          <strong style={{ color: '#92400e' }}>📧 Dev Mode — SMTP email unavailable.</strong>
-          <span style={{ color: '#78350f' }}> Your OTP code is: <strong style={{ fontSize: 18, letterSpacing: 4, color: '#b45309' }}>{fallbackOtp}</strong></span>
-        </div>
-      )}
     </>
   );
 
-  /* ── 1. OTP VERIFICATION PANEL ───────────────────────── */
+  /* ── 1. NATIVE FIREBASE EMAIL VERIFICATION PANEL ─────── */
   const renderOtpPanel = () => {
-    const targetEmail = otpPurpose === 'signup' ? (pendingSignupData?.email || email) : forgotEmail;
-    const isSignup = otpPurpose === 'signup';
+    const targetEmail = pendingSignupData?.email || email;
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Header */}
         <div>
-          <button onClick={() => { setPageView('LOGIN'); clearMessages(); setOtpCode(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 13, fontWeight: 600, marginBottom: 16, padding: 0 }}>
-            <ArrowLeft size={15} /> Back
+          <button onClick={() => { setPageView('LOGIN'); clearMessages(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 13, fontWeight: 600, marginBottom: 16, padding: 0 }}>
+            <ArrowLeft size={15} /> Back to Sign Up
           </button>
           <div style={{ width: 56, height: 56, background: `${currentRole.color}15`, border: `1.5px solid ${currentRole.border}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <ShieldCheck size={26} color={currentRole.color} />
+            <Mail size={26} color={currentRole.color} />
           </div>
           <h3 style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: 0 }}>
-            {isSignup ? 'Verify Your Email' : 'Check Your Email'}
+            Verify Your Email
           </h3>
           <p style={{ fontSize: 13, color: '#6b7280', marginTop: 8, lineHeight: 1.7 }}>
-            We sent a <strong>6-digit verification code</strong> to<br />
+            We sent a secure **verification link** to:<br />
             <strong style={{ color: '#111827' }}>{targetEmail}</strong>
           </p>
         </div>
 
         {renderMessages()}
 
-        <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* 6-digit OTP boxes */}
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 12, textAlign: 'center' }}>
-              Enter 6-Digit Code
-            </label>
-            <OtpInput value={otpCode} onChange={setOtpCode} color={currentRole.color} />
-          </div>
-
-          {/* Countdown timer */}
-          <div style={{ textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
-            {otpTimer > 0 ? (
-              <>Code expires in <strong style={{ color: currentRole.color }}>{Math.floor(otpTimer / 60)}:{String(otpTimer % 60).padStart(2, '0')}</strong></>
-            ) : (
-              <button type="button" onClick={handleResendOtp} disabled={loading} style={{ background: 'none', border: 'none', cursor: 'pointer', color: currentRole.color, fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
-                Resend Code
-              </button>
-            )}
+        <form onSubmit={handleVerifyEmailCheck} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 20px', fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
+            💡 <strong>Next Steps:</strong>
+            <ol style={{ paddingLeft: 20, marginTop: 8, listStyleType: 'decimal' }}>
+              <li>Open your email inbox.</li>
+              <li>Click the secure link sent by <strong>Aevora HMS Security</strong>.</li>
+              <li>Once you see the "Your email has been verified" confirmation, return here and click the check button below.</li>
+            </ol>
           </div>
 
           {/* Verify button */}
-          <button type="submit" disabled={loading || otpCode.length < 6} style={{
+          <button type="submit" disabled={loading} style={{
             width: '100%', padding: '13px 20px', borderRadius: 10, border: 'none',
-            fontSize: 14, fontWeight: 700, color: '#fff', cursor: otpCode.length < 6 ? 'not-allowed' : 'pointer',
-            background: otpCode.length >= 6 ? `linear-gradient(135deg, ${currentRole.color}, ${currentRole.color}cc)` : '#d1d5db',
+            fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer',
+            background: `linear-gradient(135deg, ${currentRole.color}, ${currentRole.color}cc)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
           }}>
-            {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Verifying...</> : <><CheckCircle2 size={15} /> Verify & {isSignup ? 'Create Account' : 'Continue'}</>}
+            {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Checking status...</> : <><CheckCircle2 size={15} /> I have clicked the verification link</>}
           </button>
 
-          <p style={{ textAlign: 'center', fontSize: 12, color: '#9ca3af' }}>
-            Didn't receive the code?{' '}
+          {/* Resend status */}
+          <div style={{ textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
             {otpTimer > 0 ? (
-              <span>Wait {otpTimer}s to resend</span>
+              <>Resend link in <strong style={{ color: currentRole.color }}>{otpTimer}s</strong></>
             ) : (
-              <button type="button" onClick={handleResendOtp} style={{ background: 'none', border: 'none', cursor: 'pointer', color: currentRole.color, fontWeight: 700, fontSize: 12 }}>
-                Resend
+              <button type="button" onClick={handleResendVerificationEmail} style={{ background: 'none', border: 'none', cursor: 'pointer', color: currentRole.color, fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
+                Resend Verification Link
               </button>
             )}
-          </p>
+          </div>
         </form>
       </div>
     );
@@ -570,7 +510,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
         </div>
         <h3 style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: 0 }}>Forgot Password?</h3>
         <p style={{ fontSize: 13, color: '#6b7280', marginTop: 8, lineHeight: 1.7 }}>
-          Enter your registered email address. We'll send you a secure one-time code to reset your password.
+          Enter your registered email address. We will send a secure password reset link to your email.
         </p>
       </div>
 
@@ -598,7 +538,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
           background: 'linear-gradient(135deg, #d97706, #b45309)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
         }}>
-          {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Sending Code...</> : <>Send Reset Code <ArrowRight size={15} /></>}
+          {loading ? <><RefreshCw size={15} style={{ animation: 'ulpSpin 1s linear infinite' }} /> Sending Link...</> : <>Send Password Reset Link <ArrowRight size={15} /></>}
         </button>
       </form>
     </div>

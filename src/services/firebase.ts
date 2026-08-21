@@ -7,6 +7,8 @@ import {
   createUserWithEmailAndPassword, 
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   User as FirebaseUser
 } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
@@ -17,7 +19,7 @@ const env = (import.meta as any).env || {};
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || "AIzaSyBfmbl7vdfgwW9LZ9QaZR-OWxvNKPRaVOU",
+  apiKey: env.VITE_FIREBASE_API_KEY || "AIzaSyBFmbF7vdfgvW9LZ9QaZR-OWxvNKPRaVOU",
   authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "aevora-50cea.firebaseapp.com",
   projectId: env.VITE_FIREBASE_PROJECT_ID || "aevora-50cea",
   storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "aevora-50cea.firebasestorage.app",
@@ -79,6 +81,8 @@ export {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
   firebaseSignOut,
   onAuthStateChanged 
 };

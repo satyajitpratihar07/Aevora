@@ -7,6 +7,8 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
   firebaseSignOut,
   onAuthStateChanged,
   FirebaseUser,
@@ -29,6 +31,9 @@ interface AuthContextType {
   loginWithGoogle: (role?: UserRole, emailOverride?: string, nameOverride?: string) => Promise<boolean>;
   loginWithFirebaseEmail: (email: string, pass: string, role?: UserRole) => Promise<void>;
   signupWithFirebaseEmail: (email: string, pass: string, role?: UserRole, name?: string) => Promise<void>;
+  sendFirebaseEmailVerification: () => Promise<void>;
+  checkFirebaseEmailVerification: () => Promise<boolean>;
+  sendFirebasePasswordResetEmail: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (permission: Permission) => boolean;
   updateOrgBranding: (branding: Partial<Organization>) => Promise<void>;
@@ -238,8 +243,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const result = await createUserWithEmailAndPassword(auth, email, pass);
       fbUser = result.user;
       setFirebaseUser(fbUser);
+      // Native Firebase verification
+      await sendEmailVerification(fbUser);
+      console.log('✉️ Firebase Native Verification Email Sent to:', email);
     } catch (fbErr: any) {
-      console.warn('Firebase Signup bypass (using AVORA Auth):', fbErr?.message || fbErr);
+      console.warn('Firebase Signup bypass/error:', fbErr?.message || fbErr);
+      throw fbErr; // Propagate the error so caller can guide the user
     }
 
     try {
@@ -260,6 +269,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const sendFirebaseEmailVerification = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+    }
+  };
+
+  const checkFirebaseEmailVerification = async (): Promise<boolean> => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      const updatedUser = auth.currentUser;
+      setFirebaseUser(updatedUser);
+      return updatedUser.emailVerified;
+    }
+    return false;
+  };
+
+  const sendFirebasePasswordResetEmail = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
   };
 
   const signup = async (formData: any) => {
@@ -335,6 +364,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithGoogle,
         loginWithFirebaseEmail,
         signupWithFirebaseEmail,
+        sendFirebaseEmailVerification,
+        checkFirebaseEmailVerification,
+        sendFirebasePasswordResetEmail,
         logout,
         hasPermission,
         updateOrgBranding,
