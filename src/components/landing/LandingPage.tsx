@@ -930,87 +930,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchApp, onSelectR
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
-
-              <button
-                onClick={() => setIsSidebarPanelVisible(!isSidebarPanelVisible)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition border border-slate-200"
-              >
-                <MoreVertical className="w-4 h-4 text-sky-600" />
-                <span className="hidden sm:inline">{isSidebarPanelVisible ? "Hide Sidebar" : "Show Sidebar"}</span>
-              </button>
             </div>
           </div>
 
-          {/* SIDEBAR + LISTED SECTIONS GRID LAYOUT */}
-          <div className="grid grid-cols-12 gap-6 items-start">
-            
-            {/* LEFT SIDEBAR PANEL (PAGE-EMBEDDED) */}
-            {isSidebarPanelVisible && (
-              <div className="col-span-12 md:col-span-4 lg:col-span-3 bg-white rounded-3xl border border-slate-200 p-4 shadow-sm space-y-4 sticky top-24">
-                <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center">
-                      <MoreVertical className="w-4 h-4" />
-                    </div>
-                    <span className="font-black text-sm text-slate-900">Department Sidebar</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
-                    42+ Listed
-                  </span>
-                </div>
-
-                {/* Sidebar Navigation Items */}
-                <div className="space-y-1">
-                  {[
-                    { id: "all", name: "All 42+ Medical Specialties", icon: LayoutGrid, badge: "Full Menu" },
-                    { id: "col1", name: "Specialized Medicine", icon: HeartPulse, count: "11 Options" },
-                    { id: "col2", name: "Critical & Surgery", icon: Stethoscope, count: "11 Options" },
-                    { id: "col3", name: "Advanced & Dental Science", icon: Smile, highlighted: true, count: "10 Options" },
-                    { id: "col4", name: "Transplant & Diagnostics", icon: FlaskConical, count: "10 Options" },
-                  ].map((cat) => {
-                    const Icon = cat.icon;
-                    const active = activeSidebarCategory === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActiveSidebarCategory(cat.id)}
-                        className={`w-full text-left px-3.5 py-3 rounded-2xl transition duration-200 flex items-center justify-between text-xs font-bold border ${
-                          active
-                            ? "bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent shadow-md"
-                            : cat.highlighted
-                            ? "bg-rose-50 border-rose-200 text-slate-900 hover:bg-rose-100"
-                            : "bg-white border-slate-100 text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                          <Icon className={`w-4 h-4 shrink-0 ${active ? "text-white" : cat.highlighted ? "text-rose-600" : "text-sky-600"}`} />
-                          <span className="truncate">{cat.name}</span>
-                        </div>
-                        {cat.badge ? (
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${active ? "bg-white/20 text-white" : "bg-sky-100 text-sky-700"}`}>
-                            {cat.badge}
-                          </span>
-                        ) : (
-                          <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${active ? "text-white" : "text-slate-400"}`} />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 space-y-2 text-[11px] text-slate-500 font-medium">
-                  <div className="p-3 bg-sky-50/70 rounded-2xl border border-sky-100 flex items-start space-x-2">
-                    <Sparkles className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
-                    <p className="text-slate-700 leading-snug">
-                      Click any category or item to view specialists, OPD timings, and online tele-consultation slots.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* RIGHT LISTED SECTIONS PANEL (MATCHING SCREENSHOT COLUMNS PRECISELY!) */}
-            <div className={`${isSidebarPanelVisible ? "col-span-12 md:col-span-8 lg:col-span-9" : "col-span-12"} space-y-6`}>
+          {/* LISTED SECTIONS DIRECTORY GRID LAYOUT */}
+          <div className="w-full space-y-6">
               
               {/* 4 COLUMNS LISTED DIRECTORY VIEW */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1116,9 +1040,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunchApp, onSelectR
                   ))}
                 </div>
               </div>
-
             </div>
-          </div>
         </section>
 
         {/* 5. CARE AT AVORA — HEALTHCARE SERVICES */}
