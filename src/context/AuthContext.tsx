@@ -10,7 +10,8 @@ import {
   firebaseSignOut,
   onAuthStateChanged,
   FirebaseUser,
-  initAnalytics
+  initAnalytics,
+  saveUserToFirestore
 } from '../services/firebase.js';
 
 interface AuthContextType {
@@ -123,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveRole(res.user.role);
       setOrganization(res.organization);
       sessionStorage.setItem('avora_user', JSON.stringify(res.user));
+      saveUserToFirestore(res.user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -131,7 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Firebase Google Sign-In
   // Firebase Google Sign-In with Automatic Account Selector Fallback
   const loginWithGoogle = async (role?: UserRole, emailOverride?: string, nameOverride?: string): Promise<boolean> => {
     setIsLoading(true);
@@ -174,6 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(fullUser);
       setActiveRole(targetRole);
       sessionStorage.setItem('avora_user', JSON.stringify(fullUser));
+      saveUserToFirestore(fullUser);
       return true;
     } catch (error: any) {
       console.error('AVORA Google Auth error:', error);
@@ -208,6 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(fullUser);
       setActiveRole(targetRole);
       sessionStorage.setItem('avora_user', JSON.stringify(fullUser));
+      saveUserToFirestore(fullUser);
     } catch (error) {
       console.error('AVORA Auth error:', error);
       throw error;
@@ -242,6 +245,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(fullUser);
       setActiveRole(targetRole);
       sessionStorage.setItem('avora_user', JSON.stringify(fullUser));
+      saveUserToFirestore(fullUser);
     } catch (error) {
       console.error('AVORA Signup error:', error);
       throw error;
@@ -258,6 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveRole(res.user.role);
       setOrganization(res.organization);
       sessionStorage.setItem('avora_user', JSON.stringify(res.user));
+      saveUserToFirestore(res.user);
       const orgList = await api.getOrganizations();
       setOrganizations(orgList);
     } catch (error) {

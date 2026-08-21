@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
@@ -37,6 +37,34 @@ export const storage = getStorage(app);
 // Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Firestore Persistence Function for User Records
+export const saveUserToFirestore = async (userObj: any) => {
+  try {
+    if (!userObj || (!userObj.id && !userObj.email)) return;
+    const cleanId = (userObj.id || userObj.email).toString().replace(/[/@.]/g, '_');
+    const userRef = doc(db, "users", cleanId);
+
+    const payload = {
+      id: userObj.id || cleanId,
+      name: userObj.name || 'Hospital User',
+      email: userObj.email || '',
+      role: userObj.role || 'HOSPITAL_ADMIN',
+      organizationId: userObj.organizationId || 'org-apex-01',
+      avatarUrl: userObj.avatarUrl || '',
+      phone: userObj.phone || '',
+      department: userObj.department || '',
+      updatedAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      status: 'ACTIVE'
+    };
+
+    await setDoc(userRef, payload, { merge: true });
+    console.log('✅ User record successfully saved to Firebase Firestore:', cleanId);
+  } catch (err) {
+    console.warn('Firebase Firestore save notification:', err);
+  }
+};
 
 // Safe Analytics Initialization
 export const initAnalytics = async () => {
