@@ -56,24 +56,6 @@ import { GeminiChatbotWidget } from './components/common/GeminiChatbotWidget.js'
 import { UserRole } from './types/index.js';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
 
-type AppRoute =
-  | '/role-selection'
-  | '/doctor/login'
-  | '/admin/login'
-  | '/nurse/login'
-  | '/technical/login'
-  | '/doctor/dashboard'
-  | '/admin/dashboard'
-  | '/nurse/dashboard'
-  | '/technical/dashboard'
-  | '/landing'
-  | '/auth-general'
-  | '/avora/command-center'
-  | '/avora/smart-booking'
-  | '/avora/emergency'
-  | '/avora/workflow-designer'
-  | '/avora/icon-dashboard';
-
 const MainAppContent: React.FC = () => {
   const { user, login, logout, switchRole } = useAuth();
   const { toasts, removeToast } = useNotifications();
