@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
-import { SocketProvider } from './context/SocketContext.js';
 import { NotificationProvider, useNotifications } from './context/NotificationContext.js';
 import { Header } from './components/common/Header.js';
 import { Sidebar } from './components/common/Sidebar.js';
@@ -9,12 +8,25 @@ import { AIAssistantDrawer } from './components/common/AIAssistantDrawer.js';
 import { QrCodeModal } from './components/common/QrCodeModal.js';
 import { VoiceRecorderModal } from './components/common/VoiceRecorderModal.js';
 
-// Dedicated Role Entry & Login Pages
-import { RoleSelectionPage } from './components/auth/RoleSelectionPage.js';
-import { DoctorLoginPage } from './components/auth/DoctorLoginPage.js';
-import { AdminLoginPage } from './components/auth/AdminLoginPage.js';
-import { NurseLoginPage } from './components/auth/NurseLoginPage.js';
-import { TechnicalLoginPage } from './components/auth/TechnicalLoginPage.js';
+import { AnimatedLogoLoginPage } from './components/auth/AnimatedLogoLoginPage.js';
+
+type AppRoute =
+  | '/role-selection'
+  | '/doctor/login'
+  | '/admin/login'
+  | '/nurse/login'
+  | '/technical/login'
+  | '/doctor/dashboard'
+  | '/admin/dashboard'
+  | '/nurse/dashboard'
+  | '/technical/dashboard'
+  | '/landing'
+  | '/auth-general'
+  | '/avora/command-center'
+  | '/avora/smart-booking'
+  | '/avora/emergency'
+  | '/avora/workflow-designer'
+  | '/avora/icon-dashboard';
 
 // Dashboards and Views
 import { LandingPage } from './components/landing/LandingPage.js';
@@ -138,11 +150,18 @@ const MainAppContent: React.FC = () => {
     if (currentRoute === '/technical/login') {
       return <TechnicalLoginPage onBackToRoles={() => setCurrentRoute('/role-selection')} onSuccessLogin={() => setCurrentRoute('/technical/dashboard')} />;
     }
-    if (currentRoute === '/role-selection') {
-      return <RoleSelectionPage onSelectRole={handleRoleCardSelect} onQuickDemo={handleQuickDemo} onGoToLanding={() => setCurrentRoute('/landing')} />;
-    }
-    if (currentRoute === '/auth-general') {
-      return <AuthPage onLogin={async (email, role) => { await login(email, role); }} onSignup={async () => {}} onGoToLanding={() => setCurrentRoute('/landing')} />;
+    if (currentRoute === '/role-selection' || currentRoute === '/auth-general') {
+      return (
+        <AnimatedLogoLoginPage 
+          onSuccessLogin={() => {
+            if (user?.role === 'DOCTOR') setCurrentRoute('/doctor/dashboard');
+            else if (user?.role === 'NURSE') setCurrentRoute('/nurse/dashboard');
+            else if (user?.role === 'TECHNICAL_STAFF') setCurrentRoute('/technical/dashboard');
+            else setCurrentRoute('/admin/dashboard');
+          }} 
+          onGoToLanding={() => setCurrentRoute('/landing')} 
+        />
+      );
     }
     // Default entry point: AVORA Home Page
     return (
@@ -415,11 +434,9 @@ const ToastContainer: React.FC<{ toasts: any[]; removeToast: (id: string) => voi
 export default function App() {
   return (
     <AuthProvider>
-      <SocketProvider>
-        <NotificationProvider>
-          <MainAppContent />
-        </NotificationProvider>
-      </SocketProvider>
+      <NotificationProvider>
+        <MainAppContent />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

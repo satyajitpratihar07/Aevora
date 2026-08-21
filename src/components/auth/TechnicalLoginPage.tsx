@@ -16,7 +16,6 @@ import {
   HardDrive
 } from 'lucide-react';
 import { GoogleAccountModal } from './GoogleAccountModal.js';
-import { useAuth } from '../../context/AuthContext.js';
 
 interface TechnicalLoginPageProps {
   onBackToRoles: () => void;
