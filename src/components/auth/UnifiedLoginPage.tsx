@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { UserRole } from '../../types/index.js';
+import { GoogleAccountModal } from './GoogleAccountModal.js';
 
 interface UnifiedLoginPageProps {
   onSuccessLogin?: () => void;
@@ -220,6 +221,7 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
   // UI state
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [fallbackOtp, setFallbackOtp] = useState(''); // shown if SMTP fails in dev
@@ -439,20 +441,20 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
       const success = await loginWithGoogle(currentRole.role);
       if (success) {
         onSuccessLogin?.();
+      } else {
+        // Direct popup couldn't retrieve account — open Google Account Modal
+        setIsGoogleModalOpen(true);
       }
-      // If success===false, user simply closed the popup — no error shown
     } catch (err: any) {
       const code = err?.code || '';
-      // Ignore user-dismissed popup events gracefully
       if (
         code === 'auth/popup-closed-by-user' ||
-        code === 'auth/cancelled-popup-request' ||
-        code === 'auth/popup-blocked'
+        code === 'auth/cancelled-popup-request'
       ) {
-        // User cancelled — show nothing or a soft info message
         setError('');
       } else {
-        setError('Google sign-in failed. Please try again or use email & password.');
+        // For API key or popup blocked errors, open the Google Account Modal
+        setIsGoogleModalOpen(true);
       }
     } finally {
       setGoogleLoading(false);
@@ -980,6 +982,17 @@ export const UnifiedLoginPage: React.FC<UnifiedLoginPageProps> = ({ onSuccessLog
             ))}
           </div>
         </footer>
+
+        {/* Google Account Picker Modal */}
+        <GoogleAccountModal
+          isOpen={isGoogleModalOpen}
+          onClose={() => setIsGoogleModalOpen(false)}
+          role={currentRole.role}
+          onSelectAccount={async (email, name) => {
+            const ok = await loginWithGoogle(currentRole.role, email, name);
+            if (ok) onSuccessLogin?.();
+          }}
+        />
       </div>
     </>
   );
